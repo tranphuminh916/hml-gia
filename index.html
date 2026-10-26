@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HML – Tra cứu giá agent</title>
+<style>
+  :root {
+    --bg: #f6f7f9; --card: #ffffff; --ink: #1d2433; --muted: #667085; --line: #e4e7ec;
+    --brand: #1f4e79; --brand-soft: #e8eef6; --best: #fbd5e4; --best-ink: #9d174d;
+    --warn: #b54708; --exp: #98a2b3;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--ink);
+    font: 14px/1.45 -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+  header { background: var(--brand); color: #fff; padding: 14px 20px; display: flex; align-items: baseline;
+    gap: 12px; flex-wrap: wrap; }
+  header h1 { font-size: 18px; margin: 0; font-weight: 650; letter-spacing: .2px; }
+  header .meta { font-size: 12px; opacity: .8; }
+  main { padding: 16px 20px 40px; max-width: 1600px; margin: 0 auto; }
+  .bar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 12px; }
+  .search { flex: 1 1 280px; position: relative; }
+  .search input { width: 100%; padding: 10px 12px 10px 34px; border: 1px solid var(--line); border-radius: 8px;
+    font-size: 15px; background: var(--card); outline: none; }
+  .search input:focus { border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-soft); }
+  .search svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px;
+    stroke: var(--muted); }
+  select { padding: 9px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--card);
+    font-size: 14px; color: var(--ink); }
+  .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+  .tab { border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 6px 14px;
+    cursor: pointer; font-size: 13px; color: var(--ink); }
+  .tab b { color: var(--muted); font-weight: 500; margin-left: 4px; }
+  .tab.on { background: var(--brand); border-color: var(--brand); color: #fff; }
+  .tab.on b { color: #cfe0f2; }
+  .info { font-size: 12.5px; color: var(--muted); margin: 0 0 8px; display: flex; gap: 14px; flex-wrap: wrap; }
+  .legend { display: inline-flex; align-items: center; gap: 6px; }
+  .legend i { width: 12px; height: 12px; border-radius: 3px; background: var(--best); display: inline-block; }
+  .wrap { background: var(--card); border: 1px solid var(--line); border-radius: 10px; overflow: auto;
+    max-height: calc(100vh - 210px); }
+  table { border-collapse: separate; border-spacing: 0; width: 100%; }
+  th, td { padding: 7px 10px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+  th { position: sticky; top: 0; background: var(--brand-soft); font-size: 12px; font-weight: 650; color: #344054;
+    white-space: nowrap; z-index: 1; cursor: pointer; user-select: none; }
+  th.num, td.num { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  td { font-size: 13px; }
+  td.long { min-width: 180px; max-width: 320px; color: #475467; font-size: 12.5px; }
+  td.nowrap { white-space: nowrap; }
+  tr:hover td { background: #fafbfc; }
+  td.best { background: var(--best) !important; color: var(--best-ink); font-weight: 700; }
+  tr.expired td { color: var(--exp); }
+  .pill { font-size: 11px; padding: 1px 7px; border-radius: 999px; white-space: nowrap; }
+  .pill.ok { background: #dcfae6; color: #067647; }
+  .pill.no { background: #f2f4f7; color: #667085; }
+  .pill.ex { background: #fee4e2; color: #b42318; }
+  .empty, .loading, .err { padding: 40px; text-align: center; color: var(--muted); }
+  .err { color: #b42318; }
+  .more { display: block; margin: 12px auto; padding: 8px 16px; border: 1px solid var(--line); border-radius: 8px;
+    background: var(--card); cursor: pointer; }
+  .login { max-width: 380px; margin: 60px auto; background: var(--card); border: 1px solid var(--line);
+    border-radius: 12px; padding: 24px; }
+  .login h2 { margin: 0 0 6px; font-size: 17px; }
+  .login p { margin: 0 0 16px; color: var(--muted); font-size: 13px; }
+  .login label { display: block; font-size: 12.5px; font-weight: 600; margin: 10px 0 4px; }
+  .login input { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; font-size: 15px; }
+  .login button { width: 100%; margin-top: 16px; padding: 11px; border: 0; border-radius: 8px; background: var(--brand);
+    color: #fff; font-size: 15px; font-weight: 600; cursor: pointer; }
+  .login button:disabled { opacity: .6; }
+  .login .msg { color: #b42318; font-size: 13px; min-height: 18px; margin-top: 10px; }
+  .logout { margin-left: auto; background: transparent; border: 1px solid rgba(255,255,255,.4); color: #fff;
+    border-radius: 6px; padding: 4px 10px; font-size: 12px; cursor: pointer; display: none; }
+  @media (max-width: 640px) {
+    header { padding: 12px 16px; } main { padding: 12px 16px 32px; }
+    .wrap { max-height: none; }
+    th, td { padding: 6px 8px; }
+    td.nowrap { white-space: normal; min-width: 70px; max-width: 130px; }
+    th { white-space: normal; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>HML – Tra cứu giá agent</h1>
+  <span class="meta" id="meta"></span>
+  <button class="logout" id="logout">Đăng xuất</button>
+</header>
+<div class="login" id="login" style="display:none">
+  <h2>Đăng nhập</h2>
+  <p>Dùng email công ty đã được bộ phận Pricing cấp quyền. Lần đầu đăng nhập: tự đặt mật khẩu (ít nhất 6 ký tự).</p>
+  <label for="em">Email</label><input id="em" type="email" autocomplete="username" placeholder="ten@hml.com.vn">
+  <label for="pw">Mật khẩu</label><input id="pw" type="password" autocomplete="current-password">
+  <button id="go">Đăng nhập</button>
+  <div class="msg" id="msg"></div>
+</div>
+<main id="app" style="display:none">
+  <div class="bar">
+    <label class="search">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+      <input id="q" type="search" placeholder="Tìm cảng, agent, hãng… (VD: ningbo hph, unitex, cosco)" autocomplete="off">
+    </label>
+    <select id="dir" aria-label="Hướng">
+      <option value="">Nhập + Xuất</option><option>Nhập</option><option>Xuất</option>
+    </select>
+    <select id="valid" aria-label="Hiệu lực">
+      <option value="okOrNone">Còn hiệu lực + chưa có valid</option>
+      <option value="ok">Chỉ còn hiệu lực</option>
+      <option value="all">Tất cả (cả hết hạn)</option>
+    </select>
+  </div>
+  <div class="tabs" id="tabs"></div>
+  <p class="info"><span id="count"></span>
+    <span class="legend"><i></i> Giá tốt nhất của tuyến (cùng POL + POD, chưa hết hạn)</span>
+    <span>Bấm tiêu đề cột để sắp xếp</span></p>
+  <div class="wrap" id="wrap"><div class="loading">Đang tải giá…</div></div>
+</main>
+
+<script>
+var DATA = null, TAB = 'FCL', SORT = null, LIMIT = 300;
+var $ = function (id) { return document.getElementById(id); };
+var today = new Date(); today.setHours(0, 0, 0, 0);
+// Mã / tên viết tắt hay gõ → tên trong file (viết liền, không dấu)
+var ALIAS = { hph: 'haiphong', hpg: 'haiphong', hcm: 'hochiminh', hcmc: 'hochiminh', sgn: 'hochiminh', saigon: 'hochiminh',
+  han: 'hanoi', dad: 'danang', sha: 'shanghai', ngb: 'ningbo', szx: 'shenzhen', skou: 'shekou', hkg: 'hongkong',
+  tao: 'qingdao', xmn: 'xiamen', tsn: 'tianjin', txg: 'xingang', can: 'guangzhou', pus: 'busan', khh: 'kaohsiung',
+  bkk: 'bangkok', lch: 'laemchabang', lcb: 'laemchabang', sin: 'singapore', pkg: 'portklang', lax: 'losangeles' };
+
+function plain(s) {
+  return String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D').toLowerCase();
+}
+function dmy(s) {                                   // "31/10/2026" → Date
+  var m = String(s || '').match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  return m ? new Date(+m[3], +m[2] - 1, +m[1]) : null;
+}
+function num(s) {
+  var t = String(s || '').replace(/,/g, '').trim();
+  return /^-?\d+(\.\d+)?$/.test(t) ? parseFloat(t) : null;
+}
+function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+
+var TOKEN = '';
+var API = 'https://script.google.com/macros/s/AKfycbw6rpwaR5FSmu6_15SMa3_6Y5nVY-L3JleJLgIEq8hlQR1CJfhU3vyLJ0NlI2WFlerd/exec';
+var IN_GAS = !!(window.google && google.script && google.script.run);
+// Gọi máy chủ: trong Apps Script dùng google.script.run, ở trang ngoài dùng fetch (không gửi cookie Google)
+function call(fn, args, ok, bad) {
+  if (IN_GAS) { var r = google.script.run.withSuccessHandler(ok).withFailureHandler(bad); r[fn].apply(r, args); return; }
+  var body = { a: fn, args: args };
+  fetch(API, { method: 'POST', body: JSON.stringify(body), credentials: 'omit', redirect: 'follow' })
+    .then(function (res) { return res.json(); })
+    .then(function (j) { if (j.ok) ok(j.data); else bad(new Error(j.error)); })
+    .catch(function (e) { bad(new Error('Không kết nối được máy chủ (' + e.message + ')')); });
+}
+function store(k, v) { try { if (v === undefined) return localStorage.getItem(k) || ''; if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) { return ''; } }
+function showLogin(msg) {
+  $('app').style.display = 'none'; $('logout').style.display = 'none'; $('login').style.display = 'block';
+  $('meta').textContent = ''; $('msg').textContent = msg || ''; $('go').disabled = false;
+  $('em').value = $('em').value || store('hmlEmail');
+}
+function load() {
+  TOKEN = TOKEN || store('hmlToken');
+  if (!TOKEN && !window.MOCK) { showLogin(); return; }
+  $('login').style.display = 'none'; $('app').style.display = 'block';
+  $('meta').textContent = 'Đang tải dữ liệu…';
+  if (window.MOCK) { ready(window.MOCK); return; }
+  call('getRates', [TOKEN], ready, fail);
+}
+function fail(e) {
+  var m = String(e && e.message || e);
+  if (/LOGIN/.test(m)) { TOKEN = ''; store('hmlToken', null); showLogin('Phiên đăng nhập đã hết hạn hoặc tài khoản bị khóa – vui lòng đăng nhập lại.'); return; }
+  $('meta').textContent = '';
+  $('wrap').innerHTML = '<div class="err">Không tải được giá.<br><small>' + esc(m) + '</small></div>';
+}
+function doLogin() {
+  var em = $('em').value.trim(), pw = $('pw').value;
+  if (!em || !pw) { $('msg').textContent = 'Nhập email và mật khẩu'; return; }
+  $('go').disabled = true; $('msg').textContent = '';
+  call('webLogin', [em, pw], function (r) {
+    TOKEN = r.token; store('hmlToken', r.token); store('hmlEmail', em); $('pw').value = ''; load();
+  }, function (e) {
+    $('go').disabled = false; $('msg').textContent = String(e && e.message || e).replace(/^Error:\s*/, '');
+  });
+}
+$('go').addEventListener('click', doLogin);
+$('pw').addEventListener('keydown', function (e) { if (e.key === 'Enter') doLogin(); });
+$('logout').addEventListener('click', function () {
+  if (TOKEN) call('webLogout', [TOKEN], function () {}, function () {});
+  TOKEN = ''; store('hmlToken', null); showLogin();
+});
+function ready(d) {
+  DATA = d;
+  $('meta').textContent = 'Cập nhật lúc ' + d.updated + (d.user ? ' · ' + d.user : '');
+  $('logout').style.display = 'inline-block';
+  // cột phụ để tính toán nhanh
+  Object.keys(d.tabs).forEach(function (t) {
+    var tb = d.tabs[t], h = tb.header;
+    tb.ix = { date: h.indexOf('Ngày nhận'), dir: h.indexOf('Hướng'), pol: h.indexOf('POL'), pod: h.indexOf('POD'),
+              valid: h.indexOf('Valid đến') };
+    tb.price = [];
+    h.forEach(function (x, i) { if (/\((USD|USD\/[^)]*)\)/i.test(x)) tb.price.push(i); });
+    tb.rows.forEach(function (r) {
+      r._txt = plain(r.join(' '));
+      r._flat = r._txt.replace(/\s+/g, '');
+      r._valid = dmy(r[tb.ix.valid]);
+      r._date = dmy(r[tb.ix.date]);
+    });
+  });
+  if (!d.tabs[TAB] || !d.tabs[TAB].rows.length) {
+    TAB = Object.keys(d.tabs).filter(function (t) { return d.tabs[t].rows.length; })[0] || 'FCL';
+  }
+  render();
+}
+
+function filtered(t) {
+  var tb = DATA.tabs[t], words = plain($('q').value).split(/\s+/).filter(Boolean);
+  var dir = $('dir').value, v = $('valid').value;
+  return tb.rows.filter(function (r) {
+    if (dir && r[tb.ix.dir] !== dir) return false;
+    if (v === 'ok' && !(r._valid && r._valid >= today)) return false;
+    if (v === 'okOrNone' && r._valid && r._valid < today) return false;
+    for (var i = 0; i < words.length; i++) {
+      var w = words[i], a = ALIAS[w];
+      if (r._txt.indexOf(w) === -1 && r._flat.indexOf(w) === -1 && !(a && r._flat.indexOf(a) !== -1)) return false;
+    }
+    return true;
+  });
+}
+
+function render() {
+  if (!DATA) return;
+  // tab + số dòng khớp
+  $('tabs').innerHTML = Object.keys(DATA.tabs).map(function (t) {
+    return '<button class="tab' + (t === TAB ? ' on' : '') + '" data-t="' + t + '">' + t + '<b>' + filtered(t).length + '</b></button>';
+  }).join('');
+  var tb = DATA.tabs[TAB], rows = filtered(TAB), ix = tb.ix;
+  // giá tốt nhất còn hiệu lực theo POL + POD trong tập đang xem
+  var best = {};
+  rows.forEach(function (r) {
+    if (r._valid && r._valid < today) return;          // bỏ giá đã hết hạn
+    tb.price.forEach(function (c) {
+      var n = num(r[c]); if (n === null || n <= 0) return;
+      var k = r[ix.pol] + '|' + r[ix.pod] + '|' + c;
+      if (best[k] === undefined || n < best[k]) best[k] = n;
+    });
+  });
+  // sắp xếp
+  if (SORT) {
+    var c = SORT.c, s = SORT.d;
+    rows.sort(function (a, b) {
+      var x = num(a[c]), y = num(b[c]);
+      if (x !== null || y !== null) return ((x === null ? 1e15 : x) - (y === null ? 1e15 : y)) * s;
+      var p = dmy(a[c]), q = dmy(b[c]);
+      if (p || q) return ((p ? p.getTime() : 0) - (q ? q.getTime() : 0)) * s;
+      return String(a[c]).localeCompare(String(b[c])) * s;
+    });
+  } else {
+    rows.sort(function (a, b) {
+      return String(a[ix.pol]).localeCompare(b[ix.pol]) || String(a[ix.pod]).localeCompare(b[ix.pod]) ||
+        ((b._date ? b._date.getTime() : 0) - (a._date ? a._date.getTime() : 0));
+    });
+  }
+  $('count').textContent = rows.length + ' giá' + (rows.length > LIMIT ? ' – đang hiện ' + LIMIT + ' dòng đầu' : '');
+  if (!rows.length) { $('wrap').innerHTML = '<div class="empty">Không tìm thấy giá phù hợp. Thử bỏ bớt từ khóa hoặc chọn "Tất cả (cả hết hạn)".</div>'; return; }
+
+  var longCols = /bao gồm|local|lưu ý|etd|free time/i;
+  var head = '<tr>' + tb.header.map(function (h, i) {
+    var cls = tb.price.indexOf(i) !== -1 ? 'num' : '';
+    var arrow = SORT && SORT.c === i ? (SORT.d > 0 ? ' ▲' : ' ▼') : '';
+    return '<th class="' + cls + '" data-c="' + i + '">' + esc(h) + arrow + '</th>';
+  }).join('') + '</tr>';
+  var body = rows.slice(0, LIMIT).map(function (r) {
+    var exp = r._valid && r._valid < today;
+    return '<tr class="' + (exp ? 'expired' : '') + '">' + tb.header.map(function (h, i) {
+      var val = r[i], cls = [];
+      if (tb.price.indexOf(i) !== -1) {
+        cls.push('num');
+        var n = num(val);
+        if (n !== null && !exp && best[r[ix.pol] + '|' + r[ix.pod] + '|' + i] === n) cls.push('best');
+      } else if (longCols.test(h)) cls.push('long');
+      else cls.push('nowrap');
+      if (i === ix.valid) {
+        var pill = !r._valid ? '<span class="pill no">Chưa có valid</span>' :
+          (exp ? '<span class="pill ex">' + esc(val) + '</span>' : '<span class="pill ok">' + esc(val) + '</span>');
+        return '<td class="nowrap">' + pill + '</td>';
+      }
+      return '<td class="' + cls.join(' ') + '">' + esc(val) + '</td>';
+    }).join('') + '</tr>';
+  }).join('');
+  $('wrap').innerHTML = '<table><thead>' + head + '</thead><tbody>' + body + '</tbody></table>' +
+    (rows.length > LIMIT ? '<button class="more" id="more">Hiện thêm 300 dòng</button>' : '');
+}
+
+document.addEventListener('click', function (e) {
+  var t = e.target.closest('.tab');
+  if (t) { TAB = t.getAttribute('data-t'); SORT = null; LIMIT = 300; render(); return; }
+  var th = e.target.closest('th');
+  if (th) { var c = +th.getAttribute('data-c'); SORT = SORT && SORT.c === c ? { c: c, d: -SORT.d } : { c: c, d: 1 }; render(); return; }
+  if (e.target.id === 'more') { LIMIT += 300; render(); }
+});
+var timer;
+$('q').addEventListener('input', function () { clearTimeout(timer); timer = setTimeout(function () { LIMIT = 300; render(); }, 200); });
+$('dir').addEventListener('change', function () { LIMIT = 300; render(); });
+$('valid').addEventListener('change', function () { LIMIT = 300; render(); });
+load();
+</script>
+</body>
+</html>
