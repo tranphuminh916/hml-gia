@@ -13,7 +13,9 @@
  *   LUAN_TRON_DOI_MOI_KHACH_NGAY  số lần luận trọn đời (nhiều phần) mỗi khách mỗi ngày, mặc định 2
  *   LUAN_TOI_DA_NGAY     tổng số lần gọi luận tối đa mỗi ngày, mặc định 50 (mỗi phần của bộ trọn đời tính 1 lần)
  *   CAN_KICH_HOAT        mặc định bật: khách đăng ký bằng số điện thoại, chủ gửi mã kích hoạt; đặt 0 để tắt
- *   BAO_EMAIL            email nhận báo khách mới (mặc định email chủ); đặt 0 để không gửi
+ *   BAO_EMAIL            email nhận báo khách mới, khách xin thêm lượt (mặc định email chủ); đặt 0 để không gửi
+ *   LUOT_XEM_MOI_KHACH   số lượt xem mỗi khách được dùng, mặc định 3; đặt 0 để không giới hạn.
+ *                        Cấp thêm cho một khách: sửa ô "Lượt được xem" của khách đó trong Sheet.
  *
  * Chạy hàm caiDat() một lần sau khi dán mã (để tạo 2 trang tính và cấp quyền), và thuGuiEmail() để cấp quyền gửi email.
  * Trang cho khách: tệp HTML "Index" trong dự án này (tải giao diện từ kho GitHub qua jsDelivr).
@@ -21,8 +23,9 @@
 
 var TAB_KHACH = 'Khách';
 var TAB_LUOT = 'Lượt xem';
-var COT_KHACH = ['Mã khách', 'Lần đầu', 'Lần cuối', 'Họ tên', 'Giới tính', 'Ngày sinh', 'Lịch', 'Giờ sinh', 'Nơi sinh', 'Liên hệ', 'Số lượt xem', 'Số lần luận',
-                 'Trạng thái', 'Mã kích hoạt', 'Kích hoạt lúc'];
+var COT_KHACH = ['Mã khách', 'Lần đầu', 'Lần cuối', 'Họ tên', 'Giới tính', 'Ngày sinh', 'Lịch', 'Giờ sinh', 'Nơi sinh', 'Liên hệ', 'Lượt đã xem', 'Số lần luận',
+                 'Trạng thái', 'Mã kích hoạt', 'Kích hoạt lúc', 'Lượt được xem', 'Xin thêm lượt'];
+var COT_DA_XEM = 11, COT_DUOC_XEM = 16, COT_XIN_THEM = 17;
 var TT_CHO = 'Chờ kích hoạt', TT_DA = 'Đã kích hoạt', TT_KHOA = 'Khóa';
 var COT_LUOT = ['Thời gian', 'Mã lượt', 'Mã khách', 'Khách', 'Xem cho', 'Mục xem', 'Chi tiết / câu hỏi', 'Người thứ hai', 'Số liệu bộ tính', 'Bài luận', 'Hỏi thêm', 'Luận lúc'];
 var MUI_GIO = 'Asia/Ho_Chi_Minh';
@@ -44,9 +47,8 @@ function tab_(ten, cot) {
     sh.getRange(1, 1, 1, cot.length).setValues([cot]).setFontWeight('bold').setBackground('#f3e6d0');
     sh.setFrozenRows(1);
   }
-  if (sh.getLastColumn() < cot.length) {   // Sheet tạo từ bản cũ: thêm tiêu đề các cột mới
-    var c0 = Math.max(1, sh.getLastColumn() + 1);
-    sh.getRange(1, c0, 1, cot.length - c0 + 1).setValues([cot.slice(c0 - 1)]).setFontWeight('bold').setBackground('#f3e6d0');
+  if (sh.getLastColumn() < cot.length) {   // Sheet tạo từ bản cũ: viết lại hàng tiêu đề (thêm cột mới, đổi tên cột nếu có)
+    sh.getRange(1, 1, 1, cot.length).setValues([cot]).setFontWeight('bold').setBackground('#f3e6d0');
   }
   return sh;
 }
@@ -59,7 +61,8 @@ function trangThai_() {
     app: 'so-tu-vi',
     can_ma: !!String(P.getProperty('MA_TRUY_CAP') || '').trim(),
     co_luan: !!String(P.getProperty('ANTHROPIC_API_KEY') || '').trim(),
-    kich_hoat: canKichHoat_(P)
+    kich_hoat: canKichHoat_(P),
+    gioi_han_luot: gioiHanLuot_(P)
   };
 }
 
@@ -96,7 +99,9 @@ function xuLy_(req) {
   try {
     if (req.action === 'kiem') return { ok: true };
     if (req.action === 'khach') return luuKhach_(req);
-    if (req.action === 'luot') return luuLuot_(req);
+    if (req.action === 'luot') return luuLuot_(req, P);
+    if (req.action === 'dungluot') return dungLuot_(req, P);
+    if (req.action === 'xinluot') return xinLuot_(req, P);
     if (req.action === 'dangky') return dangKy_(req, P);
     if (req.action === 'kichhoat') return kichHoat_(req);
     if (req.action === 'toi') return toi_(req, P);
@@ -190,14 +195,23 @@ function tangDem_(sh, id, cotSo) {
 }
 
 /* ------------------------------------------------------------------ lượt xem */
-function luuLuot_(req) {
+function luuLuot_(req, P) {
   var khachId = idHopLe_(req.khachId);
   var luotId = idHopLe_(req.luotId);
   if (!khachId || !luotId) return { ok: false, ma_loi: 'du_lieu', loi: 'Thiếu mã khách hoặc mã lượt.' };
   var l = req.luot || {};
   return voiKhoa_(function () {
     var sh = tab_(TAB_LUOT, COT_LUOT);
-    if (timDong_(sh, 2, luotId)) return { ok: true, luotId: luotId, trung: true };   // gửi lại lần 2: bỏ qua
+    var dong = timDong_(sh, 2, luotId);
+    if (dong) {
+      // Lượt đã mở trước bằng "dungluot" (khi có giới hạn lượt): ghi thêm số liệu, không đếm lại.
+      if (String(sh.getRange(dong, 3).getValue()) === khachId && !String(sh.getRange(dong, 9).getValue() || '')) {
+        sh.getRange(dong, 4, 1, 6).setValues([[sach_(l.khach, 120), sach_(moTaNguoi_(l.xemCho), 300), sach_(l.muc, 120), sach_(l.chiTiet, 1000),
+          sach_(moTaNguoi_(l.nguoiThuHai), 300), sach_(l.soLieu, 45000)]]);
+      }
+      return { ok: true, luotId: luotId, trung: true };   // gửi lại lần 2: bỏ qua
+    }
+    if (gioiHanLuot_(P)) return { ok: true, luotId: luotId, boQua: true };   // có giới hạn mà lượt chưa mở: không ghi
     sh.appendRow([
       sach_(l.thoiGian || bayGio_(), 30), luotId, khachId, sach_(l.khach, 120), sach_(moTaNguoi_(l.xemCho), 300),
       sach_(l.muc, 120), sach_(l.chiTiet, 1000), sach_(moTaNguoi_(l.nguoiThuHai), 300),
@@ -316,9 +330,11 @@ function dangKy_(req, P) {
     if (dong) {
       sh.getRange(dong, 3, 1, 1 + thongTin.length).setValues([[t].concat(thongTin)]);
     } else {
-      sh.appendRow([id, t, t].concat(thongTin).concat([0, 0, '', '', '']));
+      sh.appendRow([id, t, t].concat(thongTin).concat([0, 0, '', '', '', gioiHanLuot_(P) || '', '']));
       dong = timDong_(sh, 1, id);
     }
+    var gh = gioiHanLuot_(P);   // ghi sẵn số lượt được xem để chủ thấy và sửa được ngay
+    if (gh && String(sh.getRange(dong, COT_DUOC_XEM).getValue() == null ? '' : sh.getRange(dong, COT_DUOC_XEM).getValue()).trim() === '') sh.getRange(dong, COT_DUOC_XEM).setValue(gh);
     var cur = sh.getRange(dong, 13, 1, 2).getValues()[0];
     var tt = String(cur[0] || '').trim(), ma = String(cur[1] || '').replace(/\D/g, '');
     if (tt === TT_DA || tt === TT_KHOA) return { tt: tt };
@@ -358,12 +374,117 @@ function kichHoat_(req) {
   return { ok: false, ma_loi: 'sai_ma_kh', loi: 'Mã kích hoạt chưa đúng.' };
 }
 function toi_(req, P) {
-  // Trạng thái tài khoản của chính khách này
-  if (!canKichHoat_(P)) return { ok: true, trangThai: 'da' };
+  // Trạng thái tài khoản và số lượt xem của chính khách này
+  var kh = canKichHoat_(P), gh = gioiHanLuot_(P);
+  if (!kh && !gh) return { ok: true, trangThai: 'da' };
   var id = idHopLe_(req.khachId);
   if (!id) return { ok: false, ma_loi: 'du_lieu', loi: 'Thiếu mã khách.' };
-  var tt = trangThaiCua_(id);
-  return { ok: true, trangThai: tt === TT_DA ? 'da' : tt === TT_KHOA ? 'khoa' : tt === TT_CHO ? 'cho' : 'chua' };
+  var sh = tab_(TAB_KHACH, COT_KHACH), dong = timDong_(sh, 1, id);
+  var r = dong ? sh.getRange(dong, 1, 1, COT_KHACH.length).getValues()[0] : null;
+  var tt = r ? String(r[12] || '').trim() : '';
+  var kq = { ok: true, trangThai: !kh ? 'da' : tt === TT_DA ? 'da' : tt === TT_KHOA ? 'khoa' : tt === TT_CHO ? 'cho' : 'chua' };
+  if (gh) kq.luot = luotTuDong_(r, gh, id);
+  return kq;
+}
+
+/* ------------------------------------------------------------------ giới hạn lượt xem */
+// Mỗi khách được LUOT_XEM_MOI_KHACH lượt (mặc định 3). Mỗi lần xem kết quả (lá số, vận tháng, chọn ngày, gieo quẻ,
+// xem nhà, luận trọn đời, dò giờ sinh) tính 1 lượt; luận giải cho chính kết quả đó không trừ thêm.
+// Hết lượt: khách bấm "Xin thêm lượt" → chủ nhận email, sửa ô "Lượt được xem" của khách trong Sheet để cấp thêm.
+function gioiHanLuot_(P) {
+  var n = parseInt(String(P.getProperty('LUOT_XEM_MOI_KHACH') || '3').trim(), 10);
+  return isNaN(n) || n < 0 ? 3 : n;    // 0 = không giới hạn
+}
+function duocXem_(v, gh) {
+  var s = String(v == null ? '' : v).trim(), n = Math.floor(Number(s));
+  return s === '' || isNaN(n) ? gh : Math.max(0, n);
+}
+function luotTuDong_(r, gh, id) {
+  var duoc = duocXem_(r ? r[COT_DUOC_XEM - 1] : '', gh), da = r ? Number(r[COT_DA_XEM - 1]) || 0 : 0;
+  return { da: da, duoc: duoc, choCap: CacheService.getScriptCache().get('xl_' + id) === String(duoc) };
+}
+// Trước khi hiện kết quả: trừ 1 lượt và mở sẵn dòng của lượt này trong trang tính "Lượt xem".
+function dungLuot_(req, P) {
+  var id = idHopLe_(req.khachId), luotId = idHopLe_(req.luotId);
+  if (!id || !luotId) return { ok: false, ma_loi: 'du_lieu', loi: 'Thiếu mã khách hoặc mã lượt.' };
+  var gh = gioiHanLuot_(P), kh = canKichHoat_(P);
+  if (!gh) return { ok: true, khongGioiHan: true };
+  var l = req.luot || {}, k = req.khach || {};
+  var kq = voiKhoa_(function () {
+    var sk = tab_(TAB_KHACH, COT_KHACH), dong = timDong_(sk, 1, id);
+    if (!dong) {
+      if (kh) return { ma_loi: 'chua_dang_ky' };
+      var t0 = bayGio_();    // không bật đăng ký: tạo dòng khách từ thông tin trang gửi kèm
+      sk.appendRow([id, t0, t0, sach_(k.ten, 120), k.gioi === 'nu' ? 'Nữ' : 'Nam', sach_(k.ngay, 20), k.am ? ('Âm' + (k.nhuan ? ' (nhuận)' : '')) : 'Dương',
+        sach_(k.gio, 10), sach_(k.noi, 120), soDangChu_(sach_(k.lienHe, 200)), 0, 0, '', '', '', gh, '']);
+      dong = timDong_(sk, 1, id);
+    }
+    var r = sk.getRange(dong, 1, 1, COT_KHACH.length).getValues()[0];
+    var tt = String(r[12] || '').trim();
+    if (kh && tt !== TT_DA) return { ma_loi: tt === TT_KHOA ? 'khoa' : 'chua_dang_ky' };
+    var da = Number(r[COT_DA_XEM - 1]) || 0, duoc = duocXem_(r[COT_DUOC_XEM - 1], gh);
+    if (String(r[COT_DUOC_XEM - 1] == null ? '' : r[COT_DUOC_XEM - 1]).trim() === '') sk.getRange(dong, COT_DUOC_XEM).setValue(duoc);
+    var sl = tab_(TAB_LUOT, COT_LUOT);
+    if (timDong_(sl, 2, luotId)) return { da: da, duoc: duoc };       // gửi lại lần 2: không trừ thêm
+    if (da >= duoc) return { ma_loi: 'het_luot_xem', da: da, duoc: duoc };
+    sl.appendRow([bayGio_(), luotId, id, sach_(l.khach, 120), sach_(moTaNguoi_(l.xemCho), 300), sach_(l.muc, 120), sach_(l.chiTiet, 1000),
+      sach_(moTaNguoi_(l.nguoiThuHai), 300), '', '', '', '']);
+    sk.getRange(dong, COT_DA_XEM).setValue(da + 1);
+    sk.getRange(dong, 3).setValue(bayGio_());
+    return { da: da + 1, duoc: duoc };
+  });
+  if (kq.ma_loi === 'chua_dang_ky') return { ok: false, ma_loi: 'chua_kich_hoat', loi: 'Tài khoản chưa được kích hoạt.' };
+  if (kq.ma_loi === 'khoa') return { ok: false, ma_loi: 'khoa', loi: 'Tài khoản đang tạm khóa. Mời liên hệ chủ trang.' };
+  var luot = { da: kq.da, duoc: kq.duoc, choCap: CacheService.getScriptCache().get('xl_' + id) === String(kq.duoc) };
+  if (kq.ma_loi) return { ok: false, ma_loi: kq.ma_loi, loi: 'Đã dùng hết ' + kq.duoc + ' lượt xem.', luot: luot };
+  return { ok: true, luot: luot };
+}
+// Khách hết lượt bấm "Xin thêm lượt": ghi vào Sheet và email cho chủ (mỗi khách tối đa 1 email trong 6 giờ, trừ khi chủ đã cấp thêm).
+function xinLuot_(req, P) {
+  var id = idHopLe_(req.khachId);
+  if (!id) return { ok: false, ma_loi: 'du_lieu', loi: 'Thiếu mã khách.' };
+  var gh = gioiHanLuot_(P), kh = canKichHoat_(P);
+  if (!gh) return { ok: true, khongGioiHan: true };
+  var cache = CacheService.getScriptCache(), kx = 'xl_' + id;
+  var loiNhan = String(req.loiNhan || '').replace(/\s+/g, ' ').trim().slice(0, 300);
+  var kq = voiKhoa_(function () {
+    var sk = tab_(TAB_KHACH, COT_KHACH), dong = timDong_(sk, 1, id);
+    if (!dong) return { ma_loi: 'chua_dang_ky' };
+    var r = sk.getRange(dong, 1, 1, COT_KHACH.length).getValues()[0];
+    if (kh && String(r[12] || '').trim() !== TT_DA) return { ma_loi: 'chua_dang_ky' };
+    var da = Number(r[COT_DA_XEM - 1]) || 0, duoc = duocXem_(r[COT_DUOC_XEM - 1], gh);
+    if (da < duoc) return { da: da, duoc: duoc, conLuot: true };
+    if (cache.get(kx) === String(duoc)) return { da: da, duoc: duoc, daGui: true };
+    sk.getRange(dong, COT_XIN_THEM).setValue(sach_(bayGio_() + ' · đã xem ' + da + '/' + duoc + (loiNhan ? ' · ' + loiNhan : ''), 400));
+    return { da: da, duoc: duoc, moi: true, dong: dong, ten: String(r[3] || ''), sdt: String(r[9] || ''), gid: typeof sk.getSheetId === 'function' ? sk.getSheetId() : null };
+  });
+  if (kq.ma_loi) return { ok: false, ma_loi: 'chua_kich_hoat', loi: 'Tài khoản chưa được kích hoạt.' };
+  if (kq.moi) { cache.put(kx, String(kq.duoc), 21600); baoXinLuot_(P, kq, loiNhan); }
+  return { ok: true, daGui: !!kq.daGui, conLuot: !!kq.conLuot, luot: { da: kq.da, duoc: kq.duoc, choCap: !kq.conLuot } };
+}
+function baoXinLuot_(P, k, loiNhan) {
+  var to = String(P.getProperty('BAO_EMAIL') || '').trim();
+  if (to === '0') return;
+  try {
+    if (!to) to = Session.getEffectiveUser().getEmail();
+    if (!to) return;
+    var url = SpreadsheetApp.getActiveSpreadsheet().getUrl();
+    var o = url + (k.gid != null ? '#gid=' + k.gid + '&range=P' + k.dong : '');
+    MailApp.sendEmail(to, 'Sổ Tử Vi – khách xin thêm lượt: ' + k.ten + ' – ' + k.sdt, [
+      'Khách xin thêm lượt xem trên trang Sổ Tử Vi:',
+      '',
+      'Họ tên: ' + k.ten,
+      'Số điện thoại: ' + k.sdt,
+      'Đã xem: ' + k.da + '/' + k.duoc + ' lượt',
+      loiNhan ? 'Lời nhắn: ' + loiNhan : 'Lời nhắn: (không có)',
+      '',
+      'Muốn cho thêm: sửa ô "Lượt được xem" của khách này thành số lớn hơn.',
+      'Ví dụ đang là ' + k.duoc + ', sửa thành ' + (k.duoc + 5) + ' là cho thêm 5 lượt.',
+      'Ô cần sửa: ' + o,
+      '',
+      'Không muốn cho thêm thì không cần làm gì.'
+    ].join('\n'));
+  } catch (e) { /* gửi thư lỗi thì thôi, yêu cầu vẫn ghi ở cột "Xin thêm lượt" */ }
 }
 
 // Chạy hàm này một lần trong trình soạn thảo để cấp quyền gửi email (Google sẽ hỏi quyền).
@@ -399,6 +520,11 @@ function luan_(req, P) {
   var xung = x.xung === 'chị' ? 'chị' : 'anh';
   if (canKichHoat_(P) && trangThaiCua_(khachId) !== TT_DA) {
     return { ok: false, ma_loi: 'chua_kich_hoat', loi: 'Tài khoản của ' + xung + ' chưa được kích hoạt.' };
+  }
+  // Chỉ luận cho lượt xem đã ghi nhận (đã trừ lượt) của chính khách này.
+  var shL = tab_(TAB_LUOT, COT_LUOT), dongL = timDong_(shL, 2, luotId);
+  if (!dongL || String(shL.getRange(dongL, 3).getValue()) !== khachId) {
+    return { ok: false, ma_loi: 'chua_co_luot', loi: 'Chưa ghi nhận lượt xem này. Mời ' + xung + ' xem lại kết quả rồi bấm luận.' };
   }
 
   // Luận trọn đời: một bộ gồm `tong` phần, mỗi lần gọi một phần (Google chỉ chờ mỗi lần gọi ~60 giây).
