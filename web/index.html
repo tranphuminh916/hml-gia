@@ -733,7 +733,7 @@ async function capNhatLuot() {
 function hetLuotHtml(trongSheet) {
   const l = KHACH.luot || { da: 0, duoc: 0 };
   const noi = l.choCap ? `Tôi đã nhận yêu cầu xin thêm lượt của ${xg()}. Khi tôi cấp thêm, ${xg()} bấm “Kiểm tra lại” hoặc mở lại trang là xem tiếp được.`
-    : `Muốn xem thêm, ${xg()} bấm “Xin thêm lượt”. Tôi sẽ xem và cấp thêm cho ${xg()}.`;
+    : `Muốn xem thêm, ${xg()} bấm “Xin thêm lượt”. Tôi sẽ xem và cấp thêm cho ${xg()}. Khi được cấp thêm, trang tự mở lại lượt xem.`;
   const nut = `<button class="primary${trongSheet ? "" : " full"}" data-luot="xin">${l.choCap ? "Kiểm tra lại" : "Xin thêm lượt"}</button>`;
   return trongSheet
     ? `<h3>Đã hết lượt xem</h3><p class="hint" style="margin-top:0">${Xg()} đã dùng hết ${l.duoc} lượt xem. ${noi}</p><div class="btns"><button class="ghost" id="hlX">Đóng</button>${nut}</div>`
@@ -791,6 +791,22 @@ async function moXinLuot() {
   };
 }
 document.addEventListener("click", e => { if (e.target.closest("[data-luot]")) moXinLuot(); });
+// Chủ trang cấp thêm lượt trong Sheet khi trang khách đang mở: tự hỏi lại máy chủ khi khách quay lại trang,
+// và mỗi phút một lần khi đang hết lượt, để không phải tải lại trang.
+let _kiemCapLuc = 0;
+async function kiemCapThem() {
+  if (!gioiHan() || !KHACH.luot || conLuotLocal() || document.hidden) return;
+  if (Date.now() - _kiemCapLuc < 20000) return;
+  _kiemCapLuc = Date.now();
+  await capNhatLuot();
+  if (conLuotLocal()) {
+    $$("[data-luot]").forEach(b => { const c = b.closest(".card"); if (c && c.parentElement && c.parentElement.id !== "luotNote") c.remove(); });
+    toast(`${Xg()} đã được cấp thêm lượt xem. Mời ${xg()} xem tiếp.`, 3500);
+  }
+}
+document.addEventListener("visibilitychange", kiemCapThem);
+window.addEventListener("focus", kiemCapThem);
+setInterval(kiemCapThem, 60000);
 function openCodeSheet() {
   if ($("#sheetBg").classList.contains("on")) return;
   openSheet(`<h3>Cần mã truy cập</h3><p class="hint">Chủ trang đã đổi mã hoặc mã ${xg()} nhập chưa đúng. Mời ${xg()} nhập mã mới để tiếp tục.</p>
