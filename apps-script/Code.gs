@@ -8,6 +8,7 @@
  *   ANTHROPIC_API_KEY    khóa API Claude (bắt buộc để có phần luận)
  *   MA_TRUY_CAP          mã anh đưa cho khách; để trống = ai có link cũng dùng được
  *   MODEL                mặc định claude-sonnet-5-5
+ *   MAX_TOKENS           độ dài tối đa bài luận (token), mặc định 2800
  *   LUAN_MOI_KHACH_NGAY  số lần luận tối đa mỗi khách mỗi ngày, mặc định 5
  *   LUAN_TOI_DA_NGAY     tổng số lần luận tối đa mỗi ngày, mặc định 50
  *
@@ -211,6 +212,23 @@ function quyTac_(xung) {
   ].join('\n');
 }
 
+// Model đời 5 tự bật suy nghĩ trước khi viết, và phần suy nghĩ ăn vào max_tokens (bài luận bị cụt).
+// Bài luận chỉ cần viết từ số liệu có sẵn nên tắt suy nghĩ: Sonnet 5.5 dùng "between_tools", model khác dùng "disabled".
+function goiApi_(model, toiDa, system, noiDung) {
+  var body = { model: model, max_tokens: toiDa, system: system, messages: [{ role: 'user', content: noiDung }] };
+  var m = String(model);
+  if (/sonnet-5-5/.test(m)) {
+    body.thinking = { type: 'between_tools' };
+    body.output_config = { effort: 'medium' };
+  } else if (/haiku-5|sonnet-5|opus-5(?!-5)/.test(m)) {
+    body.thinking = { type: 'disabled' };
+    body.output_config = { effort: 'medium' };
+  } else if (/opus-5-5|fable|mythos/.test(m)) {
+    body.output_config = { effort: 'low' };       // các model này luôn suy nghĩ; hạ effort cho bài ngắn, nhanh
+  }
+  return body;
+}
+
 function luan_(req, P) {
   var khachId = idHopLe_(req.khachId);
   var luotId = idHopLe_(req.luotId);
@@ -257,8 +275,8 @@ function luan_(req, P) {
 
   // Google chỉ chờ mỗi lần gọi ra ngoài khoảng 60 giây. Lần đầu viết vừa phải; quá giờ thì thử lại một lần
   // bằng model nhanh hơn, bài ngắn hơn.
-  var lan = [[String(P.getProperty('MODEL') || MODEL_MAC_DINH).trim(), Number(P.getProperty('MAX_TOKENS')) || 2200],
-             [MODEL_NHANH, 1100]];
+  var lan = [[String(P.getProperty('MODEL') || MODEL_MAC_DINH).trim(), Number(P.getProperty('MAX_TOKENS')) || 2800],
+             [MODEL_NHANH, 1600]];
   var res = null, loiMang = '';
   for (var i = 0; i < lan.length && !res; i++) {
     try {
@@ -266,12 +284,7 @@ function luan_(req, P) {
         method: 'post',
         contentType: 'application/json',
         headers: { 'x-api-key': key, 'anthropic-version': '2023-06-01' },
-        payload: JSON.stringify({
-          model: lan[i][0],
-          max_tokens: lan[i][1],
-          system: quyTac_(xung),
-          messages: [{ role: 'user', content: noiDung }]
-        }),
+        payload: JSON.stringify(goiApi_(lan[i][0], lan[i][1], quyTac_(xung), noiDung)),
         muteHttpExceptions: true
       });
     } catch (e1) {
@@ -292,6 +305,10 @@ function luan_(req, P) {
     return { ok: false, ma_loi: code === 429 || code === 529 ? 'ban' : 'loi_claude', loi: 'Chưa luận được (' + thongDiep + ').' };
   }
   var text = (j.content || []).filter(function (c) { return c.type === 'text'; }).map(function (c) { return c.text; }).join('\n').trim();
+  if (!text) {
+    cache.put(kKhach, String(daDung), 21600);   // không có chữ thì trả lại lượt
+    return { ok: false, ma_loi: 'loi_claude', loi: 'Chưa luận được (bài trả về trống). Mời ' + xung + ' thử lại.' };
+  }
   if (j.stop_reason === 'max_tokens') text += '\n\n_(Bài luận dừng ở giới hạn độ dài.)_';
 
   voiKhoa_(function () {
