@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<title>Sổ Tử Vi</title>
+<style>
+  body { margin: 0; background: #f7f2ea; color: #2a2420; font-family: system-ui, -apple-system, sans-serif; }
+  #ld { padding: 48px 20px; text-align: center; color: #7a6e64; }
+</style>
+</head>
+<body>
+<div id="ld">Đang mở Sổ Tử Vi…</div>
+<script>
+// Trang khung: tải giao diện Sổ Tử Vi từ kho GitHub (qua jsDelivr, ghim theo commit) rồi chạy trong trang này.
+(async function () {
+  var BASE = '__BASE__';
+  window.SO_TU_VI = { base: BASE };
+  try {
+    var r = await fetch(BASE + 'index.html');
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    var doc = new DOMParser().parseFromString(await r.text(), 'text/html');
+    doc.head.querySelectorAll('style, link[rel=stylesheet], link[rel=preconnect]').forEach(function (n) { document.head.appendChild(n); });
+    var scripts = Array.prototype.slice.call(doc.body.querySelectorAll('script'));
+    scripts.forEach(function (s) { s.remove(); });
+    document.body.innerHTML = doc.body.innerHTML;
+    for (var i = 0; i < scripts.length; i++) {
+      var src = scripts[i].getAttribute('src');
+      if (src && /config\.js$/.test(src)) continue;
+      var n = document.createElement('script');
+      if (src) {
+        n.src = new URL(src, BASE).href;
+        await new Promise(function (ok) { n.onload = ok; n.onerror = ok; document.body.appendChild(n); });
+      } else {
+        n.textContent = scripts[i].textContent;
+        document.body.appendChild(n);
+      }
+    }
+  } catch (e) {
+    document.getElementById('ld').textContent = 'Chưa mở được trang (' + e.message + '). Vui lòng tải lại.';
+  }
+})();
+</script>
+</body>
+</html>

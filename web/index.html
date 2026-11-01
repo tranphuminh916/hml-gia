@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Sổ Tử Vi">
+<meta name="theme-color" content="#7a1f1f">
+<title>Sổ Tử Vi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Noto+Serif:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f7f2ea; --card:#fffdf9; --ink:#2a2420; --muted:#7a6e64; --line:#e6dccd;
+  --red:#8e2323; --red2:#b23a2e; --gold:#b07d2a; --gold-bg:#fbf1dc; --green:#2f6b45; --warn-bg:#fff4e0; --warn:#9a5a00;
+  --radius:14px; --safe-b:env(safe-area-inset-bottom,0px); --safe-t:env(safe-area-inset-top,0px);
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:"Be Vietnam Pro",system-ui,-apple-system,sans-serif;font-size:16px;line-height:1.5;-webkit-text-size-adjust:100%}
+body{padding-top:var(--safe-t)}
+header.top{position:sticky;top:0;z-index:20;background:linear-gradient(180deg,#7a1f1f,#8e2323);color:#fff;padding:12px 16px 10px;padding-top:calc(12px + var(--safe-t));margin-top:calc(-1 * var(--safe-t))}
+header.top h1{margin:0;font-family:"Noto Serif",serif;font-size:20px;letter-spacing:.3px;display:flex;align-items:center;gap:8px}
+header.top .sub{font-size:12.5px;opacity:.9;margin-top:2px;display:flex;align-items:center;gap:6px}
+.dot{width:8px;height:8px;border-radius:50%;background:#f0c36a;display:inline-block}
+.dot.ok{background:#7be09a}.dot.err{background:#ff8a80}
+main{padding:14px 14px calc(96px + var(--safe-b));max-width:760px;margin:0 auto}
+section.tab{display:none}section.tab.on{display:block}
+h2{font-family:"Noto Serif",serif;font-size:19px;margin:6px 2px 10px;color:var(--red)}
+h3{font-size:16px;margin:0 0 8px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px;margin-bottom:12px;box-shadow:0 1px 2px rgba(60,40,20,.04)}
+.hint{font-size:13.5px;color:var(--muted)}
+label{display:block;font-size:13.5px;font-weight:600;color:#4b4038;margin:10px 0 4px}
+input[type=text],input[type=number],input[type=date],input[type=time],select,textarea{width:100%;font:inherit;font-size:16px;padding:10px 11px;border:1px solid #d9ccb9;border-radius:10px;background:#fff;color:var(--ink);-webkit-appearance:none;appearance:none}
+select{background-image:linear-gradient(45deg,transparent 50%,#8a7a6a 50%),linear-gradient(135deg,#8a7a6a 50%,transparent 50%);background-position:calc(100% - 18px) 55%,calc(100% - 13px) 55%;background-size:5px 5px;background-repeat:no-repeat;padding-right:30px}
+textarea{min-height:64px;resize:vertical}
+input:focus,select:focus,textarea:focus{outline:2px solid #e2b35e;border-color:#e2b35e}
+.row{display:flex;gap:8px}.row>*{flex:1;min-width:0}
+.row3>*{flex:1}
+.check{display:flex;align-items:center;gap:8px;font-weight:500;font-size:14.5px;margin:8px 0}
+.check input{width:20px;height:20px;accent-color:var(--red)}
+button{font:inherit;cursor:pointer;border-radius:11px;border:1px solid transparent;padding:11px 14px;font-weight:600;font-size:15px;touch-action:manipulation}
+button.primary{background:var(--red);color:#fff;width:100%}
+button.primary:active{background:#6f1a1a}
+button.gold{background:var(--gold-bg);color:#6b4a10;border-color:#ecd7a8}
+button.ghost{background:#fff;color:var(--ink);border-color:#d9ccb9}
+button.small{padding:7px 11px;font-size:13.5px;border-radius:9px}
+button:disabled{opacity:.5;cursor:default}
+.btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.btns .full{grid-column:1/-1}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid #d9ccb9;background:#fff;border-radius:999px;padding:6px 11px;font-size:14px;font-weight:500}
+.chip.on{background:var(--red);border-color:var(--red);color:#fff}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg .chip{flex:1 0 auto;text-align:center}
+.person{display:flex;gap:12px;align-items:flex-start}
+.avatar{width:42px;height:42px;border-radius:50%;background:var(--gold-bg);color:#7a5414;display:flex;align-items:center;justify-content:center;font-weight:700;font-family:"Noto Serif",serif;font-size:18px;flex:none;border:1px solid #ecd7a8}
+.person .info{flex:1;min-width:0}
+.person .name{font-weight:700}
+.person .meta{font-size:13.5px;color:var(--muted)}
+.person .acts{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.tag{display:inline-block;font-size:12px;background:#f1e8da;color:#6b5a48;border-radius:6px;padding:1px 7px;margin-left:4px;font-weight:600}
+.notice{background:var(--warn-bg);border:1px solid #f0d6a8;color:var(--warn);border-radius:12px;padding:10px 12px;font-size:14px;margin-bottom:12px}
+.notice.info{background:#eef5f0;border-color:#cfe3d5;color:#2f5a3e}
+.notice.err{background:#fdecea;border-color:#f5c2bd;color:#8e2323}
+/* output */
+.out{font-size:14.5px}
+.out .h{font-weight:700;color:var(--red);margin:14px 0 6px;font-size:14.5px;letter-spacing:.2px}
+.out .h:first-child{margin-top:0}
+.out p{margin:4px 0}
+.out ul{margin:4px 0;padding-left:18px}
+.out li{margin:2px 0}
+.out .warnline{background:var(--warn-bg);border-left:3px solid #e0a040;padding:6px 9px;border-radius:6px;margin:6px 0;color:#7a4a00;font-size:14px}
+.out .note{color:var(--muted);font-size:13px;margin:4px 0}
+.tw{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:6px 0 10px;border:1px solid var(--line);border-radius:10px;background:#fff}
+.tw table{border-collapse:collapse;font-size:13px;min-width:100%}
+.tw th,.tw td{border-bottom:1px solid #efe6d8;padding:6px 8px;text-align:left;vertical-align:top}
+.tw th{background:#faf3e7;font-weight:600;white-space:nowrap;position:sticky;top:0}
+.tw td:first-child{font-weight:600;white-space:nowrap}
+.tw tr:last-child td{border-bottom:none}
+details.sec{border:1px solid var(--line);border-radius:12px;background:#fff;margin:10px 0}
+details.sec>summary{padding:11px 12px;font-weight:600;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center}
+details.sec>summary::-webkit-details-marker{display:none}
+details.sec>summary::after{content:"▾";color:var(--muted);transition:transform .2s}
+details.sec[open]>summary::after{transform:rotate(180deg)}
+details.sec>.body{padding:0 12px 12px}
+.chart{border:1px solid var(--line);border-radius:12px;background:#fff;overflow:auto;-webkit-overflow-scrolling:touch;margin:8px 0;position:relative}
+.chart .scaler{transform-origin:0 0}
+.chart-tools{display:flex;justify-content:flex-end;gap:6px;margin-top:4px}
+.luan{margin-top:12px}
+.luan .md{font-size:15.5px;line-height:1.6}
+.md h1,.md h2,.md h3{font-family:"Noto Serif",serif;color:var(--red);margin:14px 0 6px}
+.md h1{font-size:19px}.md h2{font-size:17.5px}.md h3{font-size:16px}
+.md p{margin:6px 0}.md ul,.md ol{padding-left:20px;margin:6px 0}.md li{margin:3px 0}
+.md strong{color:#3a2a20}
+.md blockquote{margin:8px 0;padding:6px 10px;border-left:3px solid var(--gold);background:var(--gold-bg);border-radius:6px}
+.luan-box{border:1px solid #ecd7a8;background:linear-gradient(180deg,#fffaf0,#fffdf9);border-radius:14px;padding:12px 14px}
+.thinking{color:var(--muted);font-style:italic}
+.logitem{border-bottom:1px solid var(--line);padding:10px 0}
+.logitem:last-child{border-bottom:none}
+.logitem .top{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.logitem .when{font-size:12.5px;color:var(--muted);white-space:nowrap}
+.logitem .what{font-weight:600}
+.logitem .q{font-size:14px;color:#4b4038}
+.pill{font-size:11.5px;font-weight:700;border-radius:6px;padding:1px 6px;background:#f1e8da;color:#6b5a48}
+.pill.red{background:#fbe3e0;color:#8e2323}
+/* tabbar */
+nav.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:30;background:rgba(255,253,249,.97);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-top:1px solid var(--line);display:flex;padding:6px 4px calc(6px + var(--safe-b))}
+nav.tabbar button{flex:1;background:none;border:none;padding:4px 2px;color:#8a7d72;font-size:11.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:2px;border-radius:10px}
+nav.tabbar button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+nav.tabbar button.on{color:var(--red)}
+/* sheet */
+.sheet-bg{position:fixed;inset:0;background:rgba(30,20,10,.45);z-index:50;display:none;align-items:flex-end;justify-content:center}
+.sheet-bg.on{display:flex}
+.sheet{background:var(--card);width:100%;max-width:640px;max-height:92vh;overflow:auto;border-radius:18px 18px 0 0;padding:16px 16px calc(18px + var(--safe-b));-webkit-overflow-scrolling:touch}
+.sheet h3{font-family:"Noto Serif",serif;color:var(--red);font-size:18px}
+.toast{position:fixed;left:50%;bottom:calc(84px + var(--safe-b));transform:translateX(-50%);background:#2a2420;color:#fff;padding:9px 14px;border-radius:10px;font-size:14px;z-index:60;opacity:0;transition:opacity .25s;pointer-events:none;max-width:90vw;text-align:center}
+.toast.on{opacity:.95}
+.busy{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:14px;padding:8px 2px}
+.spin{width:18px;height:18px;border:2.5px solid #e6d3b3;border-top-color:var(--red);border-radius:50%;animation:sp 0.8s linear infinite;flex:none}
+@keyframes sp{to{transform:rotate(360deg)}}
+.coin-row{display:flex;align-items:center;gap:8px;margin:5px 0}
+.coin-row span{width:92px;font-size:13.5px;color:#4b4038}
+.coin-row .seg{flex:1}
+.coin-row .chip{padding:5px 0;min-width:40px}
+.small-note{font-size:12.5px;color:var(--muted);margin-top:6px}
+.empty{color:var(--muted);text-align:center;padding:18px 6px;font-size:14.5px}
+.kv{font-size:13.5px;color:var(--muted)}
+a{color:var(--red2)}
+</style>
+</head>
+<body>
+<header class="top">
+  <h1><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f3cf86" stroke-width="1.6"><circle cx="12" cy="12" r="9.5"/><path d="M12 2.5a4.75 4.75 0 0 1 0 9.5a4.75 4.75 0 0 0 0 9.5"/><circle cx="12" cy="7.25" r="1.2" fill="#f3cf86"/><circle cx="12" cy="16.75" r="1.2"/></svg>Sổ Tử Vi</h1>
+  <div class="sub"><span class="dot" id="engDot"></span><span id="engText">Đang nạp bộ tính…</span></div>
+</header>
+
+<main>
+<!-- ===================== SỔ ===================== -->
+<section class="tab on" id="tab-so">
+  <div id="srvNote"></div>
+  <div id="pendingNote"></div>
+  <h2>Thông tin đã nhập</h2>
+  <div class="hint" style="margin:-4px 2px 10px">Người đầu tiên là <span class="xg">anh/chị</span>. <span class="Xg">Anh/Chị</span> có thể thêm người thân để xem giúp.</div>
+  <div id="peopleList"><div class="empty">Đang tải…</div></div>
+  <button class="gold" style="width:100%" id="btnAddPerson">＋ Thêm người (vợ, chồng, con, bố mẹ…)</button>
+  <h2 style="margin-top:22px">Các lần <span class="xg">anh/chị</span> đã xem</h2>
+  <div class="hint" style="margin:-4px 2px 10px">Lưu trên máy này để <span class="xg">anh/chị</span> xem lại.</div>
+  <div class="card" id="logList"><div class="empty">Chưa có mục nào.</div></div>
+  <details class="sec">
+    <summary>Về trang này và quyền riêng tư</summary>
+    <div class="body hint">
+      <p>Mọi con số (can chi, sao, cục, quẻ, ngày tốt) do bộ tính đã kiểm chứng tính ngay trên máy của <span class="xg">anh/chị</span> (bản <b id="verLbl">492a69d</b>). <span id="aiNote" hidden>Phần luận do Claude (trí tuệ nhân tạo) viết dựa trên số liệu đó.</span></p>
+      <p><b>Quyền riêng tư:</b> thông tin <span class="xg">anh/chị</span> nhập và các lần <span class="xg">anh/chị</span> xem (kèm kết quả, bài luận) được lưu lại để chủ trang theo dõi. Chỉ chủ trang xem được, không công khai.</p>
+      <p>Đây là tri thức văn hóa truyền thống để tham khảo, không phải dự báo khoa học.</p>
+      <button class="ghost small" id="btnSelfTest" disabled>Chạy tự kiểm bộ tính (khoảng 30–60 giây)</button>
+      <div id="selfTestOut" class="out" style="margin-top:8px"></div>
+    </div>
+  </details>
+</section>
+
+<!-- ===================== LÁ SỐ ===================== -->
+<section class="tab" id="tab-laso">
+  <h2>Lá số và vận hạn</h2>
+  <div class="card">
+    <label for="lsPerson">Xem cho ai</label>
+    <select id="lsPerson"></select>
+    <div class="kv" id="lsPersonInfo" style="margin-top:6px"></div>
+    <div class="row">
+      <div><label for="lsYear">Năm xem</label><input type="number" id="lsYear" inputmode="numeric"></div>
+      <div><label for="lsMode">Muốn xem</label>
+        <select id="lsMode">
+          <option value="full">Lá số đầy đủ</option>
+          <option value="thang">Vận hạn từng tháng trong năm</option>
+          <option value="tuan">Vận 7 ngày tới (lưu nhật)</option>
+          <option value="vanthe">Biểu đồ vận thế 10 năm</option>
+          <option value="hop">Hợp tuổi, hợp tác với…</option>
+        </select>
+      </div>
+    </div>
+    <div id="lsHopBox" style="display:none">
+      <label for="lsPerson2">Người thứ hai</label>
+      <select id="lsPerson2"></select>
+      <label for="lsHopLoai">Xem về</label>
+      <select id="lsHopLoai"><option value="hoptac">Hợp tác, làm ăn</option><option value="honnhan">Hôn nhân, vợ chồng</option></select>
+    </div>
+    <div class="btns"><button class="primary full" id="btnLaso" disabled>Lập</button></div>
+  </div>
+  <div id="resLaso"></div>
+</section>
+
+<!-- ===================== CHỌN NGÀY ===================== -->
+<section class="tab" id="tab-ngay">
+  <h2>Chọn ngày giờ tốt</h2>
+  <div class="card">
+    <label for="ngViec">Việc cần làm</label>
+    <select id="ngViec"></select>
+    <div class="row">
+      <div><label for="ngTu">Từ ngày</label><input type="date" id="ngTu"></div>
+      <div><label for="ngDen">Đến ngày</label><input type="date" id="ngDen"></div>
+    </div>
+    <div class="small-note">Tối đa 93 ngày mỗi lần.</div>
+    <label>Người chủ sự <span class="hint">(cưới: cả cô dâu và chú rể; xây nhà: chủ nhà)</span></label>
+    <div class="chips" id="ngPeople"></div>
+    <label>Chỉ lấy các thứ <span class="hint">(bỏ trống = mọi ngày)</span></label>
+    <div class="chips" id="ngThu"></div>
+    <label class="check"><input type="checkbox" id="ngChiTiet"> Hiện bảng chấm từng ngày (dài)</label>
+    <div class="btns"><button class="primary full" id="btnNgay" disabled>Tìm ngày tốt</button></div>
+  </div>
+  <div id="resNgay"></div>
+</section>
+
+<!-- ===================== GIEO QUẺ ===================== -->
+<section class="tab" id="tab-que">
+  <h2>Gieo quẻ hỏi việc</h2>
+  <div class="card">
+    <label for="qHoi"><span class="Xg">Anh/Chị</span> muốn hỏi việc gì? <span class="hint">(một câu cụ thể)</span></label>
+    <textarea id="qHoi" placeholder="Ví dụ: Tháng này ký hợp đồng vận chuyển với khách mới có thuận không?"></textarea>
+    <label>Môn</label>
+    <div class="seg" id="qMon"></div>
+    <div class="small-note" id="qMonNote"></div>
+    <div class="row">
+      <div><label for="qViec">Loại việc</label><select id="qViec"></select></div>
+      <div><label for="qNguoi">Người hỏi</label><select id="qNguoi"></select></div>
+    </div>
+    <div id="qCachBox"></div>
+    <label class="check"><input type="checkbox" id="qNow" checked> Lấy thời điểm bây giờ</label>
+    <div class="row" id="qTimeBox" style="display:none">
+      <div><label for="qNgay">Ngày</label><input type="date" id="qNgay"></div>
+      <div><label for="qGio">Giờ</label><input type="time" id="qGio"></div>
+    </div>
+    <label for="qNoi">Nơi đang ở</label>
+    <input type="text" id="qNoi" value="Hà Nội" list="dsNoi">
+    <div class="btns"><button class="primary full" id="btnQue" disabled>Lập quẻ</button></div>
+    <div class="small-note">Mỗi việc chỉ nên hỏi một lần. Hỏi lại cùng một việc khi chưa có gì mới thì kết quả mất giá trị tham khảo.</div>
+  </div>
+  <div id="queRepeat"></div>
+  <div id="resQue"></div>
+</section>
+
+<!-- ===================== NHÀ ===================== -->
+<section class="tab" id="tab-nha">
+  <h2>Phong thủy nhà</h2>
+  <div class="card">
+    <label for="nhChu">Chủ nhà</label>
+    <select id="nhChu"></select>
+    <div class="row">
+      <div><label for="nhHuong">Độ hướng nhà (0–360°)</label><input type="number" id="nhHuong" inputmode="decimal" min="0" max="360" step="0.5" placeholder="vd 165"></div>
+      <div><label for="nhNamXay">Năm xây xong / nhập trạch</label><input type="number" id="nhNamXay" inputmode="numeric" placeholder="vd 2015"></div>
+    </div>
+    <details class="sec"><summary>Cách đo hướng nhà</summary><div class="body hint">Đứng ở cửa chính, nhìn thẳng ra ngoài, đo bằng la bàn điện thoại 2–3 lần. Tránh xa xe, cột thép, thiết bị điện. Hiệu chuẩn la bàn trước khi đo. Sai 3–5° có thể đổi sang sơn hướng khác.</div></details>
+    <div class="row">
+      <div><label for="nhNamXem">Năm xem</label><input type="number" id="nhNamXem" inputmode="numeric"></div>
+      <div><label for="nhThang">Tháng xem (tiết khí)</label><select id="nhThang"></select></div>
+    </div>
+    <label>Phương có nước, cửa, đường thật</label>
+    <div class="chips" id="nhNuoc"></div>
+    <label>Phương có núi, nhà cao, tường cao</label>
+    <div class="chips" id="nhNui"></div>
+    <div class="btns"><button class="primary full" id="btnNha" disabled>Xem phong thủy</button></div>
+  </div>
+  <div id="resNha"></div>
+</section>
+</main>
+
+<nav class="tabbar" id="tabbar">
+  <button data-tab="so" class="on"><svg viewBox="0 0 24 24"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h11"/><path d="M9 8h6"/></svg>Sổ</button>
+  <button data-tab="laso"><svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="2"/><path d="M3.5 9.2h17M3.5 14.8h17M9.2 3.5v17M14.8 3.5v17"/></svg>Lá số</button>
+  <button data-tab="ngay"><svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="m9 15 2 2 4-4"/></svg>Chọn ngày</button>
+  <button data-tab="que"><svg viewBox="0 0 24 24"><path d="M5 5h14M5 9.7h5.5M13.5 9.7H19M5 14.3h14M5 19h5.5M13.5 19H19"/></svg>Gieo quẻ</button>
+  <button data-tab="nha"><svg viewBox="0 0 24 24"><path d="M3.5 11 12 4l8.5 7"/><path d="M6 9.5V20h12V9.5"/><path d="M10 20v-5h4v5"/></svg>Nhà</button>
+</nav>
+
+<div class="sheet-bg" id="sheetBg"><div class="sheet" id="sheet"></div></div>
+<div class="toast" id="toast"></div>
+<datalist id="dsNoi"></datalist>
+
+<script src="config.js"></script>
+<script>
+"use strict";
+/* ============================================================ hằng số */
+const BAN_SCRIPT = "492a69d";
+const PYO_BASES = ["https://cdn.jsdelivr.net/pyodide/v0.27.7/full/", "https://cdn.jsdelivr.net/npm/pyodide@0.27.7/"];
+const TINH = ["Hà Nội","TP Hồ Chí Minh","Hải Phòng","Đà Nẵng","Cần Thơ","An Giang","Bà Rịa - Vũng Tàu","Bắc Giang","Bắc Kạn","Bạc Liêu","Bắc Ninh","Bến Tre","Bình Định","Bình Dương","Bình Phước","Bình Thuận","Cà Mau","Cao Bằng","Đắk Lắk","Đắk Nông","Điện Biên","Đồng Nai","Đồng Tháp","Gia Lai","Hà Giang","Hà Nam","Hà Tĩnh","Hải Dương","Hậu Giang","Hòa Bình","Hưng Yên","Khánh Hòa","Kiên Giang","Kon Tum","Lai Châu","Lâm Đồng","Lạng Sơn","Lào Cai","Long An","Nam Định","Nghệ An","Ninh Bình","Ninh Thuận","Phú Thọ","Phú Yên","Quảng Bình","Quảng Nam","Quảng Ngãi","Quảng Ninh","Quảng Trị","Sóc Trăng","Sơn La","Tây Ninh","Thái Bình","Thái Nguyên","Thanh Hóa","Thừa Thiên Huế","Tiền Giang","Trà Vinh","Tuyên Quang","Vĩnh Long","Vĩnh Phúc","Yên Bái"];
+const QUAN_HE = ["Bản thân","Vợ","Chồng","Con","Bố","Mẹ","Anh chị em","Cộng sự","Bạn bè","Khách hàng","Khác"];
+const VIEC_NGAY = [["chung","Việc chung"],["khaitruong","Khai trương"],["kyhopdong","Ký hợp đồng"],["xuathanh","Xuất hành, đi xa"],["cuoi","Cưới hỏi"],["anhoi","Ăn hỏi"],["dongtho","Động thổ, xây sửa"],["nhaptrach","Nhập trạch (về nhà mới)"],["muanha","Mua nhà, đất"],["nhamchuc","Nhậm chức, nhận việc"],["nhapkho","Nhập kho"],["xuathang","Xuất hàng"],["thuenguoi","Thuê người"],["nhaphoc","Nhập học"],["chuabenh","Chữa bệnh"],["kientung","Kiện tụng"],["lapbantho","Lập bàn thờ"],["datbep","Đặt bếp"],["kegiuong","Kê giường"],["trongcay","Trồng cây"],["antang","An táng"]];
+const THU = [["T2","Thứ 2"],["T3","Thứ 3"],["T4","Thứ 4"],["T5","Thứ 5"],["T6","Thứ 6"],["T7","Thứ 7"],["CN","CN"]];
+const MON_QUE = [["kymon","Kỳ môn"],["lucnham","Lục Nhâm"],["luchao","Lục hào"],["maihoa","Mai hoa"],["hoichan","Hội chẩn 3 môn"]];
+const MON_NOTE = {kymon:"Kỳ môn độn giáp: xem thế cục, phương hướng, thời cơ hành động.",lucnham:"Đại Lục Nhâm: xem diễn biến, người và việc liên quan.",luchao:"Lục hào nạp giáp: xem được mất, ứng kỳ. Có thể gieo bằng 3 đồng xu.",maihoa:"Mai hoa dịch số: nhanh, gọn; lập theo giờ hoặc theo 2 số tự nghĩ ra.",hoichan:"Hội chẩn: Lục hào + Mai hoa + Lục Nhâm cùng một thời điểm, rồi đối chiếu."};
+// loại việc chung → mã của từng môn
+const VIEC_QUE = [
+  ["chung","Việc chung","chung","chung"],["tien","Tiền bạc, làm ăn","taichinh","tien"],["congviec","Công việc, chức vụ","congviec","quan"],
+  ["hopdong","Hợp đồng, giấy tờ","giayto","hopdong"],["honnhan","Hôn nhân, tình cảm","honnhan","honnhan"],["suckhoe","Sức khỏe","suckhoe","benh"],
+  ["kien","Kiện tụng, tranh chấp","kientung","kien"],["dixa","Đi xa, xuất hành","dixa","xuathanh"],["timdo","Tìm đồ mất","timdo","matdo"],
+  ["thi","Thi cử","thicu","thi"],["nha","Nhà cửa","chung","nha"],["timnguoi","Tìm người","chung","timnguoi"],["concai","Con cái","concai","chung"],["anhem","Anh em, bạn bè","anhem","chung"]];
+const PHUONG = ["Bắc","Đông Bắc","Đông","Đông Nam","Nam","Tây Nam","Tây","Tây Bắc"];
+const THANG_TIET = ["Dần (từ Lập Xuân ~4/2)","Mão (~6/3)","Thìn (~5/4)","Tỵ (~6/5)","Ngọ (~6/6)","Mùi (~7/7)","Thân (~8/8)","Dậu (~8/9)","Tuất (~8/10)","Hợi (~7/11)","Tý (~7/12)","Sửu (~6/1 năm sau)"];
+
+/* ============================================================ tiện ích */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+function vnNow() { return new Date(Date.now() + 7 * 3600e3); }           // dùng các hàm getUTC* để đọc giờ VN
+function ymd(d) { return d.toISOString().slice(0, 10); }
+function hm(d) { return d.toISOString().slice(11, 16); }
+function addDays(s, n) { const d = new Date(s + "T00:00:00Z"); d.setUTCDate(d.getUTCDate() + n); return ymd(d); }
+function daysBetween(a, b) { return Math.round((new Date(b + "T00:00:00Z") - new Date(a + "T00:00:00Z")) / 864e5); }
+function fmtDate(s) { if (!s) return ""; const [y, m, d] = s.split("-"); return `${d}/${m}/${y}`; }
+function fmtTs(iso) { const d = new Date(new Date(iso).getTime() + 7 * 3600e3); return `${hm(d)} ${fmtDate(ymd(d))}`; }
+function toast(msg, ms = 2200) { const t = $("#toast"); t.textContent = msg; t.classList.add("on"); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove("on"), ms); }
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+function slug(s) { return String(s).normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d").replace(/Đ/g, "D").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "nguoi"; }
+function normQ(s) { return String(s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d").toLowerCase().replace(/[^a-z0-9 ]+/g, " ").split(/\s+/).filter(w => w.length > 1); }
+function similar(a, b) { const A = new Set(normQ(a)), B = new Set(normQ(b)); if (!A.size || !B.size) return 0; let n = 0; A.forEach(w => B.has(w) && n++); return n / Math.min(A.size, B.size) * (2 * n / (A.size + B.size)) ** 0.5; }
+
+/* ============================================================ hiển thị output của script */
+function renderTable(rows) {
+  const cells = r => r.replace(/^\s*\|/, "").replace(/\|\s*$/, "").split("|").map(c => c.trim());
+  const head = cells(rows[0]);
+  const body = rows.slice(1).filter(r => !/^\s*\|[\s:\-|]+\|\s*$/.test(r)).map(cells);
+  return `<div class="tw"><table><thead><tr>${head.map(h => `<th>${inlineMd(h)}</th>`).join("")}</tr></thead><tbody>${body.map(r => `<tr>${r.map(c => `<td>${inlineMd(c)}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
+}
+function inlineMd(s) {
+  return esc(s).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>").replace(/(^|[^*])\*(?!\s)(.+?)\*(?!\*)/g, "$1<em>$2</em>").replace(/`([^`]+)`/g, "<code>$1</code>");
+}
+function isHeading(line) {
+  const s = line.replace(/\([^)]*\)/g, "").replace(/[–—:].*$/, m => m.length > 40 ? "" : m).trim();
+  return s.length >= 4 && /[A-ZÀ-Ỹ]/.test(s) && s === s.toUpperCase() && !/^[\-|!(]/.test(line.trim());
+}
+function renderOutput(text) {
+  const lines = String(text).replace(/\r/g, "").split("\n");
+  let html = "", i = 0, list = [];
+  const flush = () => { if (list.length) { html += `<ul>${list.map(x => `<li>${inlineMd(x)}</li>`).join("")}</ul>`; list = []; } };
+  while (i < lines.length) {
+    const L = lines[i];
+    if (/^\s*\|/.test(L)) { flush(); const rows = []; while (i < lines.length && /^\s*\|/.test(lines[i])) rows.push(lines[i++]); html += renderTable(rows); continue; }
+    const t = L.trim();
+    if (!t) { flush(); i++; continue; }
+    if (t.startsWith("! ")) { flush(); html += `<div class="warnline">⚠️ ${inlineMd(t.slice(2))}</div>`; }
+    else if (/^[-•] /.test(t)) list.push(t.slice(2));
+    else if (isHeading(t)) { flush(); html += `<div class="h">${esc(t)}</div>`; }
+    else if (/^\(.*\)$/.test(t)) { flush(); html += `<div class="note">${inlineMd(t)}</div>`; }
+    else { flush(); html += `<p>${inlineMd(t)}</p>`; }
+    i++;
+  }
+  flush();
+  return `<div class="out">${html}</div>`;
+}
+/* markdown gọn cho phần luận của Claude */
+function renderMd(md) {
+  const lines = String(md || "").replace(/\r/g, "").split("\n");
+  let html = "", i = 0;
+  while (i < lines.length) {
+    const L = lines[i], t = L.trim();
+    if (!t) { i++; continue; }
+    let m;
+    if ((m = t.match(/^(#{1,4})\s+(.*)$/))) { const n = Math.min(3, m[1].length); html += `<h${n}>${inlineMd(m[2])}</h${n}>`; i++; continue; }
+    if (/^\|/.test(t)) { const rows = []; while (i < lines.length && /^\s*\|/.test(lines[i])) rows.push(lines[i++]); html += renderTable(rows); continue; }
+    if (/^([-*•])\s+/.test(t)) { let items = []; while (i < lines.length && /^\s*([-*•])\s+/.test(lines[i])) { items.push(lines[i].trim().replace(/^([-*•])\s+/, "")); i++; } html += `<ul>${items.map(x => `<li>${inlineMd(x)}</li>`).join("")}</ul>`; continue; }
+    if (/^\d+[.)]\s+/.test(t)) { let items = []; while (i < lines.length && /^\s*\d+[.)]\s+/.test(lines[i])) { items.push(lines[i].trim().replace(/^\d+[.)]\s+/, "")); i++; } html += `<ol>${items.map(x => `<li>${inlineMd(x)}</li>`).join("")}</ol>`; continue; }
+    if (/^>\s?/.test(t)) { let q = []; while (i < lines.length && /^\s*>/.test(lines[i])) { q.push(lines[i].trim().replace(/^>\s?/, "")); i++; } html += `<blockquote>${inlineMd(q.join(" "))}</blockquote>`; continue; }
+    if (/^(-{3,}|\*{3,})$/.test(t)) { html += "<hr>"; i++; continue; }
+    let p = [t]; i++;
+    while (i < lines.length && lines[i].trim() && !/^(#{1,4}\s|[-*•]\s|\d+[.)]\s|\||>)/.test(lines[i].trim())) { p.push(lines[i].trim()); i++; }
+    html += `<p>${inlineMd(p.join(" "))}</p>`;
+  }
+  return `<div class="md">${html}</div>`;
+}
+
+/* ============================================================ bộ tính Python (Pyodide) */
+let PY = null, RUN = null, ENGINE_ERR = null;
+function loadScript(src) { return new Promise((ok, no) => { const s = document.createElement("script"); s.src = src; s.onload = ok; s.onerror = () => no(new Error("không tải được " + src)); document.head.appendChild(s); }); }
+function setEngine(state, text) { $("#engDot").className = "dot " + (state || ""); $("#engText").textContent = text; }
+async function loadEngine() {
+  const t0 = Date.now();
+  try {
+    const bundleP = fetch(BASE + "py-bundle.json").then(r => { if (!r.ok) throw new Error("py-bundle.json " + r.status); return r.json(); });
+    let lastErr;
+    for (const base of PYO_BASES) {
+      try {
+        if (typeof loadPyodide !== "function") await loadScript(base + "pyodide.js");
+        setEngine("", "Đang nạp bộ tính… (lần đầu 10–30 giây)");
+        PY = await loadPyodide({ indexURL: base });
+        break;
+      } catch (e) { lastErr = e; PY = null; }
+    }
+    if (!PY) throw lastErr || new Error("không nạp được Pyodide");
+    const bundle = await bundleP;
+    for (const [p, src] of Object.entries(bundle)) {
+      const full = "/home/pyodide/" + p;
+      PY.FS.mkdirTree(full.substring(0, full.lastIndexOf("/")));
+      PY.FS.writeFile(full, src);
+    }
+    PY.runPython("import sys; sys.path.insert(0,'/home/pyodide'); import app_run; import tvbt");
+    const mod = PY.globals.get("app_run");
+    RUN = { run: mod.run, thong_tin: mod.thong_tin, kiem_noi: mod.kiem_noi, read_text: mod.read_text };
+    setEngine("ok", `Bộ tính sẵn sàng · bản ${BAN_SCRIPT} · ${((Date.now() - t0) / 1000).toFixed(1)} giây`);
+    $$("#btnLaso,#btnNgay,#btnQue,#btnNha,#btnSelfTest").forEach(b => b.disabled = false);
+    refreshPersonInfo();
+    renderPeople();
+  } catch (e) {
+    ENGINE_ERR = e;
+    console.error(e);
+    setEngine("err", "Không nạp được bộ tính – kiểm tra mạng rồi mở lại app");
+  }
+}
+async function py(prog, args) {
+  if (!RUN) throw new Error("Bộ tính chưa sẵn sàng");
+  await sleep(30);   // cho giao diện kịp vẽ vòng quay
+  const r = RUN.run(prog, PY.toPy(args.map(String)));
+  const [code, text] = r.toJs(); r.destroy?.();
+  return { code, text: cleanOut(text) };
+}
+function cleanOut(text) {
+  return String(text).split("\n").filter(l => !/^(Đã vẽ |- Ảnh bàn:|! Không vẽ được PNG)/.test(l.trim())).join("\n").trim();
+}
+function readFile(path) { try { return RUN.read_text(path); } catch (e) { return ""; } }
+function infoOf(p) {
+  if (!RUN || !p) return null;
+  const key = [p.ngay, p.gio, p.gioi, p.noi, p.am, p.nhuan].join("|");
+  if (infoOf.cache[key]) return infoOf.cache[key];
+  const r = RUN.thong_tin(p.ngay, p.gio || "", p.gioi, p.noi || "", !!p.am, !!p.nhuan);
+  const o = r.toJs({ dict_converter: Object.fromEntries }); r.destroy?.();
+  return (infoOf.cache[key] = o);
+}
+infoOf.cache = {};
+
+/* ============================================================ lưu trữ trên máy khách + máy chủ */
+let PEOPLE = [], LOGS = [], OUTBOX = [], STORE_MODE = "loading";
+let KHACH = { id: "", dongY: false, ma: "" };
+const NG_SEL = new Set();
+const LS_KEY = "sotuvi.khach.v1";
+const CFG = window.SO_TU_VI || {};
+const GAS = !!(window.google && google.script && google.script.run);
+const BASE = String(CFG.base || "");
+const SRV = { url: GAS ? "gas" : String(CFG.mayChu || "").trim(), info: null, flushing: false };
+// Gọi máy chủ: trong Google Apps Script dùng google.script.run, ngoài ra dùng fetch tới URL ứng dụng web.
+function gasCall(body) { return new Promise((ok, no) => google.script.run.withSuccessHandler(ok).withFailureHandler(no).api(body)); }
+function localLoad() {
+  try { const o = JSON.parse(localStorage.getItem(LS_KEY) || "{}"); PEOPLE = (o.people || []).sort(byRank); LOGS = o.logs || []; OUTBOX = o.outbox || []; KHACH = Object.assign({ id: "", dongY: false, ma: "" }, o.khach || {}); }
+  catch (e) { PEOPLE = []; LOGS = []; OUTBOX = []; }
+}
+function localSave() {
+  try { localStorage.setItem(LS_KEY, JSON.stringify({ people: PEOPLE, logs: LOGS.slice(0, 60), outbox: OUTBOX.slice(-200), khach: KHACH })); } catch (e) {}
+}
+const self_ = () => PEOPLE.find(p => p.quanHe === "Bản thân");
+const coLuan = () => !!(SRV.url && SRV.info && SRV.info.co_luan);
+// Trang xưng "tôi", gọi khách là anh hoặc chị theo giới tính khách đã nhập.
+function xg() { const me = self_(); return me ? (me.gioi === "nu" ? "chị" : "anh") : "anh/chị"; }
+function Xg() { const v = xg(); return v.charAt(0).toUpperCase() + v.slice(1); }
+function applyXung() { $$(".xg").forEach(e => e.textContent = xg()); $$(".Xg").forEach(e => e.textContent = Xg()); }
+function personPublic(p) { return p ? { ten: p.ten, quanHe: p.quanHe, gioi: p.gioi, ngay: p.ngay, am: !!p.am, nhuan: !!p.nhuan, gio: p.gio || "", noi: p.noi || "" } : null; }
+
+async function callServer(body, timeoutMs = 30000) {
+  if (!SRV.url) { const e = new Error("Trang chưa nối máy chủ"); e.code = "no_server"; throw e; }
+  if (GAS) return await gasCall({ ...body, ma: KHACH.ma, khachId: KHACH.id });
+  const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), timeoutMs);
+  try {
+    const r = await fetch(SRV.url, { method: "POST", body: JSON.stringify({ ...body, ma: KHACH.ma, khachId: KHACH.id }), signal: ctl.signal, redirect: "follow" });
+    return await r.json();
+  } finally { clearTimeout(t); }
+}
+function queue(action, payload) { OUTBOX.push({ action, ...payload }); localSave(); return flushOutbox(); }
+async function flushOutbox() {
+  if (SRV.flushing || !SRV.url) return; SRV.flushing = true;
+  try {
+    while (OUTBOX.length) {
+      let j;
+      try { j = await callServer(OUTBOX[0]); } catch (e) { break; }               // mất mạng: để lần sau
+      if (j && (j.ok || j.ma_loi === "du_lieu" || j.ma_loi === "khong_ro")) { OUTBOX.shift(); localSave(); continue; }
+      if (j && j.ma_loi === "sai_ma") { openCodeSheet(); break; }
+      break;
+    }
+  } finally { SRV.flushing = false; }
+}
+window.addEventListener("online", () => flushOutbox());
+async function checkServer() {
+  if (!SRV.url) { $("#srvNote").innerHTML = `<div class="notice">Trang đang chạy thử, chưa nối máy chủ nên chưa lưu lại được.</div>`; return; }
+  try { SRV.info = GAS ? await gasCall({ action: "trangthai" }) : await (await fetch(SRV.url + (SRV.url.includes("?") ? "&" : "?") + "api=1&t=" + Date.now())).json(); $("#srvNote").innerHTML = ""; $("#aiNote").hidden = !coLuan(); }
+  catch (e) { SRV.info = null; $("#srvNote").innerHTML = `<div class="notice">Chưa kết nối được máy chủ. ${Xg()} vẫn xem được số liệu; các lần xem sẽ được gửi khi có mạng.</div>`; }
+}
+async function initStore() {
+  STORE_MODE = "local"; localLoad();
+  if (!KHACH.id) { KHACH.id = "k" + uid() + uid(); localSave(); }
+  renderPeople(); renderLogs(); fillPeopleSelects(); applyXung();
+  await checkServer();
+  if (!KHACH.dongY || !self_()) openPersonSheet(self_() || null, { welcome: true });
+  else flushOutbox();
+}
+async function savePerson(p) {
+  const id = p.id || (slug(p.ten) + "-" + (p.ngay || "").slice(0, 4) + "-" + uid().slice(-4));
+  const body = { ...p }; delete body.id; body.capNhat = new Date().toISOString();
+  const i = PEOPLE.findIndex(x => x.id === id); if (i >= 0) PEOPLE[i] = { id, ...body }; else PEOPLE.push({ id, ...body });
+  PEOPLE.sort(byRank); localSave(); renderPeople(); fillPeopleSelects(); applyXung();
+  if (body.quanHe === "Bản thân") queue("khach", { khach: { ...personPublic({ id, ...body }), lienHe: body.lienHe || "" } });
+  return id;
+}
+async function updatePerson(id, patch) { const p = PEOPLE.find(x => x.id === id); if (p) Object.assign(p, patch); localSave(); renderPeople(); }
+async function deletePerson(id) { PEOPLE = PEOPLE.filter(x => x.id !== id); localSave(); renderPeople(); fillPeopleSelects(); }
+async function saveLog(entry) {
+  const id = entry.id || ("l" + uid() + uid());
+  const body = { ...entry }; delete body.id;
+  if (body.ketqua && body.ketqua.length > 30000) body.ketqua = body.ketqua.slice(0, 30000) + "\n…(đã cắt bớt)";
+  const i = LOGS.findIndex(x => x.id === id); if (i >= 0) LOGS[i] = { id, ...body }; else LOGS.unshift({ id, ...body });
+  localSave(); renderLogs(); return id;
+}
+async function updateLog(id, patch) { const l = LOGS.find(x => x.id === id); if (l) Object.assign(l, patch); localSave(); renderLogs(); }
+async function deleteLog(id) { LOGS = LOGS.filter(x => x.id !== id); localSave(); renderLogs(); }
+const personById = id => PEOPLE.find(p => p.id === id);
+function byRank(a, b) { const r = p => { const i = QUAN_HE.indexOf(p.quanHe); return i < 0 ? 99 : i; }; return r(a) - r(b) || String(a.ten).localeCompare(String(b.ten), "vi"); }
+
+/* ============================================================ giao diện sổ */
+function personLine(p) {
+  const ngay = p.am ? `${p.ngay.split("-").reverse().join("/")} âm lịch${p.nhuan ? " (tháng nhuận)" : ""}` : fmtDate(p.ngay);
+  return `${p.gioi === "nu" ? "Nữ" : "Nam"} · ${ngay}${p.gio ? " · " + p.gio : " · không rõ giờ"}${p.noi ? " · " + esc(p.noi) : ""}`;
+}
+function renderPeople() {
+  const box = $("#peopleList");
+  if (STORE_MODE === "loading") return;
+  if (!PEOPLE.length) { box.innerHTML = `<div class="card empty">Chưa có thông tin. Mời ${xg()} nhập thông tin để bắt đầu.</div>`; return; }
+  box.innerHTML = PEOPLE.map(p => {
+    const inf = infoOf(p);
+    const am = inf && inf.ok ? `Âm lịch ${inf.am[0]}/${inf.am[1]}${inf.am[3] ? " nhuận" : ""}/${inf.am[2]} · tuổi ${esc(inf.can_chi_nam)}` : "";
+    return `<div class="card person" data-id="${esc(p.id)}">
+      <div class="avatar">${esc((p.ten || "?").trim().split(/\s+/).pop()[0] || "?")}</div>
+      <div class="info"><div class="name">${esc(p.ten)}${p.quanHe ? `<span class="tag">${esc(p.quanHe)}</span>` : ""}</div>
+        <div class="meta">${personLine(p)}</div>${am ? `<div class="meta">${am}</div>` : ""}
+        ${p.ghiChu ? `<div class="meta">📝 ${esc(p.ghiChu)}</div>` : ""}
+        ${p.nha && p.nha.huong != null ? `<div class="meta">🏠 Nhà hướng ${esc(p.nha.huong)}°, nhập trạch ${esc(p.nha.namXay)}</div>` : ""}
+        <div class="acts"><button class="gold small" data-act="laso">Lá số</button><button class="ghost small" data-act="thang">Vận tháng</button><button class="ghost small" data-act="edit">Sửa</button></div>
+      </div></div>`;
+  }).join("");
+}
+$("#peopleList").addEventListener("click", e => {
+  const b = e.target.closest("button[data-act]"); if (!b) return;
+  const id = b.closest("[data-id]").dataset.id, act = b.dataset.act;
+  if (act === "edit") openPersonSheet(personById(id));
+  else { goTab("laso"); $("#lsPerson").value = id; $("#lsMode").value = act === "thang" ? "thang" : "full"; onLsMode(); refreshPersonInfo(); if (RUN) runLaso(); }
+});
+function renderLogs() {
+  const box = $("#logList");
+  if (!LOGS.length) { box.innerHTML = `<div class="empty">Chưa có mục nào. Mỗi lần luận hay gieo quẻ sẽ được ghi ở đây.</div>`; renderPending(); return; }
+  box.innerHTML = LOGS.slice(0, 60).map(l => {
+    const p = l.pid ? personById(l.pid) : null;
+    const cho = isPending(l);
+    return `<div class="logitem" data-id="${esc(l.id)}">
+      <div class="top"><div class="what">${esc(l.mon || "")}${p ? ` · ${esc(p.ten)}` : ""} ${cho ? `<span class="pill red">chờ ghi kết quả</span>` : ""}</div><div class="when">${fmtTs(l.ts)}</div></div>
+      ${l.hoi ? `<div class="q">${esc(l.hoi)}</div>` : ""}
+      <details class="sec"><summary>Xem lại${l.luan ? " (có luận)" : ""}</summary><div class="body">
+        ${l.luan ? `<div class="luan-box">${renderMd(l.luan)}</div>` : ""}
+        ${l.ketqua ? `<details class="sec"><summary>Số liệu bộ tính</summary><div class="body">${renderOutput(l.ketqua)}</div></details>` : ""}
+        <label>Thực tế sau đó</label>
+        <textarea data-f="thucTe" placeholder="Việc đã diễn ra thế nào? Ghi lại để theo dõi độ ứng nghiệm.">${esc(l.thucTe || "")}</textarea>
+        <div class="btns"><button class="gold small" data-act="saveTT">Lưu ghi chú</button><button class="ghost small" data-act="del">Xóa mục này</button></div>
+      </div></details></div>`;
+  }).join("");
+  renderPending();
+}
+function isPending(l) { return !l.thucTe && l.ts && (Date.now() - new Date(l.ts).getTime()) > 90 * 864e5 && (l.loai === "chiem" || l.luan); }
+function renderPending() {
+  const n = LOGS.filter(isPending).length;
+  $("#pendingNote").innerHTML = n ? `<div class="notice info">Có ${n} lần luận hoặc gieo quẻ đã quá 3 tháng mà chưa ghi kết quả thực tế. ${Xg()} xem trong mục “Các lần ${xg()} đã xem” và ghi lại để biết độ ứng nghiệm.</div>` : "";
+}
+$("#logList").addEventListener("click", async e => {
+  const b = e.target.closest("button[data-act]"); if (!b) return;
+  const item = b.closest(".logitem"), id = item.dataset.id;
+  if (b.dataset.act === "saveTT") { b.disabled = true; try { await updateLog(id, { thucTe: $("textarea[data-f=thucTe]", item).value.trim(), thucTeLuc: new Date().toISOString() }); toast("Đã lưu ghi chú"); } catch (er) { toast("Chưa lưu được: " + (er.code || er.message)); } b.disabled = false; }
+  if (b.dataset.act === "del") { if (await confirmSheet("Xóa mục nhật ký này?")) { await deleteLog(id); toast("Đã xóa"); } }
+});
+
+/* ============================================================ sheet: chào, thêm / sửa người, mã truy cập */
+let SHEET_LOCK = false;
+function openSheet(html, lock = false) { SHEET_LOCK = lock; $("#sheet").innerHTML = html; $("#sheetBg").classList.add("on"); $("#sheet").scrollTop = 0; }
+function closeSheet() { SHEET_LOCK = false; $("#sheetBg").classList.remove("on"); }
+$("#sheetBg").addEventListener("click", e => { if (e.target.id === "sheetBg" && !SHEET_LOCK) closeSheet(); });
+function confirmSheet(msg, okText = "Xóa") {
+  return new Promise(res => {
+    openSheet(`<h3>${esc(msg)}</h3><div class="btns"><button class="ghost" id="cfNo">Thôi</button><button class="primary" id="cfOk">${esc(okText)}</button></div>`);
+    $("#cfNo").onclick = () => { closeSheet(); res(false); };
+    $("#cfOk").onclick = () => { closeSheet(); res(true); };
+  });
+}
+function openPersonSheet(p, opt = {}) {
+  const welcome = !!opt.welcome, laMinh = welcome || (p && p.quanHe === "Bản thân");
+  const e = p || { gioi: "nam", quanHe: welcome ? "Bản thân" : "" };
+  const [y, m, d] = (e.ngay || "--").split("-");
+  const canMa = !!(SRV.info && SRV.info.can_ma);
+  openSheet(`${welcome ? `<h3>Xin chào</h3>
+      <p class="hint" style="margin-top:0">Trang xem Tử vi, Bát tự, chọn ngày tốt, gieo quẻ và phong thủy nhà.</p>
+      ${canMa ? `<label for="fMa">Mã truy cập <span class="hint">(chủ trang gửi cho ${xg()})</span></label><input type="text" id="fMa" value="${esc(KHACH.ma || "")}" autocomplete="off" autocapitalize="off">` : ""}`
+    : `<h3>${p ? "Sửa thông tin" : "Thêm người"}</h3>`}
+    <label for="fTen">Họ tên</label><input type="text" id="fTen" value="${esc(e.ten || "")}" autocomplete="off">
+    <div class="row">${laMinh ? "" : `<div><label for="fQH">Quan hệ với ${xg()}</label><select id="fQH"><option value="">–</option>${QUAN_HE.filter(q => q !== "Bản thân").map(q => `<option${q === e.quanHe ? " selected" : ""}>${q}</option>`).join("")}</select></div>`}
+      <div><label for="fGioi">Giới tính</label><select id="fGioi"><option value="nam"${e.gioi !== "nu" ? " selected" : ""}>Nam</option><option value="nu"${e.gioi === "nu" ? " selected" : ""}>Nữ</option></select></div></div>
+    <label>Ngày sinh</label>
+    <div class="row row3"><input type="number" id="fD" placeholder="Ngày" inputmode="numeric" value="${esc(+d || "")}"><input type="number" id="fM" placeholder="Tháng" inputmode="numeric" value="${esc(+m || "")}"><input type="number" id="fY" placeholder="Năm" inputmode="numeric" value="${esc(+y || "")}"></div>
+    <label class="check"><input type="checkbox" id="fAm"${e.am ? " checked" : ""}> Đây là ngày âm lịch</label>
+    <label class="check" id="fNhuanRow" style="${e.am ? "" : "display:none"}"><input type="checkbox" id="fNhuan"${e.nhuan ? " checked" : ""}> Tháng nhuận</label>
+    <label for="fGio">Giờ sinh (giờ đồng hồ)</label>
+    <input type="time" id="fGio" value="${esc(e.gio || "")}">
+    <div class="small-note">Không biết giờ thì để trống: vẫn có Bát tự 3 trụ, nhưng không lập được lá số Tử vi.</div>
+    <label for="fNoi">Nơi sinh (tỉnh, thành)</label><input type="text" id="fNoi" list="dsNoi" value="${esc(e.noi || "")}" autocomplete="off">
+    <div class="small-note" id="fNoiChk"></div>
+    ${laMinh ? `<label for="fLH">Số điện thoại hoặc Zalo <span class="hint">(không bắt buộc, để chủ trang liên hệ khi cần)</span></label><input type="text" id="fLH" inputmode="tel" value="${esc(e.lienHe || "")}" autocomplete="off">` : ""}
+    <label for="fGhi">Ghi chú</label><input type="text" id="fGhi" value="${esc(e.ghiChu || "")}" placeholder="vd: giờ sinh chưa chắc chắn">
+    <div class="small-note" id="fChk" style="color:#8e2323"></div>
+    <div class="btns">${welcome ? `<button class="primary full" id="fSave">Bắt đầu</button>` : `<button class="ghost" id="fCancel">Đóng</button><button class="primary" id="fSave">Lưu</button>`}${p && !laMinh ? `<button class="ghost full" id="fDel" style="color:#8e2323">Xóa người này</button>` : ""}</div>`, welcome);
+  $("#fAm").onchange = () => { $("#fNhuanRow").style.display = $("#fAm").checked ? "" : "none"; };
+  const chkNoi = () => { const v = $("#fNoi").value.trim(); if (!v || !RUN) { $("#fNoiChk").textContent = ""; return; } const r = RUN.kiem_noi(v).toJs({ dict_converter: Object.fromEntries }); $("#fNoiChk").textContent = r.kinhdo ? `✓ Có trong bảng: kinh độ ${r.kinhdo}°E` : "Chưa có trong bảng – bộ tính sẽ tạm dùng kinh độ Hà Nội (sai 0,5° ≈ 2 phút giờ mặt trời)."; };
+  $("#fNoi").addEventListener("change", chkNoi); $("#fNoi").addEventListener("blur", chkNoi); chkNoi();
+  if ($("#fCancel")) $("#fCancel").onclick = closeSheet;
+  if ($("#fDel")) $("#fDel").onclick = async () => { if (await confirmSheet(`Xóa ${p.ten}?`)) { await deletePerson(p.id); toast("Đã xóa"); } };
+  $("#fSave").onclick = async () => {
+    const chk = $("#fChk"); chk.textContent = "";
+    const ten = $("#fTen").value.trim(), D = +$("#fD").value, M = +$("#fM").value, Y = +$("#fY").value;
+    if (!ten) return void (chk.textContent = "Cần nhập họ tên.");
+    if (!(D >= 1 && D <= 31 && M >= 1 && M <= 12 && Y >= 1900 && Y <= 2100)) return void (chk.textContent = "Ngày sinh chưa đúng.");
+    const np = { ...(p || {}), ten, quanHe: laMinh ? "Bản thân" : $("#fQH").value, gioi: $("#fGioi").value, ngay: `${Y}-${String(M).padStart(2, "0")}-${String(D).padStart(2, "0")}`,
+      am: $("#fAm").checked, nhuan: $("#fAm").checked && $("#fNhuan").checked, gio: $("#fGio").value || "", noi: $("#fNoi").value.trim(), ghiChu: $("#fGhi").value.trim() };
+    if (laMinh) np.lienHe = ($("#fLH").value || "").trim().slice(0, 60);
+    if (RUN) { const inf = infoOf(np); if (!inf.ok) return void (chk.textContent = "Bộ tính báo: " + inf.loi); }
+    $("#fSave").disabled = true;
+    if (welcome && canMa) {
+      KHACH.ma = $("#fMa").value.trim();
+      let j = null; try { j = await callServer({ action: "kiem" }); } catch (er) { j = null; }
+      if (j && j.ma_loi === "sai_ma") { $("#fSave").disabled = false; return void (chk.textContent = "Mã truy cập chưa đúng. Mời " + xg() + " hỏi lại chủ trang."); }
+    }
+    if (welcome) { KHACH.dongY = true; KHACH.dongYLuc = new Date().toISOString(); localSave(); }
+    try { await savePerson(np); closeSheet(); toast(welcome ? `Chào ${np.gioi === "nu" ? "chị" : "anh"} ${ten.trim().split(/\s+/).pop()}! Mời ${np.gioi === "nu" ? "chị" : "anh"} bắt đầu xem.` : p ? "Đã cập nhật" : `Đã thêm ${ten}`); }
+    catch (er) { chk.textContent = "Chưa lưu được: " + (er.code || er.message); $("#fSave").disabled = false; }
+  };
+}
+function openCodeSheet() {
+  if ($("#sheetBg").classList.contains("on")) return;
+  openSheet(`<h3>Cần mã truy cập</h3><p class="hint">Chủ trang đã đổi mã hoặc mã ${xg()} nhập chưa đúng. Mời ${xg()} nhập mã mới để tiếp tục.</p>
+    <input type="text" id="cMa" value="${esc(KHACH.ma || "")}" autocomplete="off" autocapitalize="off"><div class="small-note" id="cChk" style="color:#8e2323"></div>
+    <div class="btns"><button class="ghost" id="cNo">Để sau</button><button class="primary" id="cOk">Xác nhận</button></div>`);
+  $("#cNo").onclick = closeSheet;
+  $("#cOk").onclick = async () => {
+    KHACH.ma = $("#cMa").value.trim(); localSave();
+    let j = null; try { j = await callServer({ action: "kiem" }); } catch (e) { j = null; }
+    if (j && j.ok) { closeSheet(); toast("Đã xác nhận mã"); flushOutbox(); } else $("#cChk").textContent = j ? "Mã chưa đúng." : "Chưa kết nối được máy chủ.";
+  };
+}
+$("#btnAddPerson").onclick = () => openPersonSheet(null);
+
+/* ============================================================ chọn người */
+function fillPeopleSelects() {
+  const opts = PEOPLE.map(p => `<option value="${esc(p.id)}">${esc(p.ten)}${p.quanHe ? " (" + esc(p.quanHe) + ")" : ""}</option>`).join("");
+  const keep = (sel, extra = "") => { const v = sel.value; sel.innerHTML = extra + opts; if ([...sel.options].some(o => o.value === v)) sel.value = v; };
+  keep($("#lsPerson"), PEOPLE.length ? "" : `<option value="">(Sổ chưa có ai)</option>`);
+  keep($("#lsPerson2"));
+  if ($("#lsPerson2").value === $("#lsPerson").value && PEOPLE.length > 1) $("#lsPerson2").selectedIndex = 1;
+  keep($("#qNguoi"), `<option value="">(Không chọn)</option>`);
+  keep($("#nhChu"), `<option value="">(Không chọn – chỉ xem Huyền không)</option>`);
+  if (!$("#qNguoi").dataset.init && PEOPLE.length) { const me = PEOPLE.find(p => p.quanHe === "Bản thân"); if (me) { $("#qNguoi").value = me.id; $("#nhChu").value = me.id; } $("#qNguoi").dataset.init = 1; }
+  $("#ngPeople").innerHTML = PEOPLE.length ? PEOPLE.map(p => `<button class="chip${NG_SEL.has(p.id) ? " on" : ""}" data-id="${esc(p.id)}">${esc(p.ten)}</button>`).join("") : `<span class="hint">Thêm người ở tab Sổ để chọn.</span>`;
+  refreshPersonInfo();
+}
+function refreshPersonInfo() {
+  const p = personById($("#lsPerson").value);
+  const inf = infoOf(p);
+  $("#lsPersonInfo").innerHTML = p ? `${personLine(p)}${inf && inf.ok ? ` · tuổi ${esc(inf.can_chi_nam)}` : ""}${p.gio ? "" : `<br><b>Không có giờ sinh:</b> chỉ có Bát tự 3 trụ, không lập được lá số Tử vi.`}` : "";
+}
+$("#lsPerson").addEventListener("change", refreshPersonInfo);
+function personArgs(p) {
+  const a = ["--ngay", p.ngay, "--gioi", p.gioi || "nam"];
+  if (p.gio) a.push("--gio", p.gio);
+  if (p.noi) a.push("--noi", p.noi);
+  if (p.am) a.push("--am"); if (p.nhuan) a.push("--nhuan");
+  return a;
+}
+
+/* ============================================================ khối kết quả + luận */
+function busy(box, text) { box.innerHTML = `<div class="card busy"><div class="spin"></div>${esc(text)}</div>`; }
+function showError(box, text) { box.innerHTML = `<div class="notice err">${esc(text)}</div>`; }
+function renderResult(box, ctx) {
+  const parts = ctx.parts.map((pt, k) => `<details class="sec"${k === 0 && !ctx.charts.length ? " open" : ""}><summary>${esc(pt.label)}</summary><div class="body">${renderOutput(pt.text)}</div></details>`).join("");
+  box.innerHTML = `<div class="card">
+    <h3>${esc(ctx.title)}</h3>${ctx.sub ? `<div class="kv">${esc(ctx.sub)}</div>` : ""}
+    ${ctx.warn ? `<div class="notice" style="margin-top:8px">${ctx.warn}</div>` : ""}
+    <div class="charts"></div>
+    ${parts}
+    <div class="luanBox"${coLuan() ? "" : " hidden"}>
+    <label>${Xg()} muốn hỏi thêm điều gì? <span class="hint">(không bắt buộc)</span></label>
+    <textarea class="askMore" placeholder="vd: Năm nay làm ăn với đối tác mới có thuận không?">${esc(ctx.hoiThem || "")}</textarea>
+    <div class="btns"><button class="primary full btnLuan">✨ Xem luận giải</button></div>
+    <div class="luan"></div>
+    </div>
+  </div>`;
+  const cbox = $(".charts", box);
+  ctx.charts.forEach(c => mountChart(cbox, c.html, c.label));
+  $(".btnLuan", box).onclick = () => doLuan(box, ctx);
+  box.scrollIntoView({ behavior: "smooth", block: "start" });
+  persistCtx(ctx);
+}
+function mountChart(container, html, label) {
+  if (!html) return;
+  const wrap = document.createElement("div");
+  wrap.innerHTML = `<div class="kv" style="margin-top:8px">${esc(label)}</div><div class="chart"><div class="scaler"></div></div><div class="chart-tools"><button class="ghost small">Phóng to</button></div>`;
+  container.appendChild(wrap);
+  const chart = $(".chart", wrap), scaler = $(".scaler", wrap), host = document.createElement("div");
+  scaler.appendChild(host);
+  const root = host.attachShadow({ mode: "open" });
+  root.innerHTML = html.replace(/<\/?(html|head|body)[^>]*>/gi, "").replace(/<meta[^>]*>|<title>[\s\S]*?<\/title>/gi, "");
+  let zoom = false;
+  const fit = () => {
+    const inner = root.querySelector(".wrap") || root.firstElementChild; if (!inner) return;
+    const w = inner.scrollWidth || inner.offsetWidth, h = inner.scrollHeight || inner.offsetHeight, cw = chart.clientWidth;
+    const s = zoom ? 1 : Math.min(1, cw / (w + 4));
+    scaler.style.transform = `scale(${s})`; scaler.style.width = w + "px"; chart.style.height = Math.ceil(h * s + 6) + "px";
+  };
+  $("button", wrap).onclick = e => { zoom = !zoom; e.target.textContent = zoom ? "Thu nhỏ vừa màn hình" : "Phóng to"; fit(); };
+  requestAnimationFrame(() => { fit(); setTimeout(fit, 300); });
+  window.addEventListener("resize", fit);
+}
+function soLieuOf(ctx) { return ctx.parts.map(p => p.label.toUpperCase() + "\n" + p.text).join("\n\n"); }
+// Mỗi lần xem: lưu trên máy khách và gửi về máy chủ (chủ trang xem trong Google Sheet).
+async function persistCtx(ctx, extra = {}) {
+  if (ctx.logId) { await updateLog(ctx.logId, extra); return ctx.logId; }
+  ctx.logId = "l" + uid() + uid();
+  const soLieu = soLieuOf(ctx);
+  await saveLog({ id: ctx.logId, ts: ctx.ts || new Date().toISOString(), mon: ctx.mon, loai: ctx.loai || "luan", pid: ctx.pid || "", hoi: ctx.hoi || "", ketqua: soLieu, ban: BAN_SCRIPT, ...extra });
+  const me = self_();
+  queue("luot", { luotId: ctx.logId, luot: { thoiGian: fmtTs(ctx.ts || new Date().toISOString()), khach: me ? me.ten : "", xemCho: personPublic(personById(ctx.pid)),
+    muc: ctx.mon, chiTiet: ctx.hoi || ctx.title || "", nguoiThuHai: personPublic(ctx.pid2 ? personById(ctx.pid2) : null), soLieu } });
+  return ctx.logId;
+}
+
+/* ---------- prompt luận ---------- */
+let DOCS = null;
+async function docs() { if (!DOCS) { try { DOCS = await (await fetch(BASE + "docs.json")).json(); } catch (e) { DOCS = {}; } } return DOCS; }
+function section(md, heading) {
+  if (!md) return "";
+  const lines = md.split("\n"); const i = lines.findIndex(l => l.startsWith(heading)); if (i < 0) return "";
+  const lvl = (heading.match(/^#+/) || ["#"])[0].length; let j = i + 1;
+  while (j < lines.length && !(lines[j].startsWith("#") && (lines[j].match(/^#+/)[0].length <= lvl))) j++;
+  return lines.slice(i, j).join("\n");
+}
+async function guideFor(kind) {
+  const D = await docs(), cb = D["co-ban"] || "";
+  const chung = [section(cb, "## Điểm khác nhau giữa các trường phái"), section(cb, "## Giới hạn")].join("\n\n");
+  const map = {
+    laso: [section(cb, "### 4.1"), section(cb, "### 4.2"), D["luan-chi-tiet"], D["cach-cuc-tu-vi"], section(D["tu-vi-nang-cao"], "### 4.1"), section(D["tu-vi-nang-cao"], "### 4.2")],
+    thang: [section(cb, "### 4.1"), section(cb, "### 4.2"), section(D["luan-chi-tiet"], "### 4.0"), section(D["luan-chi-tiet"], "### 4.1"), section(D["luan-chi-tiet"], "### 4.3"), section(D["luan-chi-tiet"], "### 4.5")],
+    tuan: [section(D["luan-chi-tiet"], "### 4.5"), section(D["tu-vi-nang-cao"], "### 4.4")],
+    vanthe: [section(D["luan-chi-tiet"], "### 4.1"), section(D["luan-chi-tiet"], "### 4.5"), section(D["tu-vi-nang-cao"], "### 4.2")],
+    hop: [section(D["luan-chi-tiet"], "### 4.6"), section(D["tu-vi-nang-cao"], "### 4.3")],
+    ngay: [section(cb, "### 4.7"), D["chon-ngay"]],
+    kymon: [section(cb, "### 4.4"), D["ky-mon"]],
+    lucnham: [section(cb, "### 4.5"), D["luc-nham"]],
+    luchao: [D["luc-hao"]], hoichan: [D["luc-hao"], section(cb, "### 4.6"), section(cb, "### 4.5")],
+    maihoa: [section(cb, "### 4.6")],
+    nha: [section(cb, "### 4.3"), D["huyen-khong"]],
+  };
+  return (map[kind] || []).filter(Boolean).join("\n\n---\n\n") + "\n\n---\n\n" + chung;
+}
+async function doLuan(box, ctx) {
+  const out = $(".luan", box), btn = $(".btnLuan", box);
+  if (!SRV.url) { out.innerHTML = `<div class="notice">Trang đang chạy thử, chưa nối máy chủ nên chưa có phần luận.</div>`; return; }
+  if (SRV.info && SRV.info.co_luan === false) { out.innerHTML = `<div class="notice">Chủ trang chưa bật phần luận. Số liệu phía trên vẫn dùng được.</div>`; return; }
+  const hoiThem = $(".askMore", box).value.trim();
+  btn.disabled = true; btn.textContent = "Đang luận giải…";
+  out.innerHTML = `<div class="luan-box"><div class="busy"><div class="spin"></div>Đang luận giải, thường mất 30–90 giây…</div></div>`;
+  const fail = msg => { out.innerHTML = `<div class="notice err">${esc(msg)}</div>`; btn.disabled = false; btn.textContent = "✨ Xem luận giải"; };
+  await persistCtx(ctx); await flushOutbox();
+  if (OUTBOX.some(x => x.luotId === ctx.logId)) return fail("Chưa gửi được lượt xem lên máy chủ (có thể do mạng). Mời " + xg() + " thử lại sau ít phút.");
+  const me = self_();
+  let j;
+  try {
+    j = await callServer({ action: "luan", luotId: ctx.logId, luan: { xung: me && me.gioi === "nu" ? "chị" : "anh", mon: ctx.mon, nguoi: ctx.nguoi || "", hoi: ctx.hoi || "", hoiThem,
+      huongDan: await guideFor(ctx.kind), soLieu: soLieuOf(ctx) } }, 240000);
+  } catch (e) { return fail("Mất kết nối khi chờ kết quả luận. Mời " + xg() + " thử lại sau."); }
+  if (!j || !j.ok) {
+    if (j && j.ma_loi === "sai_ma") { openCodeSheet(); return fail("Cần mã truy cập mới."); }
+    return fail((j && j.loi) || "Chưa luận được.");
+  }
+  ctx.luan = j.text;
+  out.innerHTML = `<div class="luan-box">${renderMd(j.text)}</div>` + (j.conLai != null ? `<div class="small-note">Hôm nay ${xg()} còn ${j.conLai} lần nhờ luận.</div>` : "");
+  await persistCtx(ctx, { luan: j.text, hoiThem });
+  btn.disabled = false; btn.textContent = "✨ Luận lại";
+}
+
+/* ============================================================ LÁ SỐ */
+function onLsMode() { $("#lsHopBox").style.display = $("#lsMode").value === "hop" ? "" : "none"; }
+$("#lsMode").addEventListener("change", onLsMode);
+$("#btnLaso").onclick = () => runLaso();
+async function runLaso() {
+  const box = $("#resLaso"), p = personById($("#lsPerson").value);
+  if (!p) return showError(box, "Mời " + xg() + " nhập thông tin ở tab Sổ trước.");
+  const mode = $("#lsMode").value, Y = +$("#lsYear").value || vnNow().getUTCFullYear();
+  const A = personArgs(p), coGio = !!p.gio, parts = [], charts = [], cmds = [];
+  const ctx = { mon: "", kind: mode === "full" ? "laso" : mode, pid: p.id, nguoi: `${p.ten} – ${personLine(p).replace(/<[^>]+>/g, "")}`, parts, charts, cmds, ts: new Date().toISOString() };
+  const run = async (label, prog, args, opt = {}) => { cmds.push([prog, args]); const r = await py(prog, args); if (r.code && !opt.soft) throw new Error(r.text || "lỗi bộ tính"); if (r.text) parts.push({ label, text: r.text }); return r; };
+  busy(box, "Đang tính…");
+  try {
+    if (mode === "full") {
+      ctx.mon = "Lá số Bát tự" + (coGio ? " và Tử vi" : ""); ctx.title = `Lá số của ${p.ten}`; ctx.sub = `Năm xem ${Y}`;
+      if (coGio) {
+        const ra = "/tmp/tuvi-" + Date.now() + ".html", r = await py("nc", ["anhtuvi", ...A, "--nam-xem", Y, "--ten", p.ten, "--ra", ra]);
+        if (!r.code) charts.push({ label: "Lá số Tử vi", html: readFile(ra) });
+      }
+      await run("Bát tự" + (coGio ? ", Tử vi" : "") + ", vận hạn", "tvbt", ["battu", ...(coGio ? ["tuvi", "--phi-hoa"] : []), ...A, "--nam-xem", Y, "--so-nam", 5, "--luu-nien", 5]);
+      await run("Vượng suy, cách cục Bát tự", "nc", ["vuongsuy", ...A]);
+      if (coGio) await run("Cách cục Tử vi", "nc", ["cachcuc", ...A, "--nam-xem", Y]);
+      if (!coGio) ctx.warn = "Không có giờ sinh nên chỉ có Bát tự 3 trụ, không lập được lá số Tử vi.";
+    } else if (mode === "thang") {
+      ctx.mon = "Vận hạn từng tháng"; ctx.title = `Vận hạn từng tháng năm ${Y} – ${p.ten}`;
+      await run("Vận hạn năm và từng tháng", "tvbt", ["battu", ...(coGio ? ["tuvi"] : []), ...A, "--nam-xem", Y, "--luu-nguyet"]);
+    } else if (mode === "tuan") {
+      const tu = ymd(vnNow()), den = addDays(tu, 6);
+      ctx.mon = "Vận 7 ngày tới"; ctx.title = `Vận ${fmtDate(tu)} – ${fmtDate(den)} – ${p.ten}`;
+      await run("Lưu nhật 7 ngày", "nc", ["luunhat", ...A, "--tu", tu, "--den", den]);
+    } else if (mode === "vanthe") {
+      ctx.mon = "Biểu đồ vận thế"; ctx.title = `Vận thế ${Y - 2}–${Y + 7} – ${p.ten}`;
+      await run("Bảng vận thế", "nc", ["vanthe", ...A, "--ten", p.ten, "--tu-nam", Y - 2, "--den-nam", Y + 7, "--ra", "/tmp/vanthe.html"]);
+      charts.push({ label: "Biểu đồ vận thế", html: readFile("/tmp/vanthe.html") });
+    } else if (mode === "hop") {
+      const q = personById($("#lsPerson2").value);
+      if (!q || q.id === p.id) return showError(box, "Chọn người thứ hai khác người thứ nhất.");
+      const loai = $("#lsHopLoai").value, ctxq = s => s.replace(/,/g, " ");
+      const nArg = x => [ctxq(x.ten), x.ngay, x.gio, x.gioi, x.am ? "am" : "", x.noi ? ctxq(x.noi) : ""].filter(Boolean).join(",");
+      ctx.kind = "hop"; ctx.pid2 = q.id; ctx.mon = loai === "honnhan" ? "Hợp tuổi hôn nhân" : "Hợp tác làm ăn"; ctx.title = `${p.ten} và ${q.ten}`; ctx.sub = ctx.mon;
+      ctx.nguoi += `; người thứ hai: ${q.ten} – ${personLine(q).replace(/<[^>]+>/g, "")}`;
+      await run("Chấm điểm hợp tác / hôn nhân", "nc", ["hoptac", "--nguoi", nArg(p), nArg(q), "--loai", loai]);
+      const q2 = `${ctxq(q.ten)}:${q.ngay}${q.gio ? " " + q.gio : ""}${q.am ? " am" : ""}`;
+      await run("So tuổi (can chi, ngũ hành, cung phi)", "tvbt", ["hoptuoi", ...A, "--nguoi", q2]);
+    }
+    renderResult(box, ctx);
+  } catch (e) { showError(box, "Bộ tính báo lỗi: " + e.message); }
+}
+
+/* ============================================================ CHỌN NGÀY */
+$("#ngViec").innerHTML = VIEC_NGAY.map(([v, t]) => `<option value="${v}">${t}</option>`).join("");
+$("#ngThu").innerHTML = THU.map(([v, t]) => `<button class="chip" data-v="${v}">${t}</button>`).join("");
+$("#ngThu").addEventListener("click", e => { const c = e.target.closest(".chip"); if (c) c.classList.toggle("on"); });
+$("#ngPeople").addEventListener("click", e => { const c = e.target.closest(".chip"); if (!c) return; c.classList.toggle("on"); if (c.classList.contains("on")) NG_SEL.add(c.dataset.id); else NG_SEL.delete(c.dataset.id); });
+$("#btnNgay").onclick = async () => {
+  const box = $("#resNgay"), tu = $("#ngTu").value, den = $("#ngDen").value, viec = $("#ngViec").value;
+  if (!tu || !den) return showError(box, "Chọn từ ngày và đến ngày.");
+  const n = daysBetween(tu, den);
+  if (n < 0) return showError(box, "Đến ngày phải sau từ ngày.");
+  if (n > 92) return showError(box, "Mỗi lần chỉ xét tối đa 93 ngày. Mời " + xg() + " chia thành nhiều đợt.");
+  const sel = $$("#ngPeople .chip.on").map(c => personById(c.dataset.id)).filter(Boolean);
+  const tuoi = [];
+  for (const p of sel) { const inf = infoOf(p); if (inf && inf.ok) tuoi.push(`${p.ten.replace(/[:,]/g, " ")}:${inf.nam_am}`); }
+  const thu = $$("#ngThu .chip.on").map(c => c.dataset.v);
+  const args = ["ngay", "--tu", tu, "--den", den, "--viec", viec, "--top", 6];
+  if (tuoi.length) args.push("--tuoi", ...tuoi);
+  if (thu.length) args.push("--thu", thu.join(","));
+  if (!$("#ngChiTiet").checked) args.push("--gon");
+  const label = VIEC_NGAY.find(v => v[0] === viec)[1];
+  busy(box, "Đang chấm từng ngày…");
+  try {
+    const r = await py("nc", args);
+    if (r.code) throw new Error(r.text);
+    const ctx = { kind: "ngay", mon: "Chọn ngày: " + label, title: `${label}: ${fmtDate(tu)} – ${fmtDate(den)}`, sub: sel.length ? "Người chủ sự: " + sel.map(p => p.ten).join(", ") : "Chưa chọn người chủ sự (chỉ xét ngày chung)",
+      hoi: `${label} trong khoảng ${fmtDate(tu)} – ${fmtDate(den)}`, pid: sel[0] ? sel[0].id : "", pid2: sel[1] ? sel[1].id : "", nguoi: sel.map(p => `${p.ten} (sinh năm âm lịch ${infoOf(p).nam_am})`).join("; "),
+      parts: [{ label: "Kết quả chọn ngày", text: r.text }], charts: [], cmds: [["nc", args]], ts: new Date().toISOString() };
+    renderResult(box, ctx); $("details.sec", box).open = true;
+  } catch (e) { showError(box, "Bộ tính báo lỗi: " + e.message); }
+};
+
+/* ============================================================ GIEO QUẺ */
+let MON = "kymon", COINS = [null, null, null, null, null, null];
+$("#qMon").innerHTML = MON_QUE.map(([v, t]) => `<button class="chip${v === MON ? " on" : ""}" data-v="${v}">${t}</button>`).join("");
+$("#qViec").innerHTML = VIEC_QUE.map(v => `<option value="${v[0]}">${v[1]}</option>`).join("");
+function renderCach() {
+  const box = $("#qCachBox");
+  $("#qMonNote").textContent = MON_NOTE[MON];
+  if (MON === "luchao" || MON === "hoichan") {
+    box.innerHTML = `<label>Cách lập quẻ Lục hào</label><div class="seg" id="qCach"><button class="chip on" data-v="gio">Theo giờ</button><button class="chip" data-v="xu">Gieo 3 đồng xu</button></div><div id="qXu"></div>`;
+    $("#qCach").onclick = e => { const c = e.target.closest(".chip"); if (!c) return; $$("#qCach .chip").forEach(x => x.classList.toggle("on", x === c)); renderXu(c.dataset.v === "xu"); };
+  } else if (MON === "maihoa") {
+    box.innerHTML = `<label>Cách lập quẻ Mai hoa</label><div class="seg" id="qCach"><button class="chip on" data-v="gio">Theo giờ</button><button class="chip" data-v="so">Theo 2 số</button></div><div id="qSo" style="display:none"><div class="row"><div><label for="qSo1">Số thứ nhất</label><input type="number" id="qSo1" inputmode="numeric" min="1"></div><div><label for="qSo2">Số thứ hai</label><input type="number" id="qSo2" inputmode="numeric" min="1"></div></div><div class="small-note">Hai số nghĩ ra ngay khi đặt câu hỏi.</div></div>`;
+    $("#qCach").onclick = e => { const c = e.target.closest(".chip"); if (!c) return; $$("#qCach .chip").forEach(x => x.classList.toggle("on", x === c)); $("#qSo").style.display = c.dataset.v === "so" ? "" : "none"; };
+  } else box.innerHTML = "";
+}
+function renderXu(on) {
+  const box = $("#qXu"); if (!on) { box.innerHTML = ""; return; }
+  box.innerHTML = `<div class="small-note">Gieo 3 đồng xu 6 lần. Mỗi lần chọn số đồng <b>ngửa</b> (mặt có chữ). Lần 1 là hào dưới cùng.</div>` +
+    COINS.map((v, i) => `<div class="coin-row"><span>Lần ${i + 1}${i === 0 ? " (dưới)" : i === 5 ? " (trên)" : ""}</span><div class="seg" data-i="${i}">${[0, 1, 2, 3].map(n => `<button class="chip${v === n ? " on" : ""}" data-n="${n}">${n}</button>`).join("")}</div></div>`).join("");
+  box.onclick = e => { const c = e.target.closest(".chip"); if (!c) return; const s = c.parentElement, i = +s.dataset.i; COINS[i] = +c.dataset.n; $$(".chip", s).forEach(x => x.classList.toggle("on", x === c)); };
+}
+$("#qMon").onclick = e => { const c = e.target.closest(".chip"); if (!c) return; MON = c.dataset.v; $$("#qMon .chip").forEach(x => x.classList.toggle("on", x === c)); renderCach(); };
+$("#qNow").onchange = () => { $("#qTimeBox").style.display = $("#qNow").checked ? "none" : ""; if (!$("#qNgay").value) { const n = vnNow(); $("#qNgay").value = ymd(n); $("#qGio").value = hm(n); } };
+renderCach();
+function recentSame(hoi) {
+  const lim = Date.now() - 45 * 864e5;
+  return LOGS.filter(l => l.loai === "chiem" && l.ts && new Date(l.ts).getTime() > lim && similar(l.hoi, hoi) >= 0.8);
+}
+$("#btnQue").onclick = () => runQue(false);
+async function runQue(force) {
+  const box = $("#resQue"), hoi = $("#qHoi").value.trim();
+  $("#queRepeat").innerHTML = "";
+  if (!hoi) return showError(box, "Mời " + xg() + " nhập câu hỏi trước (một câu cụ thể).");
+  if (!force) {
+    const same = recentSame(hoi);
+    if (same.length) {
+      const l = same[0];
+      $("#queRepeat").innerHTML = `<div class="card"><div class="notice">${Xg()} đã hỏi việc gần giống lúc <b>${fmtTs(l.ts)}</b> bằng ${esc(l.mon)}: “${esc(l.hoi)}”. Nếu chưa có gì mới thì nên dùng lại kết quả lần trước.</div>
+        ${l.luan ? `<details class="sec"><summary>Kết luận lần trước</summary><div class="body"><div class="luan-box">${renderMd(l.luan)}</div></div></details>` : `<details class="sec"><summary>Số liệu lần trước</summary><div class="body">${renderOutput(l.ketqua || "")}</div></details>`}
+        <div class="btns"><button class="ghost" id="qrNo">Dùng kết quả cũ</button><button class="gold" id="qrYes">Có thông tin mới, lập quẻ mới</button></div></div>`;
+      $("#qrNo").onclick = () => { $("#queRepeat").innerHTML = ""; goTab("so"); };
+      $("#qrYes").onclick = () => runQue(true);
+      box.innerHTML = ""; $("#queRepeat").scrollIntoView({ behavior: "smooth" });
+      return;
+    }
+  }
+  const nguoi = personById($("#qNguoi").value), inf = infoOf(nguoi);
+  const t = $("#qNow").checked ? vnNow() : null;
+  const ngay = t ? ymd(t) : $("#qNgay").value, gio = t ? hm(t) : $("#qGio").value;
+  if (!ngay || !gio) return showError(box, "Chọn ngày và giờ hỏi việc.");
+  const noi = $("#qNoi").value.trim() || "Hà Nội";
+  const V = VIEC_QUE.find(v => v[0] === $("#qViec").value);
+  const T = ["--ngay", ngay, "--gio", gio, "--noi", noi];
+  const parts = [], charts = [], cmds = [];
+  const run = async (label, prog, args) => { cmds.push([prog, args]); const r = await py(prog, args); if (r.code) throw new Error(r.text || "lỗi bộ tính"); parts.push({ label, text: r.text }); };
+  let coinArgs = [];
+  if ((MON === "luchao" || MON === "hoichan") && $("#qCach .chip.on")?.dataset.v === "xu") {
+    if (COINS.some(c => c === null)) return showError(box, "Mời " + xg() + " chọn đủ 6 lần gieo đồng xu.");
+    coinArgs = ["--xu", ...COINS.map(n => "N".repeat(n) + "S".repeat(3 - n))];
+  }
+  const monTen = MON_QUE.find(m => m[0] === MON)[1];
+  busy(box, "Đang lập quẻ…");
+  try {
+    if (MON === "kymon") {
+      const a = ["kymon", ...T, "--cau-hoi", hoi, "--ve-ban", "/tmp/kymon.html"]; if (inf && inf.ok) a.push("--nam-sinh", inf.nam_lx);
+      await run("Bàn Kỳ môn", "tvbt", a); charts.push({ label: "Bàn Kỳ môn 9 cung", html: readFile("/tmp/kymon.html") });
+    } else if (MON === "lucnham") {
+      const a = ["lucnham2", ...T, "--viec", V[3]]; if (inf && inf.ok) a.push("--nam-sinh", inf.nam_am);
+      await run("Đại Lục Nhâm", "nc", a);
+    } else if (MON === "luchao") {
+      await run("Quẻ Lục hào", "nc", ["luchao", ...T, "--viec", V[2], ...coinArgs, ...(nguoi ? ["--gioi", nguoi.gioi] : [])]);
+    } else if (MON === "maihoa") {
+      const a = ["maihoa", ...T];
+      if ($("#qCach .chip.on")?.dataset.v === "so") { const s1 = +$("#qSo1").value, s2 = +$("#qSo2").value; if (!(s1 > 0 && s2 > 0)) return showError(box, "Nhập 2 số nguyên dương."); a.push("--so", s1, s2); }
+      await run("Quẻ Mai hoa", "tvbt", a);
+    } else if (MON === "hoichan") {
+      const a = ["hoichan", ...T, "--viec", V[2], ...coinArgs]; if (inf && inf.ok) a.push("--nam-sinh", inf.nam_am);
+      await run("Hội chẩn Lục hào + Mai hoa + Lục Nhâm", "nc", a);
+    }
+    const ctx = { kind: MON, mon: monTen, loai: "chiem", title: `${monTen}: ${hoi}`, sub: `Lập lúc ${gio} ${fmtDate(ngay)} tại ${noi} · việc: ${V[1]}`, hoi, pid: nguoi ? nguoi.id : "",
+      nguoi: nguoi ? `${nguoi.ten}${inf && inf.ok ? ` (tuổi ${inf.can_chi_nam}, năm âm lịch ${inf.nam_am})` : ""}` : "", parts, charts, cmds, ts: new Date().toISOString() };
+    renderResult(box, ctx);
+  } catch (e) { showError(box, "Bộ tính báo lỗi: " + e.message); }
+}
+
+/* ============================================================ NHÀ */
+$("#nhThang").innerHTML = `<option value="">(Không xem tháng)</option>` + THANG_TIET.map((t, i) => `<option value="${i + 1}">${i + 1}. ${t}</option>`).join("");
+["#nhNuoc", "#nhNui"].forEach(s => { $(s).innerHTML = PHUONG.map(p => `<button class="chip" data-v="${p}">${p}</button>`).join(""); $(s).onclick = e => { const c = e.target.closest(".chip"); if (c) c.classList.toggle("on"); }; });
+$("#nhChu").addEventListener("change", () => { const p = personById($("#nhChu").value); if (p && p.nha) { $("#nhHuong").value = p.nha.huong ?? ""; $("#nhNamXay").value = p.nha.namXay ?? ""; ["nuoc", "nui"].forEach(k => $$(k === "nuoc" ? "#nhNuoc .chip" : "#nhNui .chip").forEach(c => c.classList.toggle("on", (p.nha[k] || []).includes(c.dataset.v)))); } });
+$("#btnNha").onclick = async () => {
+  const box = $("#resNha"), huong = parseFloat($("#nhHuong").value), namXay = parseInt($("#nhNamXay").value), namXem = +$("#nhNamXem").value || vnNow().getUTCFullYear();
+  if (!(huong >= 0 && huong <= 360)) return showError(box, "Nhập độ hướng nhà từ 0 đến 360.");
+  if (!(namXay >= 1800 && namXay <= 2100)) return showError(box, "Cần năm xây xong hoặc năm nhập trạch (bắt buộc để lấy vận).");
+  const p = personById($("#nhChu").value), thang = $("#nhThang").value;
+  const nuoc = $$("#nhNuoc .chip.on").map(c => c.dataset.v), nui = $$("#nhNui .chip.on").map(c => c.dataset.v);
+  const parts = [], cmds = [];
+  busy(box, "Đang tính phong thủy…");
+  try {
+    const hk = ["huyenkhong", "--huong", huong, "--nam-xay", namXay, "--nam-xem", namXem];
+    if (thang) hk.push("--thang-xem", thang); if (nuoc.length) hk.push("--nuoc", nuoc.join(",")); if (nui.length) hk.push("--nui", nui.join(","));
+    if (p) { const a = ["phongthuy", ...personArgs(p), "--huong", huong, "--nam-xay", namXay, "--nam-xem", namXem]; cmds.push(["tvbt", a]); const r = await py("tvbt", a); if (r.code) throw new Error(r.text); parts.push({ label: "Cung phi, Bát trạch, Cửu tinh", text: r.text }); }
+    cmds.push(["nc", hk]); const r2 = await py("nc", hk); if (r2.code) throw new Error(r2.text); parts.push({ label: "Huyền không phi tinh", text: r2.text });
+    const warn = (namXay === 2024 || namXay === 2044) ? "Năm 2024/2044 là năm đổi vận: nếu nhập trạch trước Lập Xuân (~4/2) thì vận khác. Mời " + xg() + " kiểm tra lại." : "";
+    const ctx = { kind: "nha", mon: "Phong thủy nhà", title: `Nhà hướng ${huong}° · nhập trạch ${namXay}`, sub: p ? `Chủ nhà: ${p.ten} · năm xem ${namXem}` : `Năm xem ${namXem}`, warn, pid: p ? p.id : "",
+      nguoi: p ? `${p.ten} – ${personLine(p).replace(/<[^>]+>/g, "")}` : "", hoi: `Phong thủy nhà hướng ${huong}°, nhập trạch ${namXay}${nuoc.length ? ", nước/cửa: " + nuoc.join(", ") : ""}${nui.length ? ", núi/nhà cao: " + nui.join(", ") : ""}`,
+      parts, charts: [], cmds, ts: new Date().toISOString() };
+    renderResult(box, ctx); $("details.sec", box).open = true;
+    if (p) { try { await updatePerson(p.id, { nha: { huong, namXay, nuoc, nui } }); } catch (e) {} }
+  } catch (e) { showError(box, "Bộ tính báo lỗi: " + e.message); }
+};
+
+/* ============================================================ tự kiểm */
+$("#btnSelfTest").onclick = async () => {
+  const b = $("#btnSelfTest"), o = $("#selfTestOut"); b.disabled = true; o.innerHTML = `<div class="busy"><div class="spin"></div>Đang tự kiểm… màn hình có thể đứng một lúc.</div>`;
+  await sleep(80);
+  const r = await py("nc", ["tukiem"]);
+  o.innerHTML = renderOutput(r.text) + (/: ĐẠT\s*$/.test(r.text.trim()) ? `<div class="notice info">Bộ tính hoạt động đúng.</div>` : `<div class="notice err">Có phần chưa đạt – mời ${xg()} báo lại cho chủ trang.</div>`);
+  b.disabled = false;
+};
+
+/* ============================================================ tab + khởi động */
+function goTab(t) { $$("section.tab").forEach(s => s.classList.toggle("on", s.id === "tab-" + t)); $$("#tabbar button").forEach(b => b.classList.toggle("on", b.dataset.tab === t)); window.scrollTo(0, 0); try { history.replaceState(null, "", "#" + t); } catch (e) {} }
+$("#tabbar").onclick = e => { const b = e.target.closest("button[data-tab]"); if (b) goTab(b.dataset.tab); };
+(function init() {
+  $("#dsNoi").innerHTML = TINH.map(t => `<option value="${t}">`).join("");
+  const n = vnNow(), Y = n.getUTCFullYear();
+  $("#lsYear").value = Y; $("#nhNamXem").value = Y;
+  $("#ngTu").value = ymd(n); $("#ngDen").value = addDays(ymd(n), 30);
+  const h = (location.hash || "").slice(1); if (["so", "laso", "ngay", "que", "nha"].includes(h)) goTab(h);
+  window.addEventListener("hashchange", () => { const x = location.hash.slice(1); if (["so", "laso", "ngay", "que", "nha"].includes(x)) goTab(x); });
+  fillPeopleSelects();
+  initStore();
+  loadEngine();
+})();
+</script>
+</body>
+</html>
