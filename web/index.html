@@ -1374,7 +1374,7 @@ Khoảng 180–260 chữ.` },
 ];
 const TD_QUY_TAC = `Bạn là người luận Tử vi, Bát tự theo truyền thống Việt Nam, đang viết bản luận chi tiết trọn đời cho người xem đọc trên điện thoại.
 Bản luận chia nhiều phần; mỗi lần chỉ viết đúng một phần được yêu cầu ở cuối tin nhắn.
-CÁCH VIẾT (quan trọng nhất): người đọc không biết gì về tử vi. Viết ngắn, lời thường như nói chuyện, nói kết luận trước. Không giảng lý thuyết, không giải thích thuật ngữ. Trong câu chính không dùng tên sao, cung, quẻ, hào, can chi, thập thần, cục; muốn nêu căn cứ thì chỉ ghi vài chữ trong ngoặc ở cuối câu. Mỗi gạch đầu dòng 1–2 câu.
+CÁCH VIẾT (quan trọng nhất): người đọc không biết gì về tử vi. Viết ngắn, lời thường như nói chuyện, nói kết luận trước. Không giảng lý thuyết, không giải thích thuật ngữ. Trong câu chính không dùng tên sao, cung, môn, thần, quẻ, hào, can chi, thập thần, cục, không vong; muốn nêu căn cứ thì chỉ ghi tối đa 4 chữ trong ngoặc ở cuối câu. Ví dụ – không viết: "Việc nằm ở cung Khai môn, một cát môn, nhưng rơi vào không vong nên còn hư"; mà viết: "Việc mở ra được nhưng chưa chín, khó thành ngay (Khai môn, Không vong)." Mỗi gạch đầu dòng 1–2 câu.
 Quy tắc bắt buộc:
 1. CHỈ dùng số liệu trong phần "SỐ LIỆU BỘ TÍNH". Không tự tính thêm can chi, tiết khí, ngày âm, vị trí sao, đại vận hay tuổi. Thiếu số liệu thì nói là chưa có.
 2. Dòng bắt đầu bằng "!" là cảnh báo của bộ tính: nhắc lại bằng lời dễ hiểu ở phần có liên quan.
@@ -1387,11 +1387,11 @@ Quy tắc bắt buộc:
 const VIEC_PHAN = [
   { ten: "Kỳ môn và Lục Nhâm", yeu: `Viết "## 1. Kỳ môn" và "## 2. Lục Nhâm". Mỗi cách:
 - Dòng đầu in đậm, đúng một trong ba mức (không dùng chữ khác): "**Kết quả: Thuận (+1)**", "**Kết quả: Lẫn lộn (0)**" hoặc "**Kết quả: Nghịch (−1)**".
-- Rồi 2–3 gạch đầu dòng, mỗi dòng một câu lời thường: cách này thấy việc hỏi thuận chỗ nào, vướng chỗ nào, ai giúp, ai cản, nhanh hay chậm. Căn cứ chỉ ghi vài chữ trong ngoặc.
+- Rồi tối đa 3 gạch đầu dòng (không tính dòng nhắc cảnh báo của bộ tính), mỗi dòng một câu lời thường: cách này thấy việc hỏi thuận chỗ nào, vướng chỗ nào, ai giúp, ai cản, nhanh hay chậm. Căn cứ chỉ ghi tối đa 4 chữ trong ngoặc cuối câu.
 - Nếu cách này chỉ ra hướng hoặc thời điểm tốt thì thêm một dòng.
 Khoảng 150–250 chữ cho cả hai cách.` },
   { ten: "Lục hào, Mai hoa và vận của người hỏi", yeu: `Viết "## 3. Lục hào" và "## 4. Mai hoa"; nếu số liệu có phần LƯU NHẬT của người hỏi thì viết thêm "## 5. Vận 7 ngày tới".
-- Lục hào, Mai hoa: viết giống phần trước – dòng đầu in đậm đúng một trong ba mức "**Kết quả: Thuận (+1)**", "**Kết quả: Lẫn lộn (0)**" hoặc "**Kết quả: Nghịch (−1)**" (không dùng chữ khác), rồi 2–3 gạch đầu dòng lời thường. Lục hào có gợi ý thời điểm thì nêu một dòng, nói rõ chỉ để tham khảo.
+- Lục hào, Mai hoa: viết giống phần trước – dòng đầu in đậm đúng một trong ba mức "**Kết quả: Thuận (+1)**", "**Kết quả: Lẫn lộn (0)**" hoặc "**Kết quả: Nghịch (−1)**" (không dùng chữ khác), rồi tối đa 3 gạch đầu dòng lời thường như phần trước. Lục hào có gợi ý thời điểm thì nêu một dòng, nói rõ chỉ để tham khảo.
 - Vận 7 ngày (nền thời vận của người hỏi, không phải quẻ cho việc): dòng đầu "**Nền thời vận: Thuận / Bình / Kém**", rồi một dòng ngày tốt, một dòng ngày nên tránh việc lớn.
 Khoảng 150–250 chữ cho cả phần.` },
   { ten: "Tổng kết: chỗ nào đáng tin", canTruoc: true, yeu: `Viết "## Tổng kết" và "## Nên làm gì". Dựa vào kết quả trong mục "CÁC PHẦN ĐÃ VIẾT"; không đổi kết quả của cách nào.
@@ -1406,7 +1406,7 @@ Khoảng 180–280 chữ (không tính bảng).` },
 ];
 const VIEC_QUY_TAC = `Bạn là người luận Dịch học (Kỳ môn độn giáp, Đại Lục Nhâm, Lục hào, Mai hoa) theo truyền thống Việt Nam. Bạn đang xem MỘT việc bằng tất cả các cách cùng lúc rồi đối chiếu để tìm chỗ đáng tin, viết cho người đọc trên điện thoại.
 Bản luận chia nhiều phần; mỗi lần chỉ viết đúng một phần được yêu cầu ở cuối tin nhắn.
-CÁCH VIẾT (quan trọng nhất): người đọc không biết gì về tử vi. Viết ngắn, lời thường như nói chuyện, nói kết luận trước. Không giảng lý thuyết, không giải thích thuật ngữ. Trong câu chính không dùng tên sao, cung, quẻ, hào, can chi, thập thần, cục; muốn nêu căn cứ thì chỉ ghi vài chữ trong ngoặc ở cuối câu. Mỗi gạch đầu dòng 1–2 câu.
+CÁCH VIẾT (quan trọng nhất): người đọc không biết gì về tử vi. Viết ngắn, lời thường như nói chuyện, nói kết luận trước. Không giảng lý thuyết, không giải thích thuật ngữ. Trong câu chính không dùng tên sao, cung, môn, thần, quẻ, hào, can chi, thập thần, cục, không vong; muốn nêu căn cứ thì chỉ ghi tối đa 4 chữ trong ngoặc ở cuối câu. Ví dụ – không viết: "Việc nằm ở cung Khai môn, một cát môn, nhưng rơi vào không vong nên còn hư"; mà viết: "Việc mở ra được nhưng chưa chín, khó thành ngay (Khai môn, Không vong)." Mỗi gạch đầu dòng 1–2 câu.
 Quy tắc bắt buộc:
 1. CHỈ dùng số liệu trong phần "SỐ LIỆU BỘ TÍNH". Không tự tính thêm can chi, cục, quẻ, hào, tam truyền hay ngày giờ. Thiếu số liệu thì nói là chưa có.
 2. Dòng bắt đầu bằng "!" là cảnh báo của bộ tính: nhắc lại bằng lời dễ hiểu ở phần có liên quan.
