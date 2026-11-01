@@ -12,14 +12,18 @@
  *   LUAN_MOI_KHACH_NGAY  số lần luận tối đa mỗi khách mỗi ngày, mặc định 5
  *   LUAN_TRON_DOI_MOI_KHACH_NGAY  số lần luận trọn đời (nhiều phần) mỗi khách mỗi ngày, mặc định 2
  *   LUAN_TOI_DA_NGAY     tổng số lần gọi luận tối đa mỗi ngày, mặc định 50 (mỗi phần của bộ trọn đời tính 1 lần)
+ *   CAN_KICH_HOAT        mặc định bật: khách đăng ký bằng số điện thoại, chủ gửi mã kích hoạt; đặt 0 để tắt
+ *   BAO_EMAIL            email nhận báo khách mới (mặc định email chủ); đặt 0 để không gửi
  *
- * Chạy hàm caiDat() một lần sau khi dán mã (để tạo 2 trang tính và cấp quyền).
+ * Chạy hàm caiDat() một lần sau khi dán mã (để tạo 2 trang tính và cấp quyền), và thuGuiEmail() để cấp quyền gửi email.
  * Trang cho khách: tệp HTML "Index" trong dự án này (tải giao diện từ kho GitHub qua jsDelivr).
  */
 
 var TAB_KHACH = 'Khách';
 var TAB_LUOT = 'Lượt xem';
-var COT_KHACH = ['Mã khách', 'Lần đầu', 'Lần cuối', 'Họ tên', 'Giới tính', 'Ngày sinh', 'Lịch', 'Giờ sinh', 'Nơi sinh', 'Liên hệ', 'Số lượt xem', 'Số lần luận'];
+var COT_KHACH = ['Mã khách', 'Lần đầu', 'Lần cuối', 'Họ tên', 'Giới tính', 'Ngày sinh', 'Lịch', 'Giờ sinh', 'Nơi sinh', 'Liên hệ', 'Số lượt xem', 'Số lần luận',
+                 'Trạng thái', 'Mã kích hoạt', 'Kích hoạt lúc'];
+var TT_CHO = 'Chờ kích hoạt', TT_DA = 'Đã kích hoạt', TT_KHOA = 'Khóa';
 var COT_LUOT = ['Thời gian', 'Mã lượt', 'Mã khách', 'Khách', 'Xem cho', 'Mục xem', 'Chi tiết / câu hỏi', 'Người thứ hai', 'Số liệu bộ tính', 'Bài luận', 'Hỏi thêm', 'Luận lúc'];
 var MUI_GIO = 'Asia/Ho_Chi_Minh';
 var MODEL_MAC_DINH = 'claude-sonnet-5-5';
@@ -40,6 +44,10 @@ function tab_(ten, cot) {
     sh.getRange(1, 1, 1, cot.length).setValues([cot]).setFontWeight('bold').setBackground('#f3e6d0');
     sh.setFrozenRows(1);
   }
+  if (sh.getLastColumn() < cot.length) {   // Sheet tạo từ bản cũ: thêm tiêu đề các cột mới
+    var c0 = Math.max(1, sh.getLastColumn() + 1);
+    sh.getRange(1, c0, 1, cot.length - c0 + 1).setValues([cot.slice(c0 - 1)]).setFontWeight('bold').setBackground('#f3e6d0');
+  }
   return sh;
 }
 
@@ -50,7 +58,8 @@ function trangThai_() {
     ok: true,
     app: 'so-tu-vi',
     can_ma: !!String(P.getProperty('MA_TRUY_CAP') || '').trim(),
-    co_luan: !!String(P.getProperty('ANTHROPIC_API_KEY') || '').trim()
+    co_luan: !!String(P.getProperty('ANTHROPIC_API_KEY') || '').trim(),
+    kich_hoat: canKichHoat_(P)
   };
 }
 
@@ -88,6 +97,9 @@ function xuLy_(req) {
     if (req.action === 'kiem') return { ok: true };
     if (req.action === 'khach') return luuKhach_(req);
     if (req.action === 'luot') return luuLuot_(req);
+    if (req.action === 'dangky') return dangKy_(req, P);
+    if (req.action === 'kichhoat') return kichHoat_(req);
+    if (req.action === 'toi') return toi_(req, P);
     if (req.action === 'luan') return luan_(req, P);
     return { ok: false, ma_loi: 'khong_ro', loi: 'Không rõ yêu cầu.' };
   } catch (err) {
@@ -146,6 +158,10 @@ function moTaNguoi_(p) {
 }
 
 /* ------------------------------------------------------------------ khách */
+function soDangChu_(s) {
+  // Sheets tự đổi "0912345678" thành số và mất số 0 đầu: thêm dấu ' để giữ nguyên dạng chữ
+  return /^\+?\d[\d\s.]*$/.test(s) ? "'" + s : s;
+}
 function luuKhach_(req) {
   var id = idHopLe_(req.khachId);
   if (!id) return { ok: false, ma_loi: 'du_lieu', loi: 'Thiếu mã khách.' };
@@ -155,7 +171,7 @@ function luuKhach_(req) {
     var dong = timDong_(sh, 1, id);
     var t = bayGio_();
     var thongTin = [sach_(k.ten, 120), k.gioi === 'nu' ? 'Nữ' : 'Nam', sach_(k.ngay, 20),
-      k.am ? ('Âm' + (k.nhuan ? ' (nhuận)' : '')) : 'Dương', sach_(k.gio, 10), sach_(k.noi, 120), sach_(k.lienHe, 200)];
+      k.am ? ('Âm' + (k.nhuan ? ' (nhuận)' : '')) : 'Dương', sach_(k.gio, 10), sach_(k.noi, 120), soDangChu_(sach_(k.lienHe, 200))];
     if (dong) {
       sh.getRange(dong, 3, 1, 1 + thongTin.length).setValues([[t].concat(thongTin)]);
     } else {
@@ -230,6 +246,133 @@ function goiApi_(model, toiDa, system, noiDung) {
   return body;
 }
 
+/* ------------------------------------------------------------------ đăng ký bằng số điện thoại + mã kích hoạt */
+// Khách mới đăng ký bằng số điện thoại → nhận trạng thái "Chờ kích hoạt" và một mã 6 số (ghi trong Sheet, email cho chủ).
+// Chủ gửi mã cho khách (Zalo, tin nhắn); khách nhập mã là dùng được. Chủ sửa cột Trạng thái thành "Khóa" để khóa,
+// hoặc "Đã kích hoạt" để mở không cần mã. Tắt cả tính năng: thuộc tính CAN_KICH_HOAT = 0.
+function canKichHoat_(P) {
+  return String(P.getProperty('CAN_KICH_HOAT') || '1').trim() !== '0';
+}
+function sdt_(s) {
+  var d = String(s || '').replace(/[^\d+]/g, '');
+  if (d.indexOf('+84') === 0) d = '0' + d.slice(3);
+  else if (d.indexOf('84') === 0 && d.length === 11) d = '0' + d.slice(2);
+  d = d.replace(/\D/g, '');
+  return /^0\d{8,10}$/.test(d) ? d : '';
+}
+function taoMa_() {
+  return String(100000 + Math.floor(Math.random() * 900000));
+}
+function trangThaiCua_(khachId) {
+  var sh = tab_(TAB_KHACH, COT_KHACH);
+  var dong = timDong_(sh, 1, khachId);
+  return dong ? String(sh.getRange(dong, 13).getValue() || '').trim() : '';
+}
+function maTheoSdt_(sh, sdt, boQua) {
+  // cùng một số điện thoại đăng ký trên máy khác: dùng lại mã cũ để khách nhập lại được
+  if (sh.getLastRow() < 2) return '';
+  var v = sh.getRange(2, 10, sh.getLastRow() - 1, 5).getValues();
+  for (var i = 0; i < v.length; i++) {
+    if (i + 2 !== boQua && String(v[i][0]).replace(/\D/g, '') === sdt.replace(/\D/g, '') && String(v[i][4] || '').trim()) {
+      return String(v[i][4]).replace(/\D/g, '');
+    }
+  }
+  return '';
+}
+function baoChu_(P, k) {
+  var to = String(P.getProperty('BAO_EMAIL') || '').trim();
+  if (to === '0') return;
+  try {
+    if (!to) to = Session.getEffectiveUser().getEmail();
+    if (!to) return;
+    var url = SpreadsheetApp.getActiveSpreadsheet().getUrl();
+    MailApp.sendEmail(to, 'Sổ Tử Vi – khách mới đăng ký: ' + k.ten + ' – ' + k.sdt, [
+      'Có khách vừa đăng ký trên trang Sổ Tử Vi:',
+      '',
+      'Họ tên: ' + k.ten,
+      'Số điện thoại: ' + k.sdt,
+      'Ngày sinh: ' + k.ngay + (k.gio ? ' · giờ ' + k.gio : '') + (k.noi ? ' · ' + k.noi : ''),
+      '',
+      'MÃ KÍCH HOẠT: ' + k.ma,
+      '',
+      'Anh gửi mã này cho khách (Zalo hoặc tin nhắn). Khách nhập mã là dùng được.',
+      'Muốn khóa: sửa cột "Trạng thái" của khách trong Sheet thành "Khóa".',
+      'Sheet: ' + url
+    ].join('\n'));
+  } catch (e) { /* gửi thư lỗi thì thôi, mã vẫn có trong Sheet */ }
+}
+function dangKy_(req, P) {
+  var id = idHopLe_(req.khachId);
+  var k = req.khach || {};
+  var sdt = sdt_(k.lienHe);
+  if (!id || !String(k.ten || '').trim()) return { ok: false, ma_loi: 'du_lieu', loi: 'Thiếu họ tên.' };
+  if (!sdt) return { ok: false, ma_loi: 'sai_sdt', loi: 'Số điện thoại chưa đúng.' };
+  var kq = voiKhoa_(function () {
+    var sh = tab_(TAB_KHACH, COT_KHACH);
+    var dong = timDong_(sh, 1, id);
+    var t = bayGio_();
+    var thongTin = [sach_(k.ten, 120), k.gioi === 'nu' ? 'Nữ' : 'Nam', sach_(k.ngay, 20),
+      k.am ? ('Âm' + (k.nhuan ? ' (nhuận)' : '')) : 'Dương', sach_(k.gio, 10), sach_(k.noi, 120), "'" + sdt];
+    if (dong) {
+      sh.getRange(dong, 3, 1, 1 + thongTin.length).setValues([[t].concat(thongTin)]);
+    } else {
+      sh.appendRow([id, t, t].concat(thongTin).concat([0, 0, '', '', '']));
+      dong = timDong_(sh, 1, id);
+    }
+    var cur = sh.getRange(dong, 13, 1, 2).getValues()[0];
+    var tt = String(cur[0] || '').trim(), ma = String(cur[1] || '').replace(/\D/g, '');
+    if (tt === TT_DA || tt === TT_KHOA) return { tt: tt };
+    if (!ma) ma = maTheoSdt_(sh, sdt, dong) || taoMa_();
+    sh.getRange(dong, 13, 1, 2).setValues([[TT_CHO, "'" + ma]]);
+    return { tt: TT_CHO, baoMoi: tt !== TT_CHO, ma: ma };
+  });
+  if (kq.baoMoi) baoChu_(P, { ten: String(k.ten).slice(0, 120), sdt: sdt, ngay: String(k.ngay || ''), gio: String(k.gio || ''), noi: String(k.noi || ''), ma: kq.ma });
+  return { ok: true, trangThai: kq.tt === TT_DA ? 'da' : kq.tt === TT_KHOA ? 'khoa' : 'cho' };
+}
+function kichHoat_(req) {
+  var id = idHopLe_(req.khachId);
+  var ma = String(req.maKichHoat || '').replace(/\D/g, '');
+  if (!id) return { ok: false, ma_loi: 'du_lieu', loi: 'Thiếu mã khách.' };
+  var cache = CacheService.getScriptCache(), kSai = 'kh_' + id;
+  var sai = Number(cache.get(kSai) || 0);
+  if (sai >= 8) return { ok: false, ma_loi: 'thu_nhieu', loi: 'Nhập sai quá nhiều lần. Mời thử lại sau vài giờ.' };
+  var kq = voiKhoa_(function () {
+    var sh = tab_(TAB_KHACH, COT_KHACH);
+    var dong = timDong_(sh, 1, id);
+    if (!dong) return 'chua';
+    var cur = sh.getRange(dong, 13, 1, 2).getValues()[0];
+    var tt = String(cur[0] || '').trim();
+    if (tt === TT_KHOA) return 'khoa';
+    if (tt === TT_DA) return 'da';
+    if (ma && ma === String(cur[1] || '').replace(/\D/g, '')) {
+      sh.getRange(dong, 13).setValue(TT_DA);
+      sh.getRange(dong, 15).setValue(bayGio_());
+      return 'da';
+    }
+    return 'sai';
+  });
+  if (kq === 'da') return { ok: true, trangThai: 'da' };
+  if (kq === 'khoa') return { ok: false, ma_loi: 'khoa', loi: 'Tài khoản đang tạm khóa. Mời liên hệ chủ trang.' };
+  if (kq === 'chua') return { ok: false, ma_loi: 'chua_dang_ky', loi: 'Chưa có đăng ký. Mời đăng ký lại.' };
+  cache.put(kSai, String(sai + 1), 21600);
+  return { ok: false, ma_loi: 'sai_ma_kh', loi: 'Mã kích hoạt chưa đúng.' };
+}
+function toi_(req, P) {
+  // Trạng thái tài khoản của chính khách này
+  if (!canKichHoat_(P)) return { ok: true, trangThai: 'da' };
+  var id = idHopLe_(req.khachId);
+  if (!id) return { ok: false, ma_loi: 'du_lieu', loi: 'Thiếu mã khách.' };
+  var tt = trangThaiCua_(id);
+  return { ok: true, trangThai: tt === TT_DA ? 'da' : tt === TT_KHOA ? 'khoa' : tt === TT_CHO ? 'cho' : 'chua' };
+}
+
+// Chạy hàm này một lần trong trình soạn thảo để cấp quyền gửi email (Google sẽ hỏi quyền).
+function thuGuiEmail() {
+  var to = Session.getEffectiveUser().getEmail();
+  MailApp.sendEmail(to, 'Sổ Tử Vi – thử gửi email', 'Trang Sổ Tử Vi đã gửi được email cho anh. Từ giờ mỗi khách mới đăng ký, anh sẽ nhận mã kích hoạt qua email này.');
+  return 'Đã gửi thử tới ' + to;
+}
+
 // Quy tắc cho bản luận chi tiết trọn đời: viết từng phần, mỗi lần gọi một phần.
 function quyTacTronDoi_(xung) {
   return [
@@ -254,6 +397,9 @@ function luan_(req, P) {
   if (!key) return { ok: false, ma_loi: 'chua_co_khoa', loi: 'Chủ trang chưa bật phần luận.' };
   var x = req.luan || {};
   var xung = x.xung === 'chị' ? 'chị' : 'anh';
+  if (canKichHoat_(P) && trangThaiCua_(khachId) !== TT_DA) {
+    return { ok: false, ma_loi: 'chua_kich_hoat', loi: 'Tài khoản của ' + xung + ' chưa được kích hoạt.' };
+  }
 
   // Luận trọn đời: một bộ gồm `tong` phần, mỗi lần gọi một phần (Google chỉ chờ mỗi lần gọi ~60 giây).
   var td = (x.tronDoi && typeof x.tronDoi === 'object') ? x.tronDoi : null;

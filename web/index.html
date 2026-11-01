@@ -497,6 +497,7 @@ async function initStore() {
   renderPeople(); renderLogs(); fillPeopleSelects(); applyXung();
   await checkServer();
   if (!KHACH.dongY || !self_()) openPersonSheet(self_() || null, { welcome: true });
+  else if (canKichHoat()) { if (await kiemKichHoat()) flushOutbox(); }
   else flushOutbox();
 }
 async function savePerson(p) {
@@ -598,8 +599,9 @@ function openPersonSheet(p, opt = {}) {
   const e = p || { gioi: "nam", quanHe: welcome ? "Bản thân" : "" };
   const [y, m, d] = (e.ngay || "--").split("-");
   const canMa = !!(SRV.info && SRV.info.can_ma);
+  const dangKy = welcome && canKichHoat();
   openSheet(`${welcome ? `<h3>Xin chào</h3>
-      <p class="hint" style="margin-top:0">Trang xem Tử vi, Bát tự, chọn ngày tốt, gieo quẻ và phong thủy nhà.</p>
+      <p class="hint" style="margin-top:0">Trang xem Tử vi, Bát tự, chọn ngày tốt, gieo quẻ và phong thủy nhà.${dangKy ? " Lần đầu dùng, mời anh/chị đăng ký bằng số điện thoại. Tôi sẽ gửi mã kích hoạt để mở trang." : ""}</p>
       ${canMa ? `<label for="fMa">Mã truy cập <span class="hint">(chủ trang gửi cho ${xg()})</span></label><input type="text" id="fMa" value="${esc(KHACH.ma || "")}" autocomplete="off" autocapitalize="off">` : ""}`
     : `<h3>${p ? "Sửa thông tin" : "Thêm người"}</h3>`}
     <label for="fTen">Họ tên</label><input type="text" id="fTen" value="${esc(e.ten || "")}" autocomplete="off">
@@ -615,10 +617,10 @@ function openPersonSheet(p, opt = {}) {
     <button class="gold small" id="fGs" type="button" style="margin-top:8px">🕰 Không biết hoặc không chắc giờ sinh? Dò qua 7 câu hỏi</button>
     <label for="fNoi">Nơi sinh (tỉnh, thành)</label><input type="text" id="fNoi" list="dsNoi" value="${esc(e.noi || "")}" autocomplete="off">
     <div class="small-note" id="fNoiChk"></div>
-    ${laMinh ? `<label for="fLH">Số điện thoại hoặc Zalo <span class="hint">(không bắt buộc, để chủ trang liên hệ khi cần)</span></label><input type="text" id="fLH" inputmode="tel" value="${esc(e.lienHe || "")}" autocomplete="off">` : ""}
+    ${laMinh ? `<label for="fLH">Số điện thoại hoặc Zalo <span class="hint">${dangKy ? "(bắt buộc, để nhận mã kích hoạt)" : "(không bắt buộc, để chủ trang liên hệ khi cần)"}</span></label><input type="text" id="fLH" inputmode="tel" value="${esc(e.lienHe || "")}" autocomplete="off">` : ""}
     <label for="fGhi">Ghi chú</label><input type="text" id="fGhi" value="${esc(e.ghiChu || "")}" placeholder="vd: giờ sinh chưa chắc chắn">
     <div class="small-note" id="fChk" style="color:#8e2323"></div>
-    <div class="btns">${welcome ? `<button class="primary full" id="fSave">Bắt đầu</button>` : `<button class="ghost" id="fCancel">Đóng</button><button class="primary" id="fSave">Lưu</button>`}${p && !laMinh ? `<button class="ghost full" id="fDel" style="color:#8e2323">Xóa người này</button>` : ""}</div>`, welcome);
+    <div class="btns">${welcome ? `<button class="primary full" id="fSave">${dangKy ? "Đăng ký" : "Bắt đầu"}</button>` : `<button class="ghost" id="fCancel">Đóng</button><button class="primary" id="fSave">Lưu</button>`}${p && !laMinh ? `<button class="ghost full" id="fDel" style="color:#8e2323">Xóa người này</button>` : ""}</div>`, welcome);
   $("#fAm").onchange = () => { $("#fNhuanRow").style.display = $("#fAm").checked ? "" : "none"; };
   const chkNoi = () => { const v = $("#fNoi").value.trim(); if (!v || !RUN) { $("#fNoiChk").textContent = ""; return; } const r = RUN.kiem_noi(v).toJs({ dict_converter: Object.fromEntries }); $("#fNoiChk").textContent = r.kinhdo ? `✓ Có trong bảng: kinh độ ${r.kinhdo}°E` : "Chưa có trong bảng – bộ tính sẽ tạm dùng kinh độ Hà Nội (sai 0,5° ≈ 2 phút giờ mặt trời)."; };
   $("#fNoi").addEventListener("change", chkNoi); $("#fNoi").addEventListener("blur", chkNoi); chkNoi();
@@ -632,6 +634,7 @@ function openPersonSheet(p, opt = {}) {
     const np = { ...(p || {}), ten, quanHe: laMinh ? "Bản thân" : $("#fQH").value, gioi: $("#fGioi").value, ngay: `${Y}-${String(M).padStart(2, "0")}-${String(D).padStart(2, "0")}`,
       am: $("#fAm").checked, nhuan: $("#fAm").checked && $("#fNhuan").checked, gio: $("#fGio").value || "", noi: $("#fNoi").value.trim(), ghiChu: $("#fGhi").value.trim() };
     if (laMinh) np.lienHe = ($("#fLH").value || "").trim().slice(0, 60);
+    if (dangKy && !sdtHopLe(np.lienHe)) { $("#fLH").focus(); return void (chk.textContent = "Mời nhập số điện thoại (10 số, ví dụ 0912 345 678) để nhận mã kích hoạt."); }
     if (RUN) { const inf = infoOf(np); if (!inf.ok) return void (chk.textContent = "Bộ tính báo: " + inf.loi); }
     $("#fSave").disabled = true;
     if (welcome && canMa) {
@@ -642,6 +645,12 @@ function openPersonSheet(p, opt = {}) {
     if (welcome) { KHACH.dongY = true; KHACH.dongYLuc = new Date().toISOString(); localSave(); }
     try {
       const id = await savePerson(np);
+      if (dangKy) {
+        let j = null; try { j = await callServer({ action: "dangky", khach: { ...personPublic({ ...np, id }), lienHe: np.lienHe } }); } catch (er) { j = null; }
+        if (!j || !j.ok) { $("#fSave").disabled = false; $("#fGs").disabled = false; return void (chk.textContent = j ? j.loi : "Chưa kết nối được máy chủ. Mời thử lại sau ít phút."); }
+        KHACH.kichHoat = j.trangThai; localSave();
+        if (j.trangThai !== "da") return openKichHoatSheet();
+      }
       if (sau) return sau({ ...np, id });
       closeSheet(); toast(welcome ? `Chào ${np.gioi === "nu" ? "chị" : "anh"} ${ten.trim().split(/\s+/).pop()}! Mời ${np.gioi === "nu" ? "chị" : "anh"} bắt đầu xem.` : p ? "Đã cập nhật" : `Đã thêm ${ten}`);
     }
@@ -653,6 +662,53 @@ function openPersonSheet(p, opt = {}) {
     if (!$("#fNoi").value.trim()) { $("#fChk").textContent = "Mời nhập nơi sinh trước khi dò giờ (để tính đúng giờ theo mặt trời ở nơi sinh)."; $("#fNoi").focus(); return; }
     $("#fGs").disabled = true; luu(q => openGioSinh(personById(q.id) || q)).finally(() => { const b = $("#fGs"); if (b) b.disabled = false; });
   };
+}
+/* ---------- đăng ký, kích hoạt ---------- */
+const canKichHoat = () => !!(SRV.info && SRV.info.kich_hoat);
+function sdtHopLe(s) {
+  let d = String(s || "").replace(/[^\d+]/g, "");
+  if (d.startsWith("+84")) d = "0" + d.slice(3); else if (d.startsWith("84") && d.length === 11) d = "0" + d.slice(2);
+  return /^0\d{8,10}$/.test(d.replace(/\D/g, ""));
+}
+function openKichHoatSheet(loi) {
+  const me = self_(), goi = xg();
+  if (KHACH.kichHoat === "khoa") {
+    openSheet(`<h3>Tài khoản đang tạm khóa</h3><p class="hint">Mời ${goi} liên hệ chủ trang để được mở lại.</p>`, true);
+    return;
+  }
+  openSheet(`<h3>Chờ kích hoạt</h3>
+    <p class="hint" style="margin-top:0">Tôi đã nhận đăng ký của ${goi}${me && me.lienHe ? ` (số ${esc(me.lienHe)})` : ""}. Tôi sẽ gửi <b>mã kích hoạt 6 số</b> cho ${goi} qua Zalo hoặc tin nhắn. ${Xg()} nhập mã vào đây là dùng được.</p>
+    <label for="kMa">Mã kích hoạt</label>
+    <input type="text" id="kMa" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="6 số">
+    <div class="small-note" id="kChk" style="color:#8e2323">${esc(loi || "")}</div>
+    <div class="btns"><button class="primary full" id="kOk">Kích hoạt</button>
+      <button class="ghost full" id="kSua">Sửa thông tin đăng ký</button></div>
+    <div class="small-note">Đã kích hoạt trên máy khác thì nhập lại đúng mã đó.</div>`, true);
+  $("#kSua").onclick = () => openPersonSheet(self_() || null, { welcome: true });
+  $("#kOk").onclick = async () => {
+    const ma = $("#kMa").value.replace(/\D/g, "");
+    if (ma.length < 6) return void ($("#kChk").textContent = "Mã gồm 6 số.");
+    $("#kOk").disabled = true;
+    let j = null; try { j = await callServer({ action: "kichhoat", maKichHoat: ma }); } catch (e) { j = null; }
+    $("#kOk").disabled = false;
+    if (j && j.ok) {
+      KHACH.kichHoat = "da"; localSave(); closeSheet();
+      toast(`Đã kích hoạt. Mời ${xg()} bắt đầu xem.`); flushOutbox(); return;
+    }
+    if (j && j.ma_loi === "khoa") { KHACH.kichHoat = "khoa"; localSave(); return openKichHoatSheet(); }
+    if (j && j.ma_loi === "chua_dang_ky") return openPersonSheet(self_() || null, { welcome: true });
+    $("#kChk").textContent = j ? j.loi : "Chưa kết nối được máy chủ. Mời thử lại sau ít phút.";
+  };
+}
+// Mỗi lần mở trang: hỏi máy chủ trạng thái tài khoản (để biết đã kích hoạt, hay bị khóa)
+async function kiemKichHoat() {
+  let j = null; try { j = await callServer({ action: "toi" }, 15000); } catch (e) { j = null; }
+  if (j && j.ok) { KHACH.kichHoat = j.trangThai; localSave(); }
+  else if (KHACH.kichHoat === "da") return true;          // mất mạng mà đã kích hoạt trước đó: cho dùng
+  if (KHACH.kichHoat === "da") return true;
+  if (KHACH.kichHoat === "chua" || !KHACH.kichHoat) openPersonSheet(self_() || null, { welcome: true });
+  else openKichHoatSheet();
+  return false;
 }
 function openCodeSheet() {
   if ($("#sheetBg").classList.contains("on")) return;
@@ -800,6 +856,7 @@ async function doLuan(box, ctx) {
   } catch (e) { return fail("Mất kết nối khi chờ kết quả luận. Mời " + xg() + " thử lại sau."); }
   if (!j || !j.ok) {
     if (j && j.ma_loi === "sai_ma") { openCodeSheet(); return fail("Cần mã truy cập mới."); }
+    if (j && j.ma_loi === "chua_kich_hoat") { KHACH.kichHoat = ""; localSave(); kiemKichHoat(); return fail(j.loi); }
     return fail((j && j.loi) || "Chưa luận được.");
   }
   ctx.luan = j.text;
