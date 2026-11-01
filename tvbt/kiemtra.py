@@ -2,7 +2,8 @@
 """kiemtra.py - Tự kiểm tra TOÀN BỘ bộ script (chạy từ thư mục chứa tvbt/): python3 tvbt/kiemtra.py
 Gồm: (1) phần cơ bản (Bát tự, Tử vi, Phong thủy, Kỳ môn, Lục Nhâm, Mai hoa, chọn ngày),
 (2) luận chi tiết (lưu niên, lưu nguyệt, vận hạn nhiều năm, hợp tuổi), (3) Kỳ môn mở rộng,
-(4) các module nâng cao (nc.py tukiem), (5) dò giờ sinh (giosinh.py).
+(4) các module nâng cao (nc.py tukiem), (5) dò giờ sinh (giosinh.py), (6) các mục đối chiếu cách trình bày
+Việt Nam (Mệnh chủ, Lưu Hà, cân lượng, độ sáng phụ tinh, sao lưu thêm, cung đại vận/lưu niên, nguyệt hạn tiểu hạn).
 In 'TỰ KIỂM TRA TOÀN BỘ: ĐẠT' khi mọi phần đều đạt."""
 import datetime as dt
 import os
@@ -164,10 +165,43 @@ def phan_gio_sinh():
     return miss
 
 
+def phan_doi_chieu_viet_nam():
+    """Các mục thêm 11/2026 để khớp cách trình bày phổ biến ở Việt Nam (tuvi.vn): Mệnh chủ theo năm sinh, Lưu Hà,
+    cân lượng, độ sáng phụ tinh, sao lưu Khôi Việt Xương Khúc Đào Hồng Hỷ Kiếp Sát, cung đại vận/lưu niên,
+    nguyệt hạn tính từ tiểu hạn. Giá trị kỳ vọng tính tay từ quy tắc gốc (lá số mẫu, không phải dữ liệu thật)."""
+    import tuvi_vn as T
+    miss = []
+    t = chay("tuvi", "--ngay", "2000-01-01", "--gio", "10:00", "--gioi", "nam", "--noi", "Hà Nội", "--nam-xem", "2023",
+             "--luu-nguyet", "--so-nam", "2")
+    miss += thieu(t, [
+        "Mệnh chủ: Văn Khúc (theo chi năm sinh, cách sách Việt Nam; nếu tính theo chi cung Mệnh như sách Trung Quốc: Vũ Khúc)",
+        "= 5 lượng 9 chỉ",
+        "| Huynh Đệ | Ngọ (Canh) | Tử Vi(M) | Lộc Tồn, Địa Không(H) | Thiên Hỷ, Thiên Giải, Lưu Hà |",
+        "Đà La(H), Văn Xương(Đ), Thiên Mã(V)", "Văn Khúc(B)[Hóa Kỵ]", "Thiên Hư(Đ)",
+        "LN.Mệnh tại Sửu (gốc Thiên Di)", "ĐV.Mệnh tại Tỵ (gốc Phu Thê)",
+        "Lưu Thiên Khôi tại Tài Bạch (Mão), Lưu Thiên Việt tại Phu Thê (Tỵ), Lưu Văn Xương tại Tài Bạch (Mão), "
+        "Lưu Văn Khúc tại Quan Lộc (Hợi), Lưu Đào Hoa tại Nô Bộc (Tý), Lưu Hồng Loan tại Nô Bộc (Tý), "
+        "Lưu Thiên Hỷ tại Huynh Đệ (Ngọ), Lưu Kiếp Sát tại Phụ Mẫu (Thân)",
+        "tháng Giêng tại Điền Trạch; phép tính từ cung tiểu hạn thì tháng Giêng tại Phụ Mẫu",
+        "| Giáp Dần (Thất Sát) | Phụ Mẫu (Thân) |", "| Tân Dậu (Thương Quan) | Tài Bạch (Mão) |"])
+    # cân lượng: bảng năm so với các giá trị đã biết (Viên Thiên Cương), tổng một lá Bính Dần tháng 6 ngày 16 giờ Tý
+    i = lambda c, z: [k for k in range(60) if k % 10 == c and k % 12 == z][0]
+    mau = {(0, 0): 12, (5, 3): 19, (2, 2): 6, (4, 6): 19, (9, 11): 6, (5, 1): 7, (3, 9): 14, (8, 10): 10, (7, 11): 17}
+    sai = ["năm %d %d" % k for k, v in mau.items() if T.CL_NAM[i(*k)] != v]
+    if sai or T.can_luong(2, 2, 6, 16, 0)[0] != 46 or sum(T.CL_THANG) != 125 or len(T.CL_NGAY) != 30:
+        miss.append("bảng cân lượng: %s" % sai)
+    if [T.CHI[x] for x in T.LUU_HA] != ["Dậu", "Tuất", "Mùi", "Thân", "Tỵ", "Ngọ", "Thìn", "Mão", "Hợi", "Dần"]:
+        miss.append("Lưu Hà")
+    if T.DO_SANG_PHU["Văn Xương"] != T.DO_SANG_PHU["Văn Khúc"] or T.DO_SANG_PHU["Thiên Khốc"] != T.DO_SANG_PHU["Thiên Hư"]:
+        miss.append("độ sáng phụ tinh")
+    return miss
+
+
 if __name__ == "__main__":
     loi = 0
     for ten, ham in [("Cơ bản", phan_co_ban), ("Luận chi tiết", phan_luan_chi_tiet), ("Kỳ môn mở rộng", phan_ky_mon),
-                     ("Nâng cao", phan_nang_cao), ("Dò giờ sinh", phan_gio_sinh)]:
+                     ("Nâng cao", phan_nang_cao), ("Dò giờ sinh", phan_gio_sinh),
+                     ("Đối chiếu cách trình bày Việt Nam", phan_doi_chieu_viet_nam)]:
         try:
             miss = ham()
         except Exception as e:      # noqa: BLE001

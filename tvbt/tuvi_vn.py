@@ -36,6 +36,18 @@ KHOI_VIET = {0: (1, 7), 4: (1, 7), 1: (0, 8), 5: (0, 8), 6: (6, 2), 7: (6, 2),
 THIEN_QUAN = [7, 4, 5, 2, 3, 9, 11, 9, 10, 6]
 THIEN_PHUC = [9, 8, 0, 11, 3, 2, 6, 5, 6, 5]
 THIEN_TRU = [5, 6, 0, 5, 6, 8, 2, 6, 9, 10]
+LUU_HA = [9, 10, 7, 8, 5, 6, 4, 3, 11, 2]
+# Lưu Văn Xương / Văn Khúc theo can năm xem
+LUU_XUONG = [5, 6, 8, 9, 8, 9, 11, 0, 2, 3]
+LUU_KHUC = [9, 8, 6, 5, 6, 5, 3, 2, 0, 11]
+# Cân lượng (xương cốt) – Viên Thiên Cương; đơn vị chỉ (1 lượng = 10 chỉ). Năm theo 60 hoa giáp, bắt đầu Giáp Tý.
+_CL_NAM_TU_CANH_TY = [7, 7, 9, 12, 8, 7, 13, 5, 14, 5, 9, 17, 5, 7, 12, 8, 8, 6, 19, 6, 8, 16, 10, 6, 12, 9, 6, 7, 12,
+                      5, 9, 8, 7, 8, 15, 9, 16, 8, 8, 19, 12, 6, 8, 7, 5, 15, 6, 16, 15, 7, 9, 12, 10, 7, 15, 6, 5, 14,
+                      14, 9]
+CL_NAM = [_CL_NAM_TU_CANH_TY[(i - 36) % 60] for i in range(60)]
+CL_THANG = [6, 7, 18, 9, 5, 16, 9, 15, 18, 8, 9, 5]
+CL_NGAY = [5, 10, 8, 15, 16, 15, 8, 16, 8, 16, 9, 17, 8, 17, 10, 8, 9, 18, 5, 15, 10, 9, 8, 9, 15, 18, 7, 8, 16, 6]
+CL_GIO = [16, 6, 7, 10, 9, 16, 10, 8, 8, 9, 6, 6]
 TRIET = {0: (8, 9), 5: (8, 9), 1: (6, 7), 6: (6, 7), 2: (4, 5), 7: (4, 5),
          3: (2, 3), 8: (2, 3), 4: (0, 1), 9: (0, 1)}
 # Tứ hóa (Lộc, Quyền, Khoa, Kỵ) – bảng thông dụng ở Việt Nam
@@ -66,6 +78,19 @@ DO_SANG = {
     "Kình Dương": "H Đ H H Đ H H Đ H H Đ H", "Đà La": "H Đ H H Đ H H Đ H H Đ H",
     "Hỏa Tinh": "H H Đ Đ Đ Đ Đ H H H H H", "Linh Tinh": "H H Đ Đ Đ Đ Đ H H H H H",
     "Địa Không": "H H Đ H H Đ H H Đ H H Đ", "Địa Kiếp": "H H Đ H H Đ H H Đ H H Đ",
+}
+# Độ sáng hiển thị thêm cho Thiên Phủ và một số phụ tinh (bảng Việt Nam, theo bài từng sao trên tuvi.vn và
+# Tử Vi Đẩu Số Tân Biên). Chỉ dùng để HIỂN THỊ (do_sang_day_du); các phép chấm cách cục, vận thế vẫn dùng DO_SANG
+# như cũ để không đổi kết quả đã kiểm. "-" = sao không bao giờ đóng ở cung đó hoặc sách không ghi.
+DO_SANG_PHU = {
+    "Thiên Phủ": "M B M B V Đ M Đ M B V Đ",      # miếu Dần Thân Tý Ngọ; vượng Thìn Tuất; đắc Tỵ Hợi Mùi; bình Mão Dậu Sửu
+    "Văn Xương": "H Đ H B Đ Đ H Đ H B Đ Đ",      # đắc Tứ mộ + Tỵ Hợi (Thái Thứ Lang); hãm Tý Dần Ngọ Thân
+    "Văn Khúc": "H Đ H B Đ Đ H Đ H B Đ Đ",
+    "Thiên Mã": "- - V - - V - - Đ - - H",        # Dần Tỵ tốt nhất, Thân đắc, Hợi hãm (bài sao Thiên Mã, tuvi.vn)
+    "Thiên Hình": "H H Đ Đ H H H H Đ Đ H H",      # đắc Dần Thân Mão Dậu
+    "Thiên Diêu": "H H Đ Đ H H H H H Đ Đ H",      # đắc Dần Mão Dậu Tuất
+    "Thiên Khốc": "Đ Đ H Đ H H Đ Đ H Đ H H",      # đắc Tý Ngọ Mão Dậu Sửu Mùi
+    "Thiên Hư": "Đ Đ H Đ H H Đ Đ H Đ H H",
 }
 CHINH_TINH = ["Tử Vi", "Thiên Cơ", "Thái Dương", "Vũ Khúc", "Thiên Đồng", "Liêm Trinh",
               "Thiên Phủ", "Thái Âm", "Tham Lang", "Cự Môn", "Thiên Tướng", "Thiên Lương",
@@ -160,6 +185,7 @@ def lap_la_so(thang, ngay, gio, can, chi, gioi, thang_do_dai=30, nhuan=False):
     dat("Thiên Quan", THIEN_QUAN[can])
     dat("Thiên Phúc", THIEN_PHUC[can])
     dat("Thiên Trù", THIEN_TRU[can])
+    dat("Lưu Hà", LUU_HA[can])
     dat("Lưu Niên Văn Tinh", lt + 3)
     dat("Đường Phù", lt + 5)
     dat("Quốc Ấn", lt + 8)
@@ -189,7 +215,7 @@ def lap_la_so(thang, ngay, gio, can, chi, gioi, thang_do_dai=30, nhuan=False):
     return dict(menh=menh, than=than, cuc=cuc, can_cung=can_cung, sao=sao, vt=vt, hoa=hoa,
                 bac_si=bac_si, thai_tue=thai_tue, trang_sinh=trang_sinh, tuan=tuan, triet=triet,
                 dai_han=dai_han, chieu=chieu, g=g, can=can, chi=chi, thang=thang, ngay=ngay, gio=gio,
-                tieu_han_goc=tieu_han_goc, menh_chu=MENH_CHU[menh],
+                tieu_han_goc=tieu_han_goc, menh_chu=MENH_CHU[chi], menh_chu_cung=MENH_CHU[menh],
                 than_chu=THAN_CHU[chi] + (" (có sách ghi %s)" % ("Hỏa Tinh" if chi == 0 else "Linh Tinh")
                                           if chi in (0, 6) else ""))
 
@@ -203,6 +229,25 @@ def do_sang(ten, p):
     return s.split()[p] if s else ""
 
 
+def do_sang_day_du(ten, p):
+    """Độ sáng để hiển thị: chính tinh, sát tinh (DO_SANG) + Thiên Phủ và phụ tinh (DO_SANG_PHU)."""
+    s = DO_SANG.get(ten) or DO_SANG_PHU.get(ten)
+    v = s.split()[p] if s else ""
+    return "" if v == "-" else v
+
+
+def can_luong(can, chi, thang, ngay, gio):
+    """Cân lượng xương cốt: trả về (tổng chỉ, chi tiết). can/chi năm âm lịch, tháng/ngày âm lịch, giờ 0..11."""
+    i = [k for k in range(60) if k % 10 == can and k % 12 == chi][0]
+    ct = (CL_NAM[i], CL_THANG[thang - 1], CL_NGAY[ngay - 1], CL_GIO[gio])
+    return sum(ct), ct
+
+
+def cung_luu(goc):
+    """Tên 12 cung lưu khi lấy cung 'goc' làm Mệnh (đi thuận như lá số gốc): dict cung -> tên."""
+    return {(goc + k) % 12: TEN_CUNG[k] for k in range(12)}
+
+
 def van_han(ls, nam_can, nam_chi, tuoi_mu):
     """Vận hạn một năm âm lịch (can, chi của năm xem; tuổi mụ)."""
     dh = [p for p, (a, b) in ls["dai_han"].items() if a <= tuoi_mu <= b]
@@ -213,6 +258,12 @@ def van_han(ls, nam_can, nam_chi, tuoi_mu):
            "Lưu Thiên Hư": (6 + nam_chi) % 12, "Lưu Lộc Tồn": lt, "Lưu Kình Dương": (lt + 1) % 12,
            "Lưu Đà La": (lt - 1) % 12,
            "Lưu Thiên Mã": {0: 2, 1: 11, 2: 8, 3: 5}[nam_chi % 4]}
+    ma = luu["Lưu Thiên Mã"]
+    khoi, viet = KHOI_VIET[nam_can]
+    luu.update({"Lưu Thiên Khôi": khoi, "Lưu Thiên Việt": viet,
+                "Lưu Văn Xương": LUU_XUONG[nam_can], "Lưu Văn Khúc": LUU_KHUC[nam_can],
+                "Lưu Đào Hoa": (ma + 7) % 12, "Lưu Hồng Loan": (3 - nam_chi) % 12,
+                "Lưu Thiên Hỷ": (9 - nam_chi) % 12, "Lưu Kiếp Sát": (ma + 3) % 12})
     hoa = list(zip(HOA, TU_HOA[nam_can]))
     return dict(dai_han=dh[0] if dh else None, tieu_han=th, luu=luu, hoa=hoa)
 

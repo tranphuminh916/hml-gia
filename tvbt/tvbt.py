@@ -616,6 +616,10 @@ def do_dai_thang_am(d, m, y, nhuan, tz):
     return 30 if duong_sang_am(ngay30, tz)[0] == 30 else 29
 
 
+def _chi(n):
+    return ("%d lượng %d chỉ" % (n // 10, n % 10)) if n >= 10 else "%d chỉ" % n
+
+
 def tu_vi(tt, nam_xem, phi=False, so_nam=1, luu_nguyet=False):
     import tuvi_vn as T
     if not tt.co_gio:
@@ -648,8 +652,15 @@ def tu_vi(tt, nam_xem, phi=False, so_nam=1, luu_nguyet=False):
         "thuận lý" if thuan_ly else "nghịch lý", "thuận" if ls["chieu"] == 1 else "nghịch"))
     print("- Bản mệnh: %s; Cục: %s; quan hệ: %s" % (
         ban_menh, T.TEN_CUC[ls["cuc"]], quan_he_hanh(T.hanh_nap_am(can, chi), hanh_cuc, "Mệnh", "Cục")))
-    print("- Mệnh tại %s, Thân tại %s (Thân cư %s); Mệnh chủ: %s; Thân chủ: %s" % (
-        T.CHI[ls["menh"]], T.CHI[ls["than"]], T.ten_cung(ls, ls["than"]), ls["menh_chu"], ls["than_chu"]))
+    print("- Mệnh tại %s, Thân tại %s (Thân cư %s); Mệnh chủ: %s%s; Thân chủ: %s" % (
+        T.CHI[ls["menh"]], T.CHI[ls["than"]], T.ten_cung(ls, ls["than"]), ls["menh_chu"],
+        " (theo chi năm sinh, cách sách Việt Nam; nếu tính theo chi cung Mệnh như sách Trung Quốc: %s)"
+        % ls["menh_chu_cung"] if ls["menh_chu_cung"] != ls["menh_chu"] else " (theo chi năm sinh; tính theo cung Mệnh "
+        "cũng ra sao này)", ls["than_chu"]))
+    cl, ct = T.can_luong(can, chi, ls["thang"], d, gio)
+    print("- Cân lượng (xương cốt, Viên Thiên Cương): năm %s %s %s + tháng %d %s + ngày %d %s + giờ %s %s = %d lượng %d chỉ%s"
+          % (T.CAN[can], T.CHI[chi], _chi(ct[0]), ls["thang"], _chi(ct[1]), d, _chi(ct[2]), T.CHI[gio], _chi(ct[3]),
+             cl // 10, cl % 10, " (tháng nhuận: tính như tháng %d)" % ls["thang"] if nhuan else ""))
     print("- Tuần tại %s–%s; Triệt tại %s–%s" % tuple(T.CHI[i] for i in ls["tuan"] + ls["triet"]))
     print("- Tứ hóa năm sinh %s: %s" % (T.CAN[can], ", ".join(
         "%s %s (cung %s)" % (ten, hoa, T.ten_cung(ls, ls["vt"][ten])) for ten, hoa in ls["hoa"].items())))
@@ -661,12 +672,12 @@ def tu_vi(tt, nam_xem, phi=False, so_nam=1, luu_nguyet=False):
     for k in range(12):
         p = (ls["menh"] + k) % 12
         def fmt(ten):
-            ds = T.do_sang(ten, p)
+            ds = T.do_sang_day_du(ten, p)
             h = ls["hoa"].get(ten)
             return ten + ("(%s)" % ds if ds else "") + ("[%s]" % h if h else "")
         chinh = [fmt(x) for x in T.CHINH_TINH if x in ls["sao"][p]]
         phu = [fmt(x) for x in PHU if x in ls["sao"][p]]
-        nho = [x for x in ls["sao"][p] if x not in T.CHINH_TINH and x not in PHU]
+        nho = [fmt(x) for x in ls["sao"][p] if x not in T.CHINH_TINH and x not in PHU]
         if p in ls["tuan"]:
             nho.insert(0, "TUẦN")
         if p in ls["triet"]:
@@ -676,7 +687,8 @@ def tu_vi(tt, nam_xem, phi=False, so_nam=1, luu_nguyet=False):
             T.ten_cung(ls, p), " (THÂN)" if p == ls["than"] else "", T.CHI[p], T.CAN[ls["can_cung"][p]],
             ", ".join(chinh) or "Vô chính diệu", ", ".join(phu), ", ".join(nho),
             ls["trang_sinh"][p], ls["bac_si"][p], ls["thai_tue"][p], a, b))
-    print("(Độ sáng: M miếu, V vượng, Đ đắc, B bình, H hãm. Chính tinh chính chiếu từ cung đối diện khi Vô chính diệu.)")
+    print("(Độ sáng: M miếu, V vượng, Đ đắc, B bình, H hãm. Chính tinh chính chiếu từ cung đối diện khi Vô chính diệu. "
+          "Độ sáng Thiên Phủ và phụ tinh (Xương, Khúc, Mã, Hình, Diêu, Khốc, Hư) theo bảng Việt Nam, chỉ để hiển thị.)")
     print()
     if phi:
         pf, lai = T.phi_hoa(ls)
@@ -707,6 +719,14 @@ def tu_vi(tt, nam_xem, phi=False, so_nam=1, luu_nguyet=False):
         print("- Chưa vào đại hạn đầu (đại hạn đầu bắt đầu từ %d tuổi)." % ls["cuc"] if tuoi < ls["cuc"]
               else "- Tuổi %d vượt quá 12 đại hạn của lá số." % tuoi)
     print("- Tiểu hạn: cung %s (%s)" % (T.ten_cung(ls, vh["tieu_han"]), T.CHI[vh["tieu_han"]]))
+    for nhan, goc in (("ĐV", vh["dai_han"]), ("LN", vh["tieu_han"])):
+        if goc is None:
+            continue
+        cl_ = T.cung_luu(goc)
+        print("- Cung %s (lấy cung %s làm Mệnh %s, như nhãn %s. trên lá số tuvi.vn): " % (
+            "đại vận" if nhan == "ĐV" else "lưu niên", T.CHI[goc], "đại hạn" if nhan == "ĐV" else "tiểu hạn", nhan)
+              + ", ".join("%s.%s tại %s (gốc %s)" % (nhan, cl_[q], T.CHI[q], T.ten_cung(ls, q))
+                          for q in [(goc + k) % 12 for k in range(12)]))
     print("- Sao lưu: " + ", ".join("%s tại %s (%s)" % (k, T.ten_cung(ls, p), T.CHI[p]) for k, p in vh["luu"].items()))
     def ghi_goc(ten):
         g = ls["hoa"].get(ten)
@@ -750,8 +770,8 @@ def tu_vi(tt, nam_xem, phi=False, so_nam=1, luu_nguyet=False):
               "tiểu hạn thì tháng Giêng tại %s)" % (T.CAN[nc], T.CHI[nz], nam_xem, T.ten_cung(ls, dq),
                                                      T.ten_cung(ls, dq_vn)))
         print("| Tháng âm | Dương lịch | Can chi tháng | Cung tháng (Đẩu Quân) | Hóa Lộc | Hóa Quyền | Hóa Khoa | Hóa Kỵ | "
-              "Bát tự giữa tháng |")
-        print("|---|---|---|---|---|---|---|---|---|")
+              "Bát tự giữa tháng | Cung tháng (tính từ tiểu hạn, như tuvi.vn) |")
+        print("|---|---|---|---|---|---|---|---|---|---|")
         for i, (m, nh, d0) in enumerate(thang_ds):
             d1 = (thang_ds[i + 1][2] if i + 1 < len(thang_ds) else het) - dt.timedelta(days=1)
             cm, zm = (can1 + m - 1) % 10, (m + 1) % 12
@@ -762,29 +782,36 @@ def tu_vi(tt, nam_xem, phi=False, so_nam=1, luu_nguyet=False):
                    for ten in T.TU_HOA[cm]]
             giua = d0 + dt.timedelta(days=14)
             gm = Solar.fromYmdHms(giua.year, giua.month, giua.day, 12, 0, 0).getLunar().getMonthInGanZhiExact()
-            print("| %d%s | %s – %s | %s %s | %s (%s) | %s | %s %s (%s) |" % (
+            cung_th = (dq_vn + m - 1) % 12
+            print("| %d%s | %s – %s | %s %s | %s (%s) | %s | %s %s (%s) | %s (%s) |" % (
                 m, " nhuận" if nh else "", d0.strftime("%d/%m/%Y"), d1.strftime("%d/%m/%Y"), T.CAN[cm], T.CHI[zm],
-                T.ten_cung(ls, cung), T.CHI[cung], " | ".join(hoa), CAN[gm[0]], CHI[gm[1]], vn(LunarUtil.SHI_SHEN[nchu + gm[0]])))
-        print("(Tháng nhuận dùng cùng can chi và cung với tháng chính; có phái chia đôi. Cột cuối: can chi tháng tiết khí "
-              "vào ngày 15 âm – xem bảng LƯU NGUYỆT BÁT TỰ để biết ngày đổi tháng.)")
+                T.ten_cung(ls, cung), T.CHI[cung], " | ".join(hoa), CAN[gm[0]], CHI[gm[1]], vn(LunarUtil.SHI_SHEN[nchu + gm[0]]),
+                T.ten_cung(ls, cung_th), T.CHI[cung_th]))
+        print("(Tháng nhuận dùng cùng can chi và cung với tháng chính; có phái chia đôi. Cột \"Bát tự giữa tháng\": can chi "
+              "tháng tiết khí vào ngày 15 âm – xem bảng LƯU NGUYỆT BÁT TỰ để biết ngày đổi tháng. Hai cột cung tháng là hai "
+              "phép: Đẩu Quân (lưu nguyệt Thái Tuế, chủ việc từ bên ngoài) và tính từ tiểu hạn (lưu nguyệt tiểu hạn, chủ vận "
+              "của bản thân; tuvi.vn dùng phép này). Tứ hóa tháng như nhau ở cả hai phép.)")
         print()
     if so_nam > 1:
         print("VẬN HẠN TỬ VI NHIỀU NĂM (cung chứa sao lưu; tứ hóa lưu niên ghi cung mà sao được hóa đang đóng)")
         print("| Năm | Tuổi mụ | Đại hạn | Tiểu hạn | Thái Tuế | Lộc Tồn | Kình / Đà | Mã | Tang / Hổ | Khốc / Hư | "
-              "Lộc | Quyền | Khoa | Kỵ |")
-        print("|---|---|---|---|---|---|---|---|---|---|---|---|---|---|")
+              "Lộc | Quyền | Khoa | Kỵ | Khôi / Việt | Xương / Khúc | Đào / Hồng / Hỷ | Kiếp Sát |")
+        print("|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|")
         for ny in range(nam_xem, nam_xem + so_nam):
             c2, z2 = (ny - 4) % 10, (ny - 4) % 12
             v2 = T.van_han(ls, c2, z2, ny - y + 1)
             L = v2["luu"]
             tc = lambda p: T.ten_cung(ls, p)
-            print("| %d %s %s | %d | %s | %s | %s | %s | %s / %s | %s | %s / %s | %s / %s | %s |" % (
+            print("| %d %s %s | %d | %s | %s | %s | %s | %s / %s | %s | %s / %s | %s / %s | %s | %s / %s | %s / %s | "
+                  "%s / %s / %s | %s |" % (
                 ny, T.CAN[c2], T.CHI[z2], ny - y + 1, tc(v2["dai_han"]) if v2["dai_han"] is not None else "–",
                 tc(v2["tieu_han"]), tc(L["Lưu Thái Tuế"]), tc(L["Lưu Lộc Tồn"]), tc(L["Lưu Kình Dương"]),
                 tc(L["Lưu Đà La"]), tc(L["Lưu Thiên Mã"]), tc(L["Lưu Tang Môn"]), tc(L["Lưu Bạch Hổ"]),
                 tc(L["Lưu Thiên Khốc"]), tc(L["Lưu Thiên Hư"]),
                 " | ".join("%s (%s%s)" % (ten, tc(ls["vt"][ten]), ghi_goc(ten).replace(" – gốc cũng", "; gốc"))
-                           for _, ten in v2["hoa"])))
+                           for _, ten in v2["hoa"]),
+                tc(L["Lưu Thiên Khôi"]), tc(L["Lưu Thiên Việt"]), tc(L["Lưu Văn Xương"]), tc(L["Lưu Văn Khúc"]),
+                tc(L["Lưu Đào Hoa"]), tc(L["Lưu Hồng Loan"]), tc(L["Lưu Thiên Hỷ"]), tc(L["Lưu Kiếp Sát"])))
         print()
 
 

@@ -227,7 +227,13 @@ Văn phong:
 - Không gieo sợ hãi: sao hung viết thành "cần lưu ý".
 
 ## Trường phái (nói rõ khi liên quan)
-- **Nguyệt hạn Tử vi.** Mặc định dùng phép Đẩu Quân: từ cung Lưu Thái Tuế đếm nghịch đến tháng sinh, rồi đếm thuận đến giờ sinh, được cung tháng Giêng; các tháng sau đi thuận. Nhiều sách Việt Nam lại đếm từ cung tiểu hạn. Script ghi cung tháng Giêng theo cách này ngay trong tiêu đề bảng. Nếu người dùng theo phép tiểu hạn thì dịch cả bảng cho khớp.
+- **Nguyệt hạn Tử vi – hai phép, script in cả hai cột.**
+  - **Đẩu Quân** (lưu nguyệt Thái Tuế): từ cung Lưu Thái Tuế đếm nghịch đến tháng sinh, rồi đếm thuận đến giờ sinh, được cung tháng Giêng. Sách cổ coi đây là phần "ngoại" – việc từ bên ngoài đến.
+  - **Tính từ tiểu hạn** (lưu nguyệt tiểu hạn): đếm như trên nhưng khởi từ cung tiểu hạn. Đây là phép tuvi.vn và nhiều sách Việt Nam dùng (nhãn "Th.1 … Th.12" trên lá số tuvi.vn); sách cổ coi là phần "nội" – vận của bản thân.
+  - Tứ hóa tháng (theo can tháng) giống nhau ở hai phép; chỉ cung tháng khác.
+  - Khi luận tháng: người dùng đối chiếu với tuvi.vn hoặc sách Việt Nam thì lấy cột tiểu hạn làm chính; không nói gì thì luận theo cột tiểu hạn và nhắc một dòng rằng phép Đẩu Quân cho cung khác. Lưu nhật/lưu thời (`nc.py luunhat`) vẫn theo Đẩu Quân.
+- **Cung đại vận, cung lưu niên** (nhãn "ĐV." và "LN." trên lá số tuvi.vn): lấy cung đại hạn (hoặc tiểu hạn) làm Mệnh rồi đặt 12 tên cung đi thuận. Script in đủ 12 cung trong phần VẬN HẠN.
+- **Sao lưu thêm** (từ 11/2026): Lưu Khôi, Lưu Việt (theo can năm xem, cùng bảng Khôi Việt), Lưu Văn Xương, Lưu Văn Khúc (theo can năm xem), Lưu Đào Hoa, Lưu Hồng Loan, Lưu Thiên Hỷ, Lưu Kiếp Sát (theo chi năm xem). Đã khớp với các sao "L." trên lá số tuvi.vn năm Quý Mão.
 - **Tháng nhuận** dùng cùng can chi, cùng cung với tháng chính. Có phái chia đôi tháng nhuận.
 - **Tứ hóa đại hạn** theo can của cung đại hạn. Phái phi hóa dùng nhiều; phái tam hợp truyền thống ít dùng.
 - **Đại vận Bát tự.** Cách đọc phổ biến: can chủ 5 năm đầu, chi chủ 5 năm sau. Có phái xét cả 10 năm cùng lúc.
@@ -236,5 +242,5 @@ Văn phong:
 ## Giới hạn
 - `hoptuoi` tính theo giờ đồng hồ, không dùng giờ mặt trời thực. Người sinh trước 1975 được giả định theo giờ miền Bắc. Không có giờ sinh thì chỉ có 3 trụ; ngày giao tiết thì script cảnh báo.
 - Ngày đổi tháng trong lưu nguyệt Bát tự tính theo 12h trưa giờ Bắc Kinh, có thể lệch 1 ngày.
-- Chưa tính lưu nhật, lưu thời, và sao lưu theo tháng (Kình, Đà… của tháng).
+- Chưa tính sao lưu theo tháng (Kình, Đà… của tháng). Lưu nhật, lưu thời có ở `nc.py luunhat` (`tu-vi-nang-cao.md`).
 - Chỉ so tuổi khi người dùng tự đưa ngày sinh của người kia.

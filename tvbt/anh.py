@@ -122,7 +122,7 @@ def html_tu_vi(tt, ls, ten_nguoi="", nam_xem=None):
         chinh = []
         for x in T.CHINH_TINH:
             if x in ls["sao"][p]:
-                ds = T.do_sang(x, p)
+                ds = T.do_sang_day_du(x, p)
                 h = ls["hoa"].get(x)
                 badge = ""
                 if h:
@@ -136,7 +136,8 @@ def html_tu_vi(tt, ls, ten_nguoi="", nam_xem=None):
             if x in T.CHINH_TINH:
                 continue
             h = ls["hoa"].get(x)
-            phu.append(chu_sao(x) + ('<span class="bd %s">%s</span>' % (
+            ds_ = T.do_sang_day_du(x, p)
+            phu.append(chu_sao(x, " (%s)" % ds_ if ds_ else "") + ('<span class="bd %s">%s</span>' % (
                 {"Hóa Lộc": "lo", "Hóa Quyền": "qu", "Hóa Khoa": "kh", "Hóa Kỵ": "ky"}[h], h.replace("Hóa ", ""))
                 if h else ""))
         dau = []
