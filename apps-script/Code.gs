@@ -26,6 +26,8 @@ var TAB_LUOT = 'Lượt xem';
 var COT_KHACH = ['Mã khách', 'Lần đầu', 'Lần cuối', 'Họ tên', 'Giới tính', 'Ngày sinh', 'Lịch', 'Giờ sinh', 'Nơi sinh', 'Liên hệ', 'Lượt đã xem', 'Số lần luận',
                  'Trạng thái', 'Mã kích hoạt', 'Kích hoạt lúc', 'Lượt được xem', 'Xin thêm lượt'];
 var COT_DA_XEM = 11, COT_DUOC_XEM = 16, COT_XIN_THEM = 17;
+var MUC_GIO_SINH = 'Tìm giờ sinh';           // dò giờ sinh: không tính lượt xem
+var GS_SO_LIEU_TOI_DA = 10000, GS_HUONG_DAN_TOI_DA = 20000, GS_MOI_KHACH_NGAY = 10;
 var TT_CHO = 'Chờ kích hoạt', TT_DA = 'Đã kích hoạt', TT_KHOA = 'Khóa';
 var COT_LUOT = ['Thời gian', 'Mã lượt', 'Mã khách', 'Khách', 'Xem cho', 'Mục xem', 'Chi tiết / câu hỏi', 'Người thứ hai', 'Số liệu bộ tính', 'Bài luận', 'Hỏi thêm', 'Luận lúc'];
 var MUI_GIO = 'Asia/Ho_Chi_Minh';
@@ -211,6 +213,17 @@ function luuLuot_(req, P) {
       }
       return { ok: true, luotId: luotId, trung: true };   // gửi lại lần 2: bỏ qua
     }
+    if (String(l.loai || '') === 'giosinh') {
+      // Dò giờ sinh: ghi lại nhưng không tính lượt xem. Mỗi khách tối đa GS_MOI_KHACH_NGAY lần/ngày cho khỏi đầy Sheet.
+      var cache = CacheService.getScriptCache(), kG = 'gs_' + khachId + '_' + ngayKey_(), nG = Number(cache.get(kG) || 0);
+      if (nG >= GS_MOI_KHACH_NGAY) return { ok: true, luotId: luotId, boQua: true };
+      cache.put(kG, String(nG + 1), 21600);
+      sh.appendRow([
+        sach_(l.thoiGian || bayGio_(), 30), luotId, khachId, sach_(l.khach, 120), sach_(moTaNguoi_(l.xemCho), 300),
+        MUC_GIO_SINH, sach_(l.chiTiet, 1000), '', sach_(String(l.soLieu || '').slice(0, GS_SO_LIEU_TOI_DA), GS_SO_LIEU_TOI_DA + 50), '', '', ''
+      ]);
+      return { ok: true, luotId: luotId, mienPhi: true };
+    }
     if (gioiHanLuot_(P)) return { ok: true, luotId: luotId, boQua: true };   // có giới hạn mà lượt chưa mở: không ghi
     sh.appendRow([
       sach_(l.thoiGian || bayGio_(), 30), luotId, khachId, sach_(l.khach, 120), sach_(moTaNguoi_(l.xemCho), 300),
@@ -389,7 +402,7 @@ function toi_(req, P) {
 
 /* ------------------------------------------------------------------ giới hạn lượt xem */
 // Mỗi khách được LUOT_XEM_MOI_KHACH lượt (mặc định 3). Mỗi lần xem kết quả (lá số, vận tháng, chọn ngày, gieo quẻ,
-// xem nhà, luận trọn đời, dò giờ sinh) tính 1 lượt; luận giải cho chính kết quả đó không trừ thêm.
+// xem nhà, luận trọn đời) tính 1 lượt; luận giải cho chính kết quả đó không trừ thêm. Dò giờ sinh không tính lượt.
 // Hết lượt: khách bấm "Xin thêm lượt" → chủ nhận email, sửa ô "Lượt được xem" của khách trong Sheet để cấp thêm.
 function gioiHanLuot_(P) {
   var n = parseInt(String(P.getProperty('LUOT_XEM_MOI_KHACH') || '3').trim(), 10);
@@ -525,6 +538,12 @@ function luan_(req, P) {
   var shL = tab_(TAB_LUOT, COT_LUOT), dongL = timDong_(shL, 2, luotId);
   if (!dongL || String(shL.getRange(dongL, 3).getValue()) !== khachId) {
     return { ok: false, ma_loi: 'chua_co_luot', loi: 'Chưa ghi nhận lượt xem này. Mời ' + xung + ' xem lại kết quả rồi bấm luận.' };
+  }
+  // Lượt dò giờ sinh (miễn phí): chỉ luận kết quả dò giờ, dữ liệu gọn, không luận trọn đời.
+  if (String(shL.getRange(dongL, 6).getValue()) === MUC_GIO_SINH) {
+    if (x.tronDoi) return { ok: false, ma_loi: 'du_lieu', loi: 'Lượt dò giờ sinh không dùng để luận trọn đời.' };
+    x = { xung: x.xung, mon: MUC_GIO_SINH, nguoi: x.nguoi, hoi: x.hoi, hoiThem: x.hoiThem,
+          huongDan: String(x.huongDan || '').slice(0, GS_HUONG_DAN_TOI_DA), soLieu: String(x.soLieu || '').slice(0, GS_SO_LIEU_TOI_DA) };
   }
 
   // Luận trọn đời: một bộ gồm `tong` phần, mỗi lần gọi một phần (Google chỉ chờ mỗi lần gọi ~60 giây).

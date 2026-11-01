@@ -721,7 +721,7 @@ function renderLuot() {
   if (!gioiHan() || !l) { box.innerHTML = ""; return; }
   const con = Math.max(0, l.duoc - l.da);
   box.innerHTML = con > 0
-    ? `<div class="notice info">${Xg()} còn <b>${con}/${l.duoc}</b> lượt xem. Mỗi lần xem kết quả tính 1 lượt; phần luận giải cho lần xem đó không tính thêm.</div>`
+    ? `<div class="notice info">${Xg()} còn <b>${con}/${l.duoc}</b> lượt xem. Mỗi lần xem kết quả tính 1 lượt; luận giải cho lần xem đó không tính thêm. Dò giờ sinh không tính lượt.</div>`
     : `<div class="notice">${Xg()} đã dùng hết ${l.duoc} lượt xem.${l.choCap ? ` Tôi đã nhận yêu cầu xin thêm lượt của ${xg()}.` : ""}<div class="btns"><button class="gold small" data-luot="xin">${l.choCap ? "Kiểm tra lại" : "Xin thêm lượt"}</button></div></div>`;
 }
 async function capNhatLuot() {
@@ -888,7 +888,7 @@ async function persistCtx(ctx, extra = {}) {
   await saveLog({ id: ctx.logId, ts: ctx.ts || new Date().toISOString(), mon: ctx.mon, loai: ctx.loai || "luan", pid: ctx.pid || "", hoi: ctx.hoi || "", ketqua: soLieu, ban: BAN_SCRIPT, ...extra });
   const me = self_();
   queue("luot", { luotId: ctx.logId, luot: { thoiGian: fmtTs(ctx.ts || new Date().toISOString()), khach: me ? me.ten : "", xemCho: personPublic(personById(ctx.pid)),
-    muc: ctx.mon, chiTiet: ctx.hoi || ctx.title || "", nguoiThuHai: personPublic(ctx.pid2 ? personById(ctx.pid2) : null), soLieu } });
+    muc: ctx.mon, chiTiet: ctx.hoi || ctx.title || "", nguoiThuHai: personPublic(ctx.pid2 ? personById(ctx.pid2) : null), soLieu, loai: ctx.loai || "" } });
   return ctx.logId;
 }
 
@@ -1184,9 +1184,8 @@ function gsWho() { const p = GS.p; return !p || p.quanHe === "Bản thân" ? (ty
 function gsSub(s) { return String(s || "").split("{xg}").join(gsWho()); }
 function gsCoLuan() { return typeof coLuan === "function" ? coLuan() : true; }
 function gsSao(x) { return x.sao_menh.length ? x.sao_menh.join(", ") : "Vô chính diệu (mượn " + x.sao_chieu.join(", ") + ")"; }
-async function openGioSinh(p) {
+function openGioSinh(p) {
   if (!RUN) return void toast("Bộ tính chưa sẵn sàng, đợi vài giây rồi bấm lại.");
-  if (typeof conLuot === "function" && !(await conLuot(null))) return;   // trang khách: hết lượt thì không dò
   GS.p = p; GS.tl = {}; GS.i = 0; GS.dir = 1; GS.r = null;
   if (p.gio) GS.tl.khoang = { gio: p.gio, sai: 30 };
   openSheet(`<h3>Tìm giờ sinh</h3>
@@ -1273,8 +1272,7 @@ function gsTomTat() {
   });
   return out;
 }
-async function gsResult() {
-  const nb = $("#gsNext"); if (nb) { nb.disabled = true; nb.textContent = "Đang mở kết quả…"; }
+function gsResult() {
   let r;
   try { r = gsCall(GS.tl); } catch (e) { r = { ok: false, loi: String(e.message || e) }; }
   if (!r.ok) { openSheet(`<h3>Tìm giờ sinh</h3><div class="notice err">${esc(r.loi)}</div><div class="btns"><button class="ghost full" id="gsX">Đóng</button></div>`); $("#gsX").onclick = closeSheet; return; }
@@ -1291,27 +1289,7 @@ async function gsResult() {
   }).join("");
   const so = k.nhi.map(id => by[id].ten).concat([top.ten]);
   const Xw = gsWho().charAt(0).toUpperCase() + gsWho().slice(1);
-  let ctx = null;
-  if (daTraLoi) {
-    const tt = gsTomTat();
-    ctx = { mon: "Tìm giờ sinh", kind: "giosinh", loai: "giosinh", pid: p.id, ts: new Date().toISOString(),
-      cmds: ["giosinh.py " + JSON.stringify({ ngay: p.ngay, gioi: p.gioi, noi: p.noi || "", am: !!p.am, nhuan: !!p.nhuan, tra_loi: GS.tl })],
-      nguoi: `${p.ten} – ${personLine(p).replace(/<[^>]+>/g, "")}`,
-      title: `Dò giờ sinh: ${top.ten} ${Math.round(k.pt)}%`,
-      hoi: `Kết quả: ${top.ten} (${top.dong_ho[0]}–${top.dong_ho[1]}), ${Math.round(k.pt)}% – ${muc}. Trả lời: ${tt.join(" | ")}`,
-      parts: [{ label: "Dò giờ sinh", text: gsSub(r.van_ban) }, { label: "Câu trả lời", text: tt.map(t => "- " + t).join("\n") }] };
-    // Trang khách: máy chủ trừ 1 lượt xem trước khi hiện kết quả
-    if (typeof dungLuot === "function") {
-      const d = await dungLuot(ctx);
-      if (d !== true) {
-        if (d && d.loi) { openSheet(`<h3>Tìm giờ sinh</h3><div class="notice err">${esc(d.loi)}</div><div class="btns"><button class="ghost full" id="gsX">Đóng</button></div>`); $("#gsX").onclick = closeSheet; }
-        else openHetLuotSheet();
-        return;
-      }
-    }
-  }
-  const ghiLuot = ctx && ctx.daTinhLuot && typeof KHACH !== "undefined" && KHACH.luot ? `<div class="small-note">Lần dò này tính 1 lượt xem · ${xg()} còn ${Math.max(0, KHACH.luot.duoc - KHACH.luot.da)}/${KHACH.luot.duoc} lượt.</div>` : "";
-  openSheet(`<h3>Kết quả dò giờ sinh</h3>${ghiLuot}
+  openSheet(`<h3>Kết quả dò giờ sinh</h3>
     <div class="gs-top"><div class="kv">${esc(p.ten)} · ${esc(muc)}</div>
       <div class="big">${esc(top.ten)} · ${Math.round(k.pt)}%</div>
       <div>Khoảng <b>${top.dong_ho[0]}–${top.dong_ho[1]}</b> theo giờ đồng hồ ngày sinh</div>
@@ -1337,7 +1315,14 @@ async function gsResult() {
     await savePerson({ ...cu, gio: top.gio_dai_dien, ghiChu });
     closeSheet(); toast(`Đã ghi giờ ${top.gio_dai_dien} cho ${cu.ten}`);
   };
-  if (ctx) {
+  if (daTraLoi) {
+    const tt = gsTomTat();
+    const ctx = { mon: "Tìm giờ sinh", kind: "giosinh", loai: "giosinh", pid: p.id, ts: new Date().toISOString(),
+      cmds: ["giosinh.py " + JSON.stringify({ ngay: p.ngay, gioi: p.gioi, noi: p.noi || "", am: !!p.am, nhuan: !!p.nhuan, tra_loi: GS.tl })],
+      nguoi: `${p.ten} – ${personLine(p).replace(/<[^>]+>/g, "")}`,
+      title: `Dò giờ sinh: ${top.ten} ${Math.round(k.pt)}%`,
+      hoi: `Kết quả: ${top.ten} (${top.dong_ho[0]}–${top.dong_ho[1]}), ${Math.round(k.pt)}% – ${muc}. Trả lời: ${tt.join(" | ")}`,
+      parts: [{ label: "Dò giờ sinh", text: gsSub(r.van_ban) }, { label: "Câu trả lời", text: tt.map(t => "- " + t).join("\n") }] };
     persistCtx(ctx);
     const box = $("#sheet");
     $(".btnLuan", box).onclick = () => doLuan(box, ctx);
