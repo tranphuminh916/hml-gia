@@ -27,6 +27,7 @@ var TAB_LUOT = 'Lượt xem';
 var COT_KHACH = ['Mã khách', 'Lần đầu', 'Lần cuối', 'Họ tên', 'Giới tính', 'Ngày sinh', 'Lịch', 'Giờ sinh', 'Nơi sinh', 'Liên hệ', 'Lượt đã xem', 'Số lần luận',
                  'Trạng thái', 'Mã kích hoạt', 'Kích hoạt lúc', 'Lượt được xem', 'Xin thêm lượt'];
 var COT_DA_XEM = 11, COT_DUOC_XEM = 16, COT_XIN_THEM = 17;
+var NHAC_VIET = 'NHẮC LẠI CÁCH VIẾT (bắt buộc): câu chính viết như kể cho người chưa từng nghe về tử vi – không có các chữ cung, môn, sao, thần, khóa, truyền, hào, quẻ, can chi, mệnh, không vong, phục ngâm, phản ngâm; những chữ đó chỉ được để trong ngoặc cuối câu (tối đa 4 chữ). Viết ngắn, đúng số gạch đầu dòng đã nêu. Viết xong tự rà lại từng câu.';
 var MUC_GIO_SINH = 'Tìm giờ sinh';           // dò giờ sinh: không tính lượt xem
 var GS_SO_LIEU_TOI_DA = 10000, GS_HUONG_DAN_TOI_DA = 20000, GS_MOI_KHACH_NGAY = 10;
 var TT_CHO = 'Chờ kích hoạt', TT_DA = 'Đã kích hoạt', TT_KHOA = 'Khóa';
@@ -630,7 +631,7 @@ function luan_(req, P) {
     '=== SỐ LIỆU BỘ TÍNH (output nguyên văn) ===',
     String(x.soLieu || '').slice(0, 70000)
   ].join('\n');
-  var noiDung = nen, system = quyTac_(xung);
+  var noiDung = nen + '\n\n=== ' + NHAC_VIET, system = quyTac_(xung);
   if (td) {
     // Phần chung (hướng dẫn + số liệu) giống hệt nhau giữa các phần: đánh dấu để API lưu đệm, phần sau rẻ hơn nhiều.
     system = viec ? quyTacXemViec_(xung) : quyTacTronDoi_(xung);
@@ -639,7 +640,7 @@ function luan_(req, P) {
       { type: 'text', text: nen, cache_control: { type: 'ephemeral' } },
       { type: 'text', text: (daViet ? '=== CÁC PHẦN ĐÃ VIẾT (để tổng kết) ===\n' + daViet + '\n\n' : '') +
         '=== PHẦN CẦN VIẾT (phần ' + (phan + 1) + '/' + tong + ') ===\n' + String(td.yeuCau || '').slice(0, 3000) +
-        (x.hoiThem ? '\nĐiều người xem quan tâm thêm (lồng vào nếu liên quan đến phần này): ' + String(x.hoiThem).slice(0, 600) : '') }
+        (x.hoiThem ? '\nĐiều người xem quan tâm thêm (lồng vào nếu liên quan đến phần này): ' + String(x.hoiThem).slice(0, 600) : '') + '\n\n' + NHAC_VIET }
     ];
   }
 

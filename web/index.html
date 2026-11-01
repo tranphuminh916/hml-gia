@@ -1421,6 +1421,7 @@ function tdKe(ctx) {
     ? { phan: VIEC_PHAN, quyTac: VIEC_QUY_TAC, loai: "viec", guide: "viec", nut: "✨ Luận đủ các cách và tổng kết", ten: "luận xem việc", phut: "khoảng 2 phút" }
     : { phan: TD_PHAN, quyTac: TD_QUY_TAC, loai: "trondoi", guide: "trondoi", nut: "✨ Luận giải chi tiết trọn đời", ten: "luận trọn đời", phut: "khoảng 4–6 phút" };
 }
+const NHAC_VIET = `NHẮC LẠI CÁCH VIẾT (bắt buộc): câu chính viết như kể cho người chưa từng nghe về tử vi – không có các chữ cung, môn, sao, thần, khóa, truyền, hào, quẻ, can chi, mệnh, không vong, phục ngâm, phản ngâm; những chữ đó chỉ được để trong ngoặc cuối câu (tối đa 4 chữ). Viết ngắn, đúng số gạch đầu dòng đã nêu. Viết xong tự rà lại từng câu.`;
 const TD_QUA_SERVER = typeof callServer === "function";
 function tdSoLieu(ctx) { return ctx.parts.map(p => p.label.toUpperCase() + "\n" + p.text).join("\n\n"); }
 async function tdGoi(ctx, i, huongDan, soLieu, hoiThem, onText) {
@@ -1447,7 +1448,9 @@ ${ctx.nguoi ? "Người được xem: " + ctx.nguoi + "\n" : ""}${ctx.kind === "
 ${soLieu}
 
 ${daViet ? "=== CÁC PHẦN ĐÃ VIẾT (để tổng kết) ===\n" + daViet + "\n\n" : ""}=== PHẦN CẦN VIẾT (phần ${i + 1}/${n}) ===
-${K.phan[i].yeu}${hoiThem ? "\nĐiều anh quan tâm thêm (lồng vào nếu liên quan đến phần này): " + hoiThem : ""}`;
+${K.phan[i].yeu}${hoiThem ? "\nĐiều anh quan tâm thêm (lồng vào nếu liên quan đến phần này): " + hoiThem : ""}
+
+${NHAC_VIET}`;
   try {
     const r = await sample(input, { modelTier: "default", onText: ({ text }) => onText && onText(text) });
     return { ok: true, text: r.text + (r.truncated ? "\n\n_(Phần này bị cắt bớt do quá dài.)_" : "") };
