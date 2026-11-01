@@ -2,7 +2,8 @@
 """kiemtra.py - Tự kiểm tra TOÀN BỘ bộ script (chạy từ thư mục chứa tvbt/): python3 tvbt/kiemtra.py
 Gồm: (1) phần cơ bản (Bát tự, Tử vi, Phong thủy, Kỳ môn, Lục Nhâm, Mai hoa, chọn ngày),
 (2) luận chi tiết (lưu niên, lưu nguyệt, vận hạn nhiều năm, hợp tuổi), (3) Kỳ môn mở rộng,
-(4) các module nâng cao (nc.py tukiem). In 'TỰ KIỂM TRA TOÀN BỘ: ĐẠT' khi mọi phần đều đạt."""
+(4) các module nâng cao (nc.py tukiem), (5) dò giờ sinh (giosinh.py).
+In 'TỰ KIỂM TRA TOÀN BỘ: ĐẠT' khi mọi phần đều đạt."""
 import datetime as dt
 import os
 import subprocess
@@ -133,10 +134,40 @@ def phan_nang_cao():
     return [] if "TỰ KIỂM TRA NÂNG CAO: ĐẠT" in r.stdout else ["nc.py tukiem: " + (r.stdout + r.stderr)[-500:]]
 
 
+def phan_gio_sinh():
+    """Dò giờ sinh: bảng giờ, cách chấm, và lá số từng khung giờ phải trùng với tvbt.py."""
+    import json
+    miss = []
+
+    def gs(*a):
+        return subprocess.run([sys.executable, "tvbt/giosinh.py"] + list(a), capture_output=True, text=True).stdout
+    t = gs("--ngay", "1990-03-15", "--gioi", "nam", "--noi", "Hà Nội", "--tra-loi",
+           '{"khoang":"toi","xoay":"mo","ngu":"sinh","mat":"sinh","than":"Tài Bạch","tinh":["g10"],"nam":[2013]}')
+    miss += thieu(t, ["| Giờ Tuất | 19:06–21:06 | Giáp Tuất | Tỵ | Tử Vi(M), Thất Sát(V) | Tài Bạch | Kim Tứ Cục | 70% |",
+                      "năm 2013 (24 tuổi) đúng lúc chuyển đại hạn (24 tuổi)",
+                      "KẾT LUẬN: Giờ Tuất (19:06–21:06 giờ đồng hồ), 70% – khá rõ.",
+                      "Giờ cần so thêm: Giờ Hợi (21:06–23:06)"])
+    t = gs("--ngay", "1970-05-10", "--gioi", "nu", "--noi", "TP Hồ Chí Minh", "--tra-loi", '{"khoang":{"gio":"23:40","sai":30}}')
+    miss += thieu(t, ["lệch giờ đồng hồ -49 phút",
+                      "| Giờ Hợi | 21:49–23:49 | Đinh Hợi | Ngọ | Thiên Lương(M) | Phu Thê | Mộc Tam Cục | 72% |",
+                      "| Giờ Tý (cuối ngày) | 23:49–24:00 | Mậu Tý | Tỵ | Cự Môn(H) | Mệnh | Kim Tứ Cục | 19% |"])
+    import giosinh as G
+    for ngay, gioi, noi in [("1990-03-15", "nam", "Hà Nội"), ("1970-05-10", "nu", "TP Hồ Chí Minh")]:
+        r = G.buoc({"ngay": ngay, "gioi": gioi, "noi": noi}, {})
+        if len(r["ung_vien"]) != 13 or len(r["cau_hoi"]) != 7:
+            miss.append("giosinh %s: %d khung giờ, %d câu" % (ngay, len(r["ung_vien"]), len(r["cau_hoi"])))
+        for x in r["ung_vien"]:
+            t = chay("tuvi", "--ngay", ngay, "--gio", x["gio_dai_dien"], "--gioi", gioi, "--noi", noi, "--nam-xem", "2026")
+            if ("Mệnh tại %s," % x["menh"]) not in t or ("(Thân cư %s)" % x["than_cu"]) not in t or x["cuc"] not in t:
+                miss.append("giosinh %s %s: lá số khác tvbt.py" % (ngay, x["ten"]))
+    json.dumps(r, ensure_ascii=False)
+    return miss
+
+
 if __name__ == "__main__":
     loi = 0
     for ten, ham in [("Cơ bản", phan_co_ban), ("Luận chi tiết", phan_luan_chi_tiet), ("Kỳ môn mở rộng", phan_ky_mon),
-                     ("Nâng cao", phan_nang_cao)]:
+                     ("Nâng cao", phan_nang_cao), ("Dò giờ sinh", phan_gio_sinh)]:
         try:
             miss = ham()
         except Exception as e:      # noqa: BLE001
