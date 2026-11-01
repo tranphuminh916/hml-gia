@@ -60,3 +60,9 @@ def kiem_noi(noi):
     import tvbt as B
     kd, mn = B.tra_noi_sinh(noi or "")
     return {"kinhdo": kd, "mien_nam": bool(mn)}
+
+
+def gio_sinh(s):
+    """Dò giờ sinh: vào/ra đều là chuỗi JSON (xem tvbt/giosinh.py)."""
+    import giosinh
+    return giosinh.buoc_json(s)

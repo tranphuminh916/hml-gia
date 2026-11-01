@@ -127,6 +127,16 @@ nav.tabbar button.on{color:var(--red)}
 .empty{color:var(--muted);text-align:center;padding:18px 6px;font-size:14.5px}
 .kv{font-size:13.5px;color:var(--muted)}
 a{color:var(--red2)}
+.gs-step{font-size:12px;color:var(--muted);font-weight:700;letter-spacing:.4px}
+.gs-progress{display:flex;gap:4px;margin:6px 0 2px}.gs-progress i{flex:1;height:4px;border-radius:3px;background:#eadfcd}.gs-progress i.on{background:var(--red)}
+.gs-opts{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.gs-opt{display:flex;gap:10px;align-items:flex-start;text-align:left;background:#fff;border:1px solid #d9ccb9;border-radius:12px;padding:11px 12px;font-weight:500;font-size:15px;color:var(--ink);width:100%}
+.gs-opt.on{border-color:var(--red);background:#fbeeee;box-shadow:inset 0 0 0 1px var(--red)}
+.gs-opt.skip{color:var(--muted);border-style:dashed}
+.gs-opt .k{flex:none;width:24px;height:24px;border-radius:50%;background:var(--gold-bg);border:1px solid #ecd7a8;color:#7a5414;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.gs-bar{height:8px;border-radius:6px;background:#f1e8da;overflow:hidden;margin-top:5px}.gs-bar i{display:block;height:100%;background:var(--gold)}
+.gs-top{border:1px solid #ecd7a8;background:linear-gradient(180deg,#fffaf0,#fffdf9);border-radius:14px;padding:12px 14px;margin:8px 0 4px}
+.gs-top .big{font-family:"Noto Serif",serif;font-size:21px;color:var(--red);font-weight:700;margin:2px 0}
 </style>
 </head>
 <body>
@@ -394,7 +404,7 @@ async function loadEngine() {
     }
     PY.runPython("import sys; sys.path.insert(0,'/home/pyodide'); import app_run; import tvbt");
     const mod = PY.globals.get("app_run");
-    RUN = { run: mod.run, thong_tin: mod.thong_tin, kiem_noi: mod.kiem_noi, read_text: mod.read_text };
+    RUN = { run: mod.run, thong_tin: mod.thong_tin, kiem_noi: mod.kiem_noi, read_text: mod.read_text, gio_sinh: mod.gio_sinh };
     setEngine("ok", `Bộ tính sẵn sàng · bản ${BAN_SCRIPT} · ${((Date.now() - t0) / 1000).toFixed(1)} giây`);
     $$("#btnLaso,#btnNgay,#btnQue,#btnNha,#btnSelfTest").forEach(b => b.disabled = false);
     refreshPersonInfo();
@@ -528,7 +538,7 @@ function renderPeople() {
         <div class="meta">${personLine(p)}</div>${am ? `<div class="meta">${am}</div>` : ""}
         ${p.ghiChu ? `<div class="meta">📝 ${esc(p.ghiChu)}</div>` : ""}
         ${p.nha && p.nha.huong != null ? `<div class="meta">🏠 Nhà hướng ${esc(p.nha.huong)}°, nhập trạch ${esc(p.nha.namXay)}</div>` : ""}
-        <div class="acts"><button class="gold small" data-act="laso">Lá số</button><button class="ghost small" data-act="thang">Vận tháng</button><button class="ghost small" data-act="edit">Sửa</button></div>
+        <div class="acts"><button class="gold small" data-act="laso">Lá số</button><button class="ghost small" data-act="thang">Vận tháng</button><button class="ghost small" data-act="giosinh">${p.gio ? "Kiểm tra giờ sinh" : "🕰 Tìm giờ sinh"}</button><button class="ghost small" data-act="edit">Sửa</button></div>
       </div></div>`;
   }).join("");
 }
@@ -536,6 +546,7 @@ $("#peopleList").addEventListener("click", e => {
   const b = e.target.closest("button[data-act]"); if (!b) return;
   const id = b.closest("[data-id]").dataset.id, act = b.dataset.act;
   if (act === "edit") openPersonSheet(personById(id));
+  else if (act === "giosinh") openGioSinh(personById(id));
   else { goTab("laso"); $("#lsPerson").value = id; $("#lsMode").value = act === "thang" ? "thang" : "full"; onLsMode(); refreshPersonInfo(); if (RUN) runLaso(); }
 });
 function renderLogs() {
@@ -599,7 +610,7 @@ function openPersonSheet(p, opt = {}) {
     <label class="check" id="fNhuanRow" style="${e.am ? "" : "display:none"}"><input type="checkbox" id="fNhuan"${e.nhuan ? " checked" : ""}> Tháng nhuận</label>
     <label for="fGio">Giờ sinh (giờ đồng hồ)</label>
     <input type="time" id="fGio" value="${esc(e.gio || "")}">
-    <div class="small-note">Không biết giờ thì để trống: vẫn có Bát tự 3 trụ, nhưng không lập được lá số Tử vi.</div>
+    <div class="small-note">Không biết giờ thì để trống: vẫn xem được Bát tự 3 trụ. Sau đó bấm “Tìm giờ sinh” ở thẻ thông tin để dò giờ qua 7 câu hỏi.</div>
     <label for="fNoi">Nơi sinh (tỉnh, thành)</label><input type="text" id="fNoi" list="dsNoi" value="${esc(e.noi || "")}" autocomplete="off">
     <div class="small-note" id="fNoiChk"></div>
     ${laMinh ? `<label for="fLH">Số điện thoại hoặc Zalo <span class="hint">(không bắt buộc, để chủ trang liên hệ khi cần)</span></label><input type="text" id="fLH" inputmode="tel" value="${esc(e.lienHe || "")}" autocomplete="off">` : ""}
@@ -661,7 +672,8 @@ function fillPeopleSelects() {
 function refreshPersonInfo() {
   const p = personById($("#lsPerson").value);
   const inf = infoOf(p);
-  $("#lsPersonInfo").innerHTML = p ? `${personLine(p)}${inf && inf.ok ? ` · tuổi ${esc(inf.can_chi_nam)}` : ""}${p.gio ? "" : `<br><b>Không có giờ sinh:</b> chỉ có Bát tự 3 trụ, không lập được lá số Tử vi.`}` : "";
+  $("#lsPersonInfo").innerHTML = p ? `${personLine(p)}${inf && inf.ok ? ` · tuổi ${esc(inf.can_chi_nam)}` : ""}${p.gio ? "" : `<br><b>Không có giờ sinh:</b> chỉ có Bát tự 3 trụ, không lập được lá số Tử vi. <button class="gold small" id="lsGs" style="margin-top:6px">🕰 Dò giờ sinh qua 7 câu hỏi</button>`}` : "";
+  if ($("#lsGs")) $("#lsGs").onclick = () => openGioSinh(p);
 }
 $("#lsPerson").addEventListener("change", refreshPersonInfo);
 function personArgs(p) {
@@ -983,6 +995,150 @@ $("#btnSelfTest").onclick = async () => {
 };
 
 /* ============================================================ tab + khởi động */
+/* ============================================================ dò giờ sinh (7 câu hỏi) */
+const GS = { p: null, tl: {}, i: 0, dir: 1, r: null };
+const GS_SO = 7;
+function gsCall(tl) {
+  const p = GS.p;
+  const s = JSON.stringify({ nguoi: { ngay: p.ngay, gioi: p.gioi || "nam", noi: p.noi || "", am: !!p.am, nhuan: !!p.nhuan }, tra_loi: tl });
+  return JSON.parse(RUN.gio_sinh(s));
+}
+// Câu hỏi về chính khách thì gọi anh/chị; về người khác thì gọi tên.
+function gsWho() { const p = GS.p; return !p || p.quanHe === "Bản thân" ? (typeof xg === "function" ? xg() : "anh") : p.ten.trim().split(/\s+/).pop(); }
+function gsSub(s) { return String(s || "").split("{xg}").join(gsWho()); }
+function gsSao(x) { return x.sao_menh.length ? x.sao_menh.join(", ") : "Vô chính diệu (mượn " + x.sao_chieu.join(", ") + ")"; }
+function openGioSinh(p) {
+  if (!RUN) return void toast("Bộ tính chưa sẵn sàng, đợi vài giây rồi bấm lại.");
+  GS.p = p; GS.tl = {}; GS.i = 0; GS.dir = 1; GS.r = null;
+  if (p.gio) GS.tl.khoang = { gio: p.gio, sai: 30 };
+  openSheet(`<h3>Tìm giờ sinh</h3>
+    <p class="hint" style="margin-top:0">7 câu hỏi ngắn để dò giờ sinh của <b>${esc(p.ten)}</b><br>${personLine(p)}</p>
+    <p class="hint">Bộ tính lập sẵn lá số cho cả 12 giờ trong ngày sinh, rồi chấm từng giờ theo câu trả lời: giờ gia đình còn nhớ, ba dấu hiệu dân gian (xoáy tóc, dáng ngủ, khuôn mặt), cung an Thân, tính cách và năm đời rẽ hướng. Câu nào không rõ thì bấm “Không rõ”.</p>
+    ${p.gio ? `<div class="notice info">Sổ đang ghi giờ sinh ${esc(p.gio)}. Câu 1 đã điền sẵn giờ này (có thể sai ± 30 phút); trả lời tiếp để kiểm tra giờ đó có hợp không.</div>` : ""}
+    <div class="small-note">Kết quả là ước đoán để tham khảo. Có giấy chứng sinh ghi giờ thì tin giấy.</div>
+    <div class="btns"><button class="ghost" id="gsNo">Đóng</button><button class="primary" id="gsGo">Bắt đầu</button></div>`);
+  $("#gsNo").onclick = closeSheet;
+  $("#gsGo").onclick = () => gsShow(0);
+}
+function gsShow(i) {
+  if (i < 0) return openGioSinh(GS.p);
+  if (i >= GS_SO) return gsResult();
+  GS.i = i;
+  let r;
+  try { r = gsCall(GS.tl); } catch (e) { r = { ok: false, loi: String(e.message || e) }; }
+  if (!r.ok) { openSheet(`<h3>Tìm giờ sinh</h3><div class="notice err">${esc(r.loi)}</div><div class="btns"><button class="ghost full" id="gsX">Đóng</button></div>`); $("#gsX").onclick = closeSheet; return; }
+  GS.r = r;
+  const c = r.cau_hoi[i], id = c.id;
+  if (id === "tinh" && !c.lua_chon.length) { delete GS.tl.tinh; return gsShow(i + GS.dir); }
+  const cur = GS.tl[id];
+  let body;
+  if (id === "nam") {
+    const v = cur || [];
+    body = `<div class="row" style="margin-top:10px"><input type="number" id="gsN1" inputmode="numeric" placeholder="Năm, vd 2012" value="${esc(v[0] || "")}"><input type="number" id="gsN2" inputmode="numeric" placeholder="Năm khác (nếu có)" value="${esc(v[1] || "")}"></div>`;
+  } else {
+    const opts = c.lua_chon.map(([v, t], k) => {
+      const val = id === "tinh" ? v.join(",") : v;
+      const on = id === "tinh" ? (Array.isArray(cur) && cur.join(",") === val)
+        : id === "khoang" ? (cur && typeof cur === "object" ? v === "giodongho" : cur === v && v !== "")
+        : cur === v && v !== "";
+      return `<button class="gs-opt${v === "" ? " skip" : ""}${on ? " on" : ""}" data-v="${esc(val)}">${id === "tinh" ? `<span class="k">${"ABCDE"[k]}</span>` : ""}<span>${esc(gsSub(t))}</span></button>`;
+    }).join("");
+    body = `<div class="gs-opts">${opts}${id === "tinh" ? `<button class="gs-opt skip" data-v="">Không mô tả nào giống</button>` : ""}</div>`;
+    if (id === "khoang") {
+      const g = cur && typeof cur === "object" ? cur : { gio: "", sai: 30 };
+      body += `<div id="gsGioBox" style="${cur && typeof cur === "object" ? "" : "display:none"}"><div class="row"><div><label for="gsGio">Giờ đồng hồ còn nhớ</label><input type="time" id="gsGio" value="${esc(g.gio)}"></div>
+        <div><label for="gsSai">Có thể sai</label><select id="gsSai">${[15, 30, 60, 120].map(m => `<option value="${m}"${+g.sai === m ? " selected" : ""}>± ${m < 60 ? m + " phút" : m / 60 + " tiếng"}</option>`).join("")}</select></div></div></div>`;
+    }
+  }
+  openSheet(`<div class="gs-step">CÂU ${i + 1}/${GS_SO} · ${esc(GS.p.ten)}</div><div class="gs-progress">${Array.from({ length: GS_SO }, (_, k) => `<i class="${k <= i ? "on" : ""}"></i>`).join("")}</div>
+    <h3 style="margin-top:10px">${esc(gsSub(c.hoi))}</h3>
+    <div class="hint">${esc(gsSub(c.goi_y))}</div>
+    ${body}
+    <div class="small-note" id="gsChk" style="color:#8e2323"></div>
+    <div class="btns"><button class="ghost" id="gsBack">‹ Quay lại</button><button class="primary" id="gsNext">${i === GS_SO - 1 ? "Xem kết quả" : "Tiếp ›"}</button></div>`, true);
+  $("#gsBack").onclick = () => { GS.dir = -1; gsShow(i - 1); };
+  const next = () => {
+    if (id === "khoang" && $("#gsGioBox") && $("#gsGioBox").style.display !== "none") {
+      const g = $("#gsGio").value;
+      if (!g) return void ($("#gsChk").textContent = "Mời nhập giờ đồng hồ còn nhớ, hoặc chọn một khoảng khác.");
+      GS.tl.khoang = { gio: g, sai: +$("#gsSai").value };
+    }
+    if (id === "nam") {
+      const ns = [$("#gsN1").value, $("#gsN2").value].map(v => +v).filter(v => v);
+      const by = +String(GS.p.ngay).slice(0, 4), now = vnNow().getUTCFullYear();
+      if (ns.some(v => v <= by || v > now)) return void ($("#gsChk").textContent = `Năm cần nằm trong khoảng ${by + 1}–${now}.`);
+      if (ns.length) GS.tl.nam = ns; else delete GS.tl.nam;
+    }
+    GS.dir = 1; gsShow(i + 1);
+  };
+  $("#gsNext").onclick = next;
+  $$(".gs-opt", $("#sheet")).forEach(b => b.onclick = () => {
+    $$(".gs-opt", $("#sheet")).forEach(x => x.classList.toggle("on", x === b && b.dataset.v !== ""));
+    const v = b.dataset.v;
+    if (id === "khoang" && v === "giodongho") { $("#gsGioBox").style.display = ""; $("#gsGio").focus(); return; }
+    if ($("#gsGioBox")) $("#gsGioBox").style.display = "none";
+    if (!v) delete GS.tl[id];
+    else GS.tl[id] = id === "tinh" ? v.split(",") : v;
+    setTimeout(next, 160);
+  });
+}
+function gsTomTat() {
+  const r = GS.r, tl = GS.tl, out = [];
+  r.cau_hoi.forEach(c => {
+    const v = tl[c.id]; if (v == null) return;
+    let t;
+    if (c.id === "khoang") t = typeof v === "object" ? `nhớ ${v.gio} ± ${v.sai} phút` : (c.lua_chon.find(o => o[0] === v) || [, v])[1];
+    else if (c.id === "nam") t = v.join(", ");
+    else if (c.id === "tinh") { const k = c.lua_chon.findIndex(o => o[0].join(",") === v.join(",")); t = k >= 0 ? "mô tả " + "ABCDE"[k] + ": " + c.lua_chon[k][1] : ""; }
+    else t = (c.lua_chon.find(o => o[0] === v) || [, v])[1];
+    if (t) out.push(`${gsSub(c.hoi)} → ${gsSub(t)}`);
+  });
+  return out;
+}
+function gsResult() {
+  let r;
+  try { r = gsCall(GS.tl); } catch (e) { r = { ok: false, loi: String(e.message || e) }; }
+  if (!r.ok) { openSheet(`<h3>Tìm giờ sinh</h3><div class="notice err">${esc(r.loi)}</div><div class="btns"><button class="ghost full" id="gsX">Đóng</button></div>`); $("#gsX").onclick = closeSheet; return; }
+  GS.r = r;
+  const p = GS.p, by = Object.fromEntries(r.ung_vien.map(x => [x.id, x])), k = r.ket_luan, top = by[k.id];
+  const daTraLoi = Object.keys(GS.tl).length;
+  const muc = !daTraLoi ? "Chưa trả lời câu nào" : { ro: "Khá rõ", kha: "Nghiêng về giờ này", chua_ro: "Chưa rõ" }[k.muc];
+  const rows = r.diem.slice(0, 4).map(d => {
+    const x = by[d.id];
+    return `<div style="margin:12px 0"><div style="display:flex;justify-content:space-between;gap:8px"><b>${esc(x.ten)}</b><b>${Math.round(d.pt)}%</b></div>
+      <div class="kv">${x.dong_ho[0]}–${x.dong_ho[1]} giờ đồng hồ · Mệnh tại ${esc(x.menh)}: ${esc(gsSao(x))} · Thân cư ${esc(x.than_cu)}</div>
+      <div class="gs-bar"><i style="width:${Math.max(2, d.pt)}%"></i></div>
+      ${d.ly_do.length ? `<div class="kv" style="margin-top:3px">✓ ${esc(gsSub(d.ly_do.join("; ")))}</div>` : ""}</div>`;
+  }).join("");
+  const so = k.nhi.map(id => by[id].ten).concat([top.ten]);
+  openSheet(`<h3>Kết quả dò giờ sinh</h3>
+    <div class="gs-top"><div class="kv">${esc(p.ten)} · ${esc(muc)}</div>
+      <div class="big">${esc(top.ten)} · ${Math.round(k.pt)}%</div>
+      <div>Khoảng <b>${top.dong_ho[0]}–${top.dong_ho[1]}</b> theo giờ đồng hồ ngày sinh</div>
+      <div class="kv">Trụ giờ ${esc(top.tru_gio)} · Mệnh tại ${esc(top.menh)} · ${esc(top.cuc)}</div></div>
+    ${k.muc === "chua_ro" ? `<div class="notice">Các giờ còn sát nhau. Nên lập lá số theo ${esc(so.join(", "))} rồi so với những việc đã xảy ra (năm cưới, năm đổi việc, năm có biến cố lớn) để chọn.</div>` : ""}
+    ${rows}
+    <details class="sec"><summary>Cả ${r.ung_vien.length} khung giờ</summary><div class="body out">${renderOutput(gsSub(r.van_ban))}</div></details>
+    <div class="small-note">Giờ mặt trời thực ở nơi sinh lệch giờ đồng hồ ${esc(r.lech_phut)} phút; khung giờ trên đã tính phần lệch này. Dấu hiệu dân gian (xoáy tóc, dáng ngủ, khuôn mặt) chỉ để tham khảo.</div>
+    <div class="btns"><button class="primary full" id="gsUse">Ghi giờ ${esc(top.ten.replace(/^Giờ /, ""))} (${top.gio_dai_dien}) vào sổ của ${esc(p.ten)}</button>
+      <button class="ghost" id="gsRedo">Làm lại</button><button class="ghost" id="gsClose">Đóng</button></div>`);
+  $("#gsClose").onclick = closeSheet;
+  $("#gsRedo").onclick = () => openGioSinh(personById(p.id) || p);
+  $("#gsUse").onclick = async () => {
+    const cu = personById(p.id) || p;
+    const ghi = `Giờ sinh dò qua 7 câu hỏi: ${top.ten} (${top.dong_ho[0]}–${top.dong_ho[1]}), ${Math.round(k.pt)}%`;
+    const ghiChu = [String(cu.ghiChu || "").replace(/Giờ sinh dò qua 7 câu hỏi:[^·]*(· )?/g, "").trim(), ghi].filter(Boolean).join(" · ");
+    await savePerson({ ...cu, gio: top.gio_dai_dien, ghiChu });
+    closeSheet(); toast(`Đã ghi giờ ${top.gio_dai_dien} cho ${cu.ten}`);
+  };
+  if (daTraLoi) {
+    const tt = gsTomTat();
+    persistCtx({ mon: "Tìm giờ sinh", loai: "giosinh", pid: p.id, cmds: [], ts: new Date().toISOString(),
+      title: `Dò giờ sinh: ${top.ten} ${Math.round(k.pt)}%`,
+      hoi: `Kết quả: ${top.ten} (${top.dong_ho[0]}–${top.dong_ho[1]}), ${Math.round(k.pt)}% – ${muc}. Trả lời: ${tt.join(" | ")}`,
+      parts: [{ label: "Dò giờ sinh", text: gsSub(r.van_ban) }, { label: "Câu trả lời", text: tt.map(t => "- " + t).join("\n") }] });
+  }
+}
 function goTab(t) { $$("section.tab").forEach(s => s.classList.toggle("on", s.id === "tab-" + t)); $$("#tabbar button").forEach(b => b.classList.toggle("on", b.dataset.tab === t)); window.scrollTo(0, 0); try { history.replaceState(null, "", "#" + t); } catch (e) {} }
 $("#tabbar").onclick = e => { const b = e.target.closest("button[data-tab]"); if (b) goTab(b.dataset.tab); };
 (function init() {
