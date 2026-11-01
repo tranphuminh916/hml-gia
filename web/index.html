@@ -610,7 +610,8 @@ function openPersonSheet(p, opt = {}) {
     <label class="check" id="fNhuanRow" style="${e.am ? "" : "display:none"}"><input type="checkbox" id="fNhuan"${e.nhuan ? " checked" : ""}> Tháng nhuận</label>
     <label for="fGio">Giờ sinh (giờ đồng hồ)</label>
     <input type="time" id="fGio" value="${esc(e.gio || "")}">
-    <div class="small-note">Không biết giờ thì để trống: vẫn xem được Bát tự 3 trụ. Sau đó bấm “Tìm giờ sinh” ở thẻ thông tin để dò giờ qua 7 câu hỏi.</div>
+    <div class="small-note">Không biết giờ thì để trống: vẫn xem được Bát tự 3 trụ. Muốn tìm giờ sinh thì bấm nút dưới đây.</div>
+    <button class="gold small" id="fGs" type="button" style="margin-top:8px">🕰 Không biết hoặc không chắc giờ sinh? Dò qua 7 câu hỏi</button>
     <label for="fNoi">Nơi sinh (tỉnh, thành)</label><input type="text" id="fNoi" list="dsNoi" value="${esc(e.noi || "")}" autocomplete="off">
     <div class="small-note" id="fNoiChk"></div>
     ${laMinh ? `<label for="fLH">Số điện thoại hoặc Zalo <span class="hint">(không bắt buộc, để chủ trang liên hệ khi cần)</span></label><input type="text" id="fLH" inputmode="tel" value="${esc(e.lienHe || "")}" autocomplete="off">` : ""}
@@ -622,7 +623,7 @@ function openPersonSheet(p, opt = {}) {
   $("#fNoi").addEventListener("change", chkNoi); $("#fNoi").addEventListener("blur", chkNoi); chkNoi();
   if ($("#fCancel")) $("#fCancel").onclick = closeSheet;
   if ($("#fDel")) $("#fDel").onclick = async () => { if (await confirmSheet(`Xóa ${p.ten}?`)) { await deletePerson(p.id); toast("Đã xóa"); } };
-  $("#fSave").onclick = async () => {
+  const luu = async (sau) => {
     const chk = $("#fChk"); chk.textContent = "";
     const ten = $("#fTen").value.trim(), D = +$("#fD").value, M = +$("#fM").value, Y = +$("#fY").value;
     if (!ten) return void (chk.textContent = "Cần nhập họ tên.");
@@ -638,8 +639,18 @@ function openPersonSheet(p, opt = {}) {
       if (j && j.ma_loi === "sai_ma") { $("#fSave").disabled = false; return void (chk.textContent = "Mã truy cập chưa đúng. Mời " + xg() + " hỏi lại chủ trang."); }
     }
     if (welcome) { KHACH.dongY = true; KHACH.dongYLuc = new Date().toISOString(); localSave(); }
-    try { await savePerson(np); closeSheet(); toast(welcome ? `Chào ${np.gioi === "nu" ? "chị" : "anh"} ${ten.trim().split(/\s+/).pop()}! Mời ${np.gioi === "nu" ? "chị" : "anh"} bắt đầu xem.` : p ? "Đã cập nhật" : `Đã thêm ${ten}`); }
-    catch (er) { chk.textContent = "Chưa lưu được: " + (er.code || er.message); $("#fSave").disabled = false; }
+    try {
+      const id = await savePerson(np);
+      if (sau) return sau({ ...np, id });
+      closeSheet(); toast(welcome ? `Chào ${np.gioi === "nu" ? "chị" : "anh"} ${ten.trim().split(/\s+/).pop()}! Mời ${np.gioi === "nu" ? "chị" : "anh"} bắt đầu xem.` : p ? "Đã cập nhật" : `Đã thêm ${ten}`);
+    }
+    catch (er) { chk.textContent = "Chưa lưu được: " + (er.code || er.message); $("#fSave").disabled = false; $("#fGs").disabled = false; }
+  };
+  $("#fSave").onclick = () => luu();
+  // Lưu thông tin rồi mở ngay phần dò giờ sinh
+  $("#fGs").onclick = () => {
+    if (!$("#fNoi").value.trim()) { $("#fChk").textContent = "Mời nhập nơi sinh trước khi dò giờ (để tính đúng giờ theo mặt trời ở nơi sinh)."; $("#fNoi").focus(); return; }
+    $("#fGs").disabled = true; luu(q => openGioSinh(personById(q.id) || q)).finally(() => { const b = $("#fGs"); if (b) b.disabled = false; });
   };
 }
 function openCodeSheet() {
