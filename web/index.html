@@ -160,7 +160,7 @@ a{color:var(--red2)}
   <details class="sec">
     <summary>Về trang này và quyền riêng tư</summary>
     <div class="body hint">
-      <p>Mọi con số (can chi, sao, cục, quẻ, ngày tốt) do bộ tính đã kiểm chứng tính ngay trên máy của <span class="xg">anh/chị</span> (bản <b id="verLbl">492a69d</b>). <span id="aiNote" hidden>Phần luận do Claude (trí tuệ nhân tạo) viết dựa trên số liệu đó.</span></p>
+      <p>Mọi con số (can chi, sao, cục, quẻ, ngày tốt) do bộ tính đã kiểm chứng tính ngay trên máy của <span class="xg">anh/chị</span> (bản <b id="verLbl">ee02c68</b>). <span id="aiNote" hidden>Phần luận do Claude (trí tuệ nhân tạo) viết dựa trên số liệu đó.</span></p>
       <p><b>Quyền riêng tư:</b> thông tin <span class="xg">anh/chị</span> nhập và các lần <span class="xg">anh/chị</span> xem (kèm kết quả, bài luận) được lưu lại để chủ trang theo dõi. Chỉ chủ trang xem được, không công khai.</p>
       <p>Đây là tri thức văn hóa truyền thống để tham khảo, không phải dự báo khoa học.</p>
       <button class="ghost small" id="btnSelfTest" disabled>Chạy tự kiểm bộ tính (khoảng 30–60 giây)</button>
@@ -289,7 +289,7 @@ a{color:var(--red2)}
 <script>
 "use strict";
 /* ============================================================ hằng số */
-const BAN_SCRIPT = "492a69d";
+const BAN_SCRIPT = "ee02c68";
 const PYO_BASES = ["https://cdn.jsdelivr.net/pyodide/v0.27.7/full/", "https://cdn.jsdelivr.net/npm/pyodide@0.27.7/"];
 const TINH = ["Hà Nội","TP Hồ Chí Minh","Hải Phòng","Đà Nẵng","Cần Thơ","An Giang","Bà Rịa - Vũng Tàu","Bắc Giang","Bắc Kạn","Bạc Liêu","Bắc Ninh","Bến Tre","Bình Định","Bình Dương","Bình Phước","Bình Thuận","Cà Mau","Cao Bằng","Đắk Lắk","Đắk Nông","Điện Biên","Đồng Nai","Đồng Tháp","Gia Lai","Hà Giang","Hà Nam","Hà Tĩnh","Hải Dương","Hậu Giang","Hòa Bình","Hưng Yên","Khánh Hòa","Kiên Giang","Kon Tum","Lai Châu","Lâm Đồng","Lạng Sơn","Lào Cai","Long An","Nam Định","Nghệ An","Ninh Bình","Ninh Thuận","Phú Thọ","Phú Yên","Quảng Bình","Quảng Nam","Quảng Ngãi","Quảng Ninh","Quảng Trị","Sóc Trăng","Sơn La","Tây Ninh","Thái Bình","Thái Nguyên","Thanh Hóa","Thừa Thiên Huế","Tiền Giang","Trà Vinh","Tuyên Quang","Vĩnh Long","Vĩnh Phúc","Yên Bái"];
 const QUAN_HE = ["Bản thân","Vợ","Chồng","Con","Bố","Mẹ","Anh chị em","Cộng sự","Bạn bè","Khách hàng","Khác"];
@@ -765,6 +765,7 @@ async function guideFor(kind) {
     luchao: [D["luc-hao"]], hoichan: [D["luc-hao"], section(cb, "### 4.6"), section(cb, "### 4.5")],
     maihoa: [section(cb, "### 4.6")],
     nha: [section(cb, "### 4.3"), D["huyen-khong"]],
+    giosinh: [D["gio-sinh"]],
   };
   return (map[kind] || []).filter(Boolean).join("\n\n---\n\n") + "\n\n---\n\n" + chung;
 }
@@ -1006,6 +1007,7 @@ function gsCall(tl) {
 // Câu hỏi về chính khách thì gọi anh/chị; về người khác thì gọi tên.
 function gsWho() { const p = GS.p; return !p || p.quanHe === "Bản thân" ? (typeof xg === "function" ? xg() : "anh") : p.ten.trim().split(/\s+/).pop(); }
 function gsSub(s) { return String(s || "").split("{xg}").join(gsWho()); }
+function gsCoLuan() { return typeof coLuan === "function" ? coLuan() : true; }
 function gsSao(x) { return x.sao_menh.length ? x.sao_menh.join(", ") : "Vô chính diệu (mượn " + x.sao_chieu.join(", ") + ")"; }
 function openGioSinh(p) {
   if (!RUN) return void toast("Bộ tính chưa sẵn sàng, đợi vài giây rồi bấm lại.");
@@ -1111,6 +1113,7 @@ function gsResult() {
       ${d.ly_do.length ? `<div class="kv" style="margin-top:3px">✓ ${esc(gsSub(d.ly_do.join("; ")))}</div>` : ""}</div>`;
   }).join("");
   const so = k.nhi.map(id => by[id].ten).concat([top.ten]);
+  const Xw = gsWho().charAt(0).toUpperCase() + gsWho().slice(1);
   openSheet(`<h3>Kết quả dò giờ sinh</h3>
     <div class="gs-top"><div class="kv">${esc(p.ten)} · ${esc(muc)}</div>
       <div class="big">${esc(top.ten)} · ${Math.round(k.pt)}%</div>
@@ -1120,7 +1123,13 @@ function gsResult() {
     ${rows}
     <details class="sec"><summary>Cả ${r.ung_vien.length} khung giờ</summary><div class="body out">${renderOutput(gsSub(r.van_ban))}</div></details>
     <div class="small-note">Giờ mặt trời thực ở nơi sinh lệch giờ đồng hồ ${esc(r.lech_phut)} phút; khung giờ trên đã tính phần lệch này. Dấu hiệu dân gian (xoáy tóc, dáng ngủ, khuôn mặt) chỉ để tham khảo.</div>
-    <div class="btns"><button class="primary full" id="gsUse">Ghi giờ ${esc(top.ten.replace(/^Giờ /, ""))} (${top.gio_dai_dien}) vào sổ của ${esc(p.ten)}</button>
+    <div class="luanBox"${daTraLoi && gsCoLuan() ? "" : " hidden"} style="margin-top:12px">
+      <label>${esc(Xw)} muốn hỏi thêm điều gì? <span class="hint">(không bắt buộc)</span></label>
+      <textarea class="askMore" placeholder="vd: Giờ này với giờ sau khác nhau thế nào?"></textarea>
+      <div class="btns"><button class="primary full btnLuan">✨ Xem luận giải</button><button class="btnSave" hidden></button></div>
+      <div class="luan"></div>
+    </div>
+    <div class="btns"><button class="${daTraLoi && gsCoLuan() ? "gold" : "primary"} full" id="gsUse">Ghi giờ ${esc(top.ten.replace(/^Giờ /, ""))} (${top.gio_dai_dien}) vào sổ của ${esc(p.ten)}</button>
       <button class="ghost" id="gsRedo">Làm lại</button><button class="ghost" id="gsClose">Đóng</button></div>`);
   $("#gsClose").onclick = closeSheet;
   $("#gsRedo").onclick = () => openGioSinh(personById(p.id) || p);
@@ -1133,10 +1142,15 @@ function gsResult() {
   };
   if (daTraLoi) {
     const tt = gsTomTat();
-    persistCtx({ mon: "Tìm giờ sinh", loai: "giosinh", pid: p.id, cmds: [], ts: new Date().toISOString(),
+    const ctx = { mon: "Tìm giờ sinh", kind: "giosinh", loai: "giosinh", pid: p.id, ts: new Date().toISOString(),
+      cmds: ["giosinh.py " + JSON.stringify({ ngay: p.ngay, gioi: p.gioi, noi: p.noi || "", am: !!p.am, nhuan: !!p.nhuan, tra_loi: GS.tl })],
+      nguoi: `${p.ten} – ${personLine(p).replace(/<[^>]+>/g, "")}`,
       title: `Dò giờ sinh: ${top.ten} ${Math.round(k.pt)}%`,
       hoi: `Kết quả: ${top.ten} (${top.dong_ho[0]}–${top.dong_ho[1]}), ${Math.round(k.pt)}% – ${muc}. Trả lời: ${tt.join(" | ")}`,
-      parts: [{ label: "Dò giờ sinh", text: gsSub(r.van_ban) }, { label: "Câu trả lời", text: tt.map(t => "- " + t).join("\n") }] });
+      parts: [{ label: "Dò giờ sinh", text: gsSub(r.van_ban) }, { label: "Câu trả lời", text: tt.map(t => "- " + t).join("\n") }] };
+    persistCtx(ctx);
+    const box = $("#sheet");
+    $(".btnLuan", box).onclick = () => doLuan(box, ctx);
   }
 }
 function goTab(t) { $$("section.tab").forEach(s => s.classList.toggle("on", s.id === "tab-" + t)); $$("#tabbar button").forEach(b => b.classList.toggle("on", b.dataset.tab === t)); window.scrollTo(0, 0); try { history.replaceState(null, "", "#" + t); } catch (e) {} }

@@ -21,6 +21,7 @@ var COT_KHACH = ['Mã khách', 'Lần đầu', 'Lần cuối', 'Họ tên', 'Gi�
 var COT_LUOT = ['Thời gian', 'Mã lượt', 'Mã khách', 'Khách', 'Xem cho', 'Mục xem', 'Chi tiết / câu hỏi', 'Người thứ hai', 'Số liệu bộ tính', 'Bài luận', 'Hỏi thêm', 'Luận lúc'];
 var MUI_GIO = 'Asia/Ho_Chi_Minh';
 var MODEL_MAC_DINH = 'claude-sonnet-5-5';
+var MODEL_NHANH = 'claude-haiku-5-5';
 
 /* ------------------------------------------------------------------ cài đặt */
 function caiDat() {
@@ -206,7 +207,7 @@ function quyTac_(xung) {
     '## Luận giải (chia mục theo nội dung, mỗi mục vài câu)',
     '## Nên làm, nên tránh (gạch đầu dòng, cụ thể)',
     '## Lưu ý và độ chắc chắn',
-    'Độ dài vừa đọc trên điện thoại: khoảng 400–800 chữ.'
+    'Độ dài vừa đọc trên điện thoại: khoảng 400–650 chữ.'
   ].join('\n');
 }
 
@@ -254,27 +255,44 @@ function luan_(req, P) {
     String(x.soLieu || '').slice(0, 70000)
   ].join('\n');
 
-  var res = UrlFetchApp.fetch('https://api.anthropic.com/v1/messages', {
-    method: 'post',
-    contentType: 'application/json',
-    headers: { 'x-api-key': key, 'anthropic-version': '2023-06-01' },
-    payload: JSON.stringify({
-      model: String(P.getProperty('MODEL') || MODEL_MAC_DINH).trim(),
-      max_tokens: 3000,
-      system: quyTac_(xung),
-      messages: [{ role: 'user', content: noiDung }]
-    }),
-    muteHttpExceptions: true
-  });
+  // Google chỉ chờ mỗi lần gọi ra ngoài khoảng 60 giây. Lần đầu viết vừa phải; quá giờ thì thử lại một lần
+  // bằng model nhanh hơn, bài ngắn hơn.
+  var lan = [[String(P.getProperty('MODEL') || MODEL_MAC_DINH).trim(), Number(P.getProperty('MAX_TOKENS')) || 2200],
+             [MODEL_NHANH, 1100]];
+  var res = null, loiMang = '';
+  for (var i = 0; i < lan.length && !res; i++) {
+    try {
+      res = UrlFetchApp.fetch('https://api.anthropic.com/v1/messages', {
+        method: 'post',
+        contentType: 'application/json',
+        headers: { 'x-api-key': key, 'anthropic-version': '2023-06-01' },
+        payload: JSON.stringify({
+          model: lan[i][0],
+          max_tokens: lan[i][1],
+          system: quyTac_(xung),
+          messages: [{ role: 'user', content: noiDung }]
+        }),
+        muteHttpExceptions: true
+      });
+    } catch (e1) {
+      loiMang = String((e1 && e1.message) || e1);
+      res = null;
+    }
+  }
+  if (!res) {
+    cache.put(kKhach, String(daDung), 21600);   // lỗi thì trả lại lượt
+    return { ok: false, ma_loi: 'ban', loi: 'Máy chủ chờ quá lâu nên chưa luận được (' + loiMang.slice(0, 120) + '). Mời ' + xung + ' thử lại sau ít phút.' };
+  }
   var code = res.getResponseCode();
   var j = {};
   try { j = JSON.parse(res.getContentText()); } catch (e2) { j = {}; }
   if (code !== 200) {
     cache.put(kKhach, String(daDung), 21600);   // lỗi thì trả lại lượt
     var thongDiep = (j.error && j.error.message) || ('mã ' + code);
-    return { ok: false, ma_loi: code === 429 || code === 529 ? 'ban' : 'loi_claude', loi: 'Claude chưa trả lời được (' + thongDiep + ').' };
+    return { ok: false, ma_loi: code === 429 || code === 529 ? 'ban' : 'loi_claude', loi: 'Chưa luận được (' + thongDiep + ').' };
   }
   var text = (j.content || []).filter(function (c) { return c.type === 'text'; }).map(function (c) { return c.text; }).join('\n').trim();
+  if (j.stop_reason === 'max_tokens') text += '\n\n_(Bài luận dừng ở giới hạn độ dài.)_';
 
   voiKhoa_(function () {
     var sh = tab_(TAB_LUOT, COT_LUOT);
