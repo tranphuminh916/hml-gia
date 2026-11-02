@@ -1013,7 +1013,7 @@ async function runLaso() {
         const vt = "/tmp/vanthe-td-" + Date.now() + ".html", r = await run("Vận thế từ 12 năm trước đến 11 năm tới", "nc", ["vanthe", ...A, "--ten", p.ten, "--tu-nam", Y - 12, "--den-nam", Y + 11, "--ra", vt], { soft: true });
         if (!r.code) charts.push({ label: "Biểu đồ vận thế", html: readFile(vt) });
       }
-      ctx.warn = coGio ? "Bản luận trọn đời gồm 8 phần, mỗi phần viết riêng nên mất khoảng 5–8 phút. Ghi thêm vài mốc đời thực đã qua (năm – việc) vào ô bên dưới để bản luận đối chiếu, kiểm lại giờ sinh." :
+      ctx.warn = coGio ? tdHuongDanTruoc() :
         "Không có giờ sinh nên chỉ có Bát tự 3 trụ, không lập được lá số Tử vi. Nên dò giờ sinh trước (nút “Tìm giờ sinh” ở tab Sổ) rồi mới luận trọn đời.";
     } else if (mode === "thang") {
       ctx.mon = "Vận hạn từng tháng"; ctx.title = `Vận hạn từng tháng năm ${Y} – ${p.ten}`;
@@ -1368,6 +1368,27 @@ function gsResult() {
 // Bản luận dài được viết thành từng phần. Trang khách: mỗi phần một lần gọi máy chủ (Google chỉ chờ ~60 giây/lần).
 // App của chủ: mỗi phần một lần hỏi Claude trong app. Dàn ý theo mục 4.7 của luan-chi-tiet.md.
 /* Trích các bảng cần dùng trong output của tvbt.py (bỏ phần trùng để số liệu gửi đi gọn). */
+/* Hướng dẫn ngắn cho người xem: trước khi luận và cách đọc bản luận. */
+function tdGoiXung() { return typeof xg === "function" ? xg() : "anh"; }
+function tdHuongDanTruoc() {
+  const g = tdGoiXung();
+  return `<b>Để bản luận sát với ${g} hơn, ${g} làm 3 bước:</b>
+<ol style="margin:6px 0 0 18px;padding:0">
+<li><b>Ghi 3–5 mốc đã qua</b> vào ô "Mốc đời thực" bên dưới, dạng <i>năm – việc</i>, cách nhau bằng dấu chấm phẩy. Ví dụ: <i>2008 cưới; 2010 sinh con trai đầu, tính hiền; 2015 mở công ty; 2020 chuyển nhà</i>.<br>Nên ghi: năm cưới, năm sinh từng con (kèm vài chữ về tính cách), năm đổi việc hoặc mở công ty, năm chuyển nhà, năm có việc lớn về tiền hay sức khỏe. Không cần ghi tên người hay số điện thoại. Không nhớ thì để trống.</li>
+<li><b>Bấm nút "✨ Luận giải chi tiết trọn đời"</b> rồi để nguyên trang khoảng 5–8 phút; đừng tắt màn hình hay chuyển sang ứng dụng khác. Nếu bị ngắt giữa chừng, bấm "Viết tiếp từ phần …" để viết nốt.</li>
+<li><b>Đọc mục "Tóm tắt" trước</b>, rồi mới xem các bảng năm, tháng.</li>
+</ol>`;
+}
+function tdCachDoc() {
+  const g = tdGoiXung();
+  return `<details class="sec" open><summary>Cách đọc bản luận này</summary><div class="body"><ul style="margin:0 0 0 18px;padding:0">
+<li>Mức đánh giá từ cao xuống thấp: <b>Tốt nhất → Rất tốt → Tốt → Khá → Trung bình → Cần thận trọng → Kém</b>.</li>
+<li>Chữ trong ngoặc cuối câu là căn cứ trong lá số; ${g} không cần hiểu cũng được.</li>
+<li>Dấu <b>✔</b> là mốc ${g} đã ghi khớp với lá số. Nếu nhiều mốc không khớp, có thể giờ sinh chưa đúng: bấm "Kiểm tra giờ sinh" ở tab Sổ, rồi luận lại.</li>
+<li>Tháng ghi theo âm lịch, ngày dương lịch để trong ngoặc.</li>
+<li>Năm, tháng cụ thể chỉ là xu hướng để ${g} chuẩn bị, không phải điều chắc chắn sẽ xảy ra. Việc lớn về tiền, sức khỏe, pháp lý nên hỏi thêm người có chuyên môn.</li>
+</ul></div></details>`;
+}
 const TD_MUC = ["THÔNG TIN SINH", "BÁT TỰ (TỨ TRỤ)", "ĐẠI VẬN", "LƯU NIÊN", "LƯU NGUYỆT BÁT TỰ", "THẦN SÁT", "TỬ VI ĐẨU SỐ", "TỨ HÓA PHI TINH", "VẬN HẠN NĂM", "LƯU NGUYỆT TỬ VI", "VẬN HẠN TỬ VI NHIỀU", "PHONG THỦY", "CỬU TINH"];
 function trichMuc(text, heads) {
   const out = []; let giu = false;
@@ -1556,6 +1577,7 @@ async function doLuanTronDoi(box, ctx, tu = 0) {
       if (dau) kiem = " " + dau.replace("TỰ KIỂM BẢN LUẬN:", "Tự kiểm bản luận:").replace(/\s*\(A: gửi được.*\)$/, "") + ".";
     } catch (e) { kiem = ""; }
   }
+  if (K.loai === "trondoi") out.insertAdjacentHTML("beforeend", tdCachDoc());
   out.insertAdjacentHTML("beforeend", `<div class="small-note">Đã viết xong ${n} phần.${kiem}${ctx.tdConLai != null ? ` Hôm nay ${goi} còn ${ctx.tdConLai} lần ${K.ten}.` : ""}</div>`);
   try { await persistCtx(ctx, { luan: ctx.luan, hoiThem }); } catch (e) {}
   const sv = $(".btnSave", box); if (sv && ctx.logId) { sv.textContent = "✓ Đã lưu vào sổ"; sv.disabled = true; }
