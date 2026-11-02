@@ -863,8 +863,8 @@ async function renderResult(box, ctx) {
     <div class="charts"></div>
     ${parts}
     <div class="luanBox"${coLuan() ? "" : " hidden"}>
-    <label>${Xg()} muốn hỏi thêm điều gì? <span class="hint">(không bắt buộc)</span></label>
-    <textarea class="askMore" placeholder="vd: Năm nay làm ăn với đối tác mới có thuận không?">${esc(ctx.hoiThem || "")}</textarea>
+    <label>${ctx.kind === "trondoi" ? "Mốc đời thực đã qua (năm – việc), tính cách các con, điều muốn hỏi thêm" : Xg() + " muốn hỏi thêm điều gì?"} <span class="hint">(không bắt buộc)</span></label>
+    <textarea class="askMore" placeholder="${ctx.kind === "trondoi" ? "vd: 2007 sinh con trai đầu (hiền); 2012 sinh con út (cứng); 2015 lập công ty; muốn hỏi thêm về hợp tác." : "vd: Năm nay làm ăn với đối tác mới có thuận không?"}">${esc(ctx.hoiThem || "")}</textarea>
     <div class="btns"><button class="primary full btnLuan">${ctx.kind === "trondoi" || ctx.kind === "viec" ? tdKe(ctx).nut : "✨ Xem luận giải"}</button></div>
     <div class="luan"></div>
     </div>
@@ -998,14 +998,22 @@ async function runLaso() {
         const ra = "/tmp/tuvi-" + Date.now() + ".html", r = await py("nc", ["anhtuvi", ...A, "--nam-xem", Y, "--ten", p.ten, "--ra", ra]);
         if (!r.code) charts.push({ label: "Lá số Tử vi", html: readFile(ra) });
       }
-      await run("Bát tự, Tử vi, phong thủy, vận hạn 10 năm, lưu nguyệt", "tvbt", ["tatca", ...A, "--nam-xem", Y, "--phi-hoa", "--luu-nien", 10, "--so-nam", 10, "--luu-nguyet"]);
+      await run("Bát tự, Tử vi, phong thủy, vận hạn 12 năm, lưu nguyệt năm nay", "tvbt", ["tatca", ...A, "--nam-xem", Y, "--phi-hoa", "--luu-nien", 12, "--so-nam", 12, "--luu-nguyet"]);
       await run("Vượng suy, cách cục Bát tự", "nc", ["vuongsuy", ...A]);
+      if (coGio) await run("Cách cục Tử vi", "nc", ["cachcuc", ...A, "--nam-xem", Y]);
+      // Năm trước (để đối chiếu) và năm sau (từng tháng): chỉ giữ các bảng cần cho bản luận.
+      const tdTrich = async (label, args, heads) => {
+        cmds.push(["tvbt", args]); const r = await py("tvbt", args);
+        if (!r.code && r.text) { const t = trichMuc(r.text, heads); if (t) parts.push({ label, text: t }); }
+      };
+      const tv = coGio ? ["tuvi"] : [];
+      await tdTrich(`Vận hạn năm trước (${Y - 1})`, ["battu", ...tv, ...A, "--nam-xem", Y - 1, "--luu-nien", 1], ["LƯU NIÊN", "VẬN HẠN NĂM"]);
+      await tdTrich(`Năm sau (${Y + 1}): vận hạn và từng tháng`, ["battu", ...tv, ...A, "--nam-xem", Y + 1, "--luu-nien", 1, "--luu-nguyet"], ["LƯU NIÊN", "LƯU NGUYỆT BÁT TỰ", "VẬN HẠN NĂM", "LƯU NGUYỆT TỬ VI"]);
       if (coGio) {
-        await run("Cách cục Tử vi", "nc", ["cachcuc", ...A, "--nam-xem", Y]);
-        const vt = "/tmp/vanthe-td-" + Date.now() + ".html", r = await run("Vận thế 12 năm", "nc", ["vanthe", ...A, "--ten", p.ten, "--tu-nam", Y - 2, "--den-nam", Y + 9, "--ra", vt], { soft: true });
+        const vt = "/tmp/vanthe-td-" + Date.now() + ".html", r = await run("Vận thế từ 12 năm trước đến 11 năm tới", "nc", ["vanthe", ...A, "--ten", p.ten, "--tu-nam", Y - 12, "--den-nam", Y + 11, "--ra", vt], { soft: true });
         if (!r.code) charts.push({ label: "Biểu đồ vận thế", html: readFile(vt) });
       }
-      ctx.warn = coGio ? "Bản luận trọn đời gồm 7 phần, mỗi phần viết riêng nên mất khoảng 4–6 phút." :
+      ctx.warn = coGio ? "Bản luận trọn đời gồm 8 phần, mỗi phần viết riêng nên mất khoảng 5–8 phút. Ghi thêm vài mốc đời thực đã qua (năm – việc) vào ô bên dưới để bản luận đối chiếu, kiểm lại giờ sinh." :
         "Không có giờ sinh nên chỉ có Bát tự 3 trụ, không lập được lá số Tử vi. Nên dò giờ sinh trước (nút “Tìm giờ sinh” ở tab Sổ) rồi mới luận trọn đời.";
     } else if (mode === "thang") {
       ctx.mon = "Vận hạn từng tháng"; ctx.title = `Vận hạn từng tháng năm ${Y} – ${p.ten}`;
@@ -1359,34 +1367,56 @@ function gsResult() {
 /* ============================================================ luận chi tiết trọn đời (nhiều phần) */
 // Bản luận dài được viết thành từng phần. Trang khách: mỗi phần một lần gọi máy chủ (Google chỉ chờ ~60 giây/lần).
 // App của chủ: mỗi phần một lần hỏi Claude trong app. Dàn ý theo mục 4.7 của luan-chi-tiet.md.
+/* Trích các bảng cần dùng trong output của tvbt.py (bỏ phần trùng để số liệu gửi đi gọn). */
+const TD_MUC = ["THÔNG TIN SINH", "BÁT TỰ (TỨ TRỤ)", "ĐẠI VẬN", "LƯU NIÊN", "LƯU NGUYỆT BÁT TỰ", "THẦN SÁT", "TỬ VI ĐẨU SỐ", "TỨ HÓA PHI TINH", "VẬN HẠN NĂM", "LƯU NGUYỆT TỬ VI", "VẬN HẠN TỬ VI NHIỀU", "PHONG THỦY", "CỬU TINH"];
+function trichMuc(text, heads) {
+  const out = []; let giu = false;
+  for (const dong of String(text).split("\n")) {
+    const muc = TD_MUC.find(m => dong.startsWith(m));
+    if (muc) giu = heads.some(h => dong.startsWith(h));
+    if (giu && !/^- Cung (đại vận|lưu niên) \(lấy cung/.test(dong)) out.push(dong);
+  }
+  return out.join("\n").replace(/\n{3,}/g, "\n\n").trim();
+}
 const TD_PHAN = [
-  { ten: "Tổng quan và con người", yeu: `Viết "## 1. Tổng quan" và "## 2. Con người".
-- Tổng quan: 2–3 câu nói gọn cả đời bằng lời thường. Rồi bảng nhỏ | Mục | Nội dung | gồm: ngày giờ, nơi sinh đã dùng; tuổi (can chi); người mạnh hay yếu (một chữ); hợp với gì, nên tránh gì (theo hành Cần / Thừa, ghi bằng màu, hướng, nghề dễ hiểu). Thiếu giờ sinh thì ghi rõ chỉ xem được một phần.
-- Con người: 3–4 điểm mạnh và 2–3 điểm cần lưu ý, mỗi ý một câu.
-Khoảng 200–300 chữ.` },
-  { ten: "Công việc và tiền bạc", yeu: `Viết "## 3. Công việc và tiền bạc", ba mục nhỏ in đậm, mỗi mục 2–3 gạch đầu dòng ngắn:
-- **Hợp làm gì** (nghề, vai trò; làm chủ hay làm thuê; một mình hay hợp tác).
-- **Kiếm tiền và giữ tiền** (dễ có tiền từ đâu, dễ hao vì đâu).
-- **Lúc nào thuận nhất** (khoảng tuổi hoặc năm).
-Khoảng 200–300 chữ.` },
-  { ten: "Gia đình", yeu: `Viết "## 4. Gia đình", bốn mục nhỏ in đậm, mỗi mục 1–2 câu: Cha mẹ; Anh em, bạn bè; Vợ hoặc chồng (người thế nào, lúc nào thuận, cần giữ hòa khí ra sao); Con cái.
-Nói nhẹ nhàng, không phán chuyện sinh tử, ly hôn. Khoảng 180–260 chữ.` },
-  { ten: "Sức khỏe", yeu: `Viết "## 5. Sức khỏe". Câu đầu: "Đây là góc nhìn cổ học, không thay cho khám bệnh." Rồi 3–4 gạch đầu dòng: chỗ cơ thể cần giữ gìn; các năm cần để ý trong 10 năm tới; thói quen nên giữ.
-Không chẩn đoán bệnh, không gieo lo lắng. Khoảng 120–200 chữ.` },
-  { ten: "Các giai đoạn cuộc đời", yeu: `Viết "## 6. Các giai đoạn cuộc đời":
-- Bảng theo chặng 10 năm từ nhỏ đến cuối đời: | Tuổi (năm dương lịch) | Đánh giá (Thuận / Bình / Cần thận trọng) | Nét chính (dưới 12 chữ, lời thường) |. Đánh dấu chặng hiện tại bằng "◀ hiện tại".
-- Sau bảng: 2–3 câu về chặng thuận nhất và chặng cần thận trọng.
-Chỉ dùng tuổi và năm có trong số liệu. Khoảng 150–250 chữ (không tính bảng).` },
-  { ten: "Năm nay, năm sau và 10 năm tới", yeu: `Viết "## 7. Năm nay và năm sau" và "## 8. Mười năm tới".
-- Năm nay: 2 câu đánh giá chung; bảng | Mảng (công việc, tiền bạc, gia đình, sức khỏe) | Đánh giá | Ghi chú ngắn |; bảng từng tháng | Tháng âm (khoảng ngày dương) | Đánh giá | Ghi chú ngắn |.
-- Năm sau: 2–3 câu.
-- Mười năm tới: bảng | Năm | Đánh giá (Tốt / Khá / Trung bình / Cần thận trọng) | Ghi chú ngắn |.
-Ô "Ghi chú ngắn" dưới 10 chữ, lời thường. Khoảng 150–250 chữ (không tính bảng).` },
-  { ten: "Lời khuyên và những thứ hợp", yeu: `Viết "## 9. Nên làm", "## 10. Những thứ hợp" và "## 11. Lưu ý".
-- Nên làm: 5–6 gợi ý đánh số, mỗi gợi ý một câu.
-- Những thứ hợp: màu, hướng, nghề, tuổi hợp tác – gạch đầu dòng ngắn, chỉ lấy từ hành Cần / Thừa và cung phi trong số liệu.
-- Lưu ý: 2–3 dòng: giờ và nơi sinh đã dùng (giờ dò thì nói là chưa chắc chắn); một câu: đây là tri thức văn hóa truyền thống để tham khảo, không phải dự báo khoa học.
-Khoảng 180–260 chữ.` },
+  { ten: "Tóm tắt, thông tin lá số, con người", yeu: `Viết "## 1. Tóm tắt", "## 2. Thông tin lá số" và "## 3. Con người".
+- Tóm tắt: 3–4 câu lời thường: cả đời nổi bật ở đâu, điều cần giữ; một câu về năm nay, một câu về năm sau.
+- Thông tin lá số: bảng | Mục | Nội dung | với các hàng: Sinh (ngày âm, ngày dương, giờ, nơi sinh đã dùng); Giờ đã chọn (giờ âm lịch kèm khung giờ đồng hồ; giờ dò hoặc có cảnh báo sát ranh giới thì ghi chưa chắc và lý do chọn); Tử vi (một dòng: bản thân, công việc, tiền bạc – chỉ tên sao); Bát tự (một dòng); Cần; Thừa; Trung tính. Ba hàng Cần / Thừa / Trung tính ghi hành kèm nghĩa đời thường trong ngoặc, ví dụ "Thổ (tiền, nền tảng)". Chọn theo đủ các bước của mục 4.1 luan-chi-tiet. Thiếu giờ sinh thì ghi rõ chỉ xem được một phần.
+- Sau bảng 1–2 câu: hai thang vượng suy lệch nhau thì nói đã chọn cách hiểu nào và vì sao (ưu tiên cách khớp mốc đời thực người xem đã nêu).
+- Con người: 4–5 gạch đầu dòng, điểm mạnh trước; dòng cuối bắt đầu bằng "**Cần lưu ý:**".
+Khoảng 250–350 chữ (không tính bảng).` },
+  { ten: "Công việc và tiền bạc", canTruoc: true, chiLay: [0], yeu: `Viết "## 4. Công việc và tiền bạc": 5–7 gạch đầu dòng, mỗi dòng 1–2 câu:
+- hợp vai trò gì (làm chủ, quản lý, chuyên môn hay làm thuê; một mình hay có cộng sự);
+- tiền đến từ đâu; phát sớm hay muộn (khoảng tuổi);
+- dễ hao vì đâu, cách giữ tiền; chuyện hợp tác, chia phần;
+- một dòng bắt đầu bằng "**Ngành hợp:**" – chỉ suy từ hành Cần trong bảng ở phần 2 (mục CÁC PHẦN ĐÃ VIẾT), theo bảng ứng dụng ngũ hành 4.2. Người xem đang làm ngành thuộc hành Thừa thì nói mảng nào trong ngành đó hợp hơn.
+Người xem có nêu nghề hoặc mốc đời thực thì đối chiếu, khớp thì nói ngắn "đúng với việc …". Khoảng 200–300 chữ.` },
+  { ten: "Gia đình và sức khỏe", canTruoc: true, chiLay: [0], yeu: `Viết "## 5. Gia đình" và "## 6. Sức khỏe (góc nhìn cổ học, không thay cho khám bệnh)".
+- Gia đình: các gạch đầu dòng mở đầu in đậm: **Cha mẹ:**, **Anh em:**, **Vợ / Chồng:** (người thế nào, chỗ dễ va, cách giữ hòa khí, giai đoạn cần giữ), **Con:**. Người xem có nêu con (năm sinh, tính cách) thì nói riêng từng con, ghi "sinh năm …", và đối chiếu tính cách đã nêu. Nói nhẹ nhàng, không phán chuyện sinh tử, ly hôn.
+- Sức khỏe: 3–4 gạch đầu dòng về chỗ cơ thể cần giữ (theo hành Thừa ở phần 2 và sao ở cung Sức khỏe); dòng cuối "**Năm cần để ý:** …" – chỉ lấy năm có trong số liệu (tiểu hạn hoặc Hóa Kỵ lưu vào cung Sức khỏe, năm xung trụ ngày, năm điểm vận thế thấp). Không chẩn đoán bệnh.
+Khoảng 220–320 chữ.` },
+  { ten: "Hành trình đã qua", canTruoc: true, chiLay: [0], yeu: `Viết "## 7. Hành trình đã qua": bảng | Năm (tuổi mụ) | Diễn biến | Ghi chú ngắn | theo chặng 10 năm của ĐẠI VẬN Bát tự, từ nhỏ đến chặng đang chạy (hàng đó ghi thêm "◀ hiện tại").
+- Cột Diễn biến: một câu lời thường; ghi luôn đại hạn Tử vi của chặng bằng tên cung dễ hiểu (Bản thân, Anh em, Vợ chồng, Con, Tiền bạc, Sức khỏe, Ra ngoài, Bạn bè – người dưới, Công việc, Nhà đất, Phúc đức, Cha mẹ); dùng năm điểm cao, điểm thấp của bảng VẬN THẾ nếu có.
+- Ghi chú ngắn dưới 10 chữ.
+- Người xem có nêu mốc đời thực (năm – việc) thì đối chiếu: khớp thì ghi "✔" kèm việc đó ở cột Ghi chú. Sau bảng 1–2 câu: mốc nào khớp, mốc nào chưa khớp. Chưa nêu mốc thì một câu mời người xem cho 3–5 mốc để kiểm lại giờ sinh và dụng thần.
+Khoảng 120–200 chữ (không tính bảng).` },
+  { ten: "Năm trước và năm nay", canTruoc: true, chiLay: [0], yeu: `Viết "## 8. Năm trước và năm nay".
+- "### <năm trước> – <can chi>: <đánh giá> (đã qua)": 1–2 câu, cả mặt tốt lẫn chưa tốt (theo phần VẬN HẠN NĂM TRƯỚC và bảng VẬN THẾ).
+- "### <năm nay> – <can chi>: <đánh giá>, <ý chính nửa câu>": 1–2 câu; bảng | Mảng | Đánh giá | gồm Công việc, Tiền bạc, Bản thân, Vợ chồng, Sức khỏe (thêm Con hoặc Cha mẹ nếu năm nay nổi bật), mỗi ô kèm lý do rất ngắn trong ngoặc; rồi bảng | Tháng âm (dương lịch) | Đánh giá | Lý do | theo LƯU NGUYỆT TỬ VI và LƯU NGUYỆT BÁT TỰ năm nay: tháng đã qua gộp lại và ghi "Đã qua"; tháng đang diễn ra ghi thêm "đang diễn ra" ở cột đầu; các tháng còn lại mỗi tháng một hàng.
+- Đánh giá chỉ dùng một trong: Tốt nhất / Rất tốt / Tốt / Khá / Trung bình / Cần thận trọng / Kém. Tử vi và Bát tự ngược nhau thì chấm mức giữa và nói rõ. Đọc đủ bốn Hóa lưu niên (Lộc, Quyền, Khoa, Kỵ), không chỉ mặt xấu. Cột Lý do dưới 12 chữ.
+Khoảng 150–250 chữ (không tính bảng).` },
+  { ten: "Năm sau", canTruoc: true, chiLay: [0], yeu: `Viết "## 9. Năm sau": "### <năm sau> – <can chi>: <đánh giá>": 1–2 câu; bảng | Mảng | Đánh giá | như phần trước; bảng | Tháng âm (dương lịch) | Đánh giá | Lý do | đủ 12 tháng âm lịch, theo phần NĂM SAU trong số liệu (lưu nguyệt Tử vi và Bát tự). Hóa Kỵ chồng hai tầng (đại hạn và năm, hoặc gốc và năm) ở cung nào thì nói rõ là điểm yếu của năm. Câu cuối nêu tháng tốt nhất và tháng cần thận trọng nhất.
+Đánh giá chỉ dùng: Tốt nhất / Rất tốt / Tốt / Khá / Trung bình / Cần thận trọng / Kém. Cột Lý do dưới 12 chữ. Khoảng 120–200 chữ (không tính bảng).` },
+  { ten: "Tương lai", canTruoc: true, chiLay: [0], yeu: `Viết "## 10. Tương lai".
+- Bảng | Giai đoạn (tuổi mụ) | Đánh giá | Ghi chú ngắn | các chặng 10 năm từ chặng đang chạy đến cuối đời (theo ĐẠI VẬN Bát tự, kèm đại hạn Tử vi; năm đỉnh, năm thấp lấy từ VẬN THẾ).
+- Bảng | Năm | Đánh giá | Ghi chú ngắn | cho khoảng 10 năm, bắt đầu từ năm sau năm sau, lấy từ VẬN THẾ, VẬN HẠN TỬ VI NHIỀU NĂM và LƯU NIÊN.
+- Sau bảng 1–2 câu: năm đỉnh và các năm nên chậm lại. Năm cụ thể luôn kèm lời rào đón (có thể, nên).
+Đánh giá chỉ dùng: Tốt nhất / Rất tốt / Tốt / Khá / Trung bình / Cần thận trọng / Kém. Ghi chú ngắn dưới 10 chữ. Khoảng 120–200 chữ (không tính bảng).` },
+  { ten: "Gợi ý, những thứ hợp, lưu ý", canTruoc: true, yeu: `Viết "## 11. Gợi ý nên làm", "## 12. Những thứ hợp" và "## 13. Lưu ý". Dựa vào các phần đã viết; không đổi đánh giá, năm hay tháng đã nêu.
+- Gợi ý: 5–6 gợi ý đánh số, mỗi gợi ý một câu cụ thể kèm lý do ngắn trong ngoặc; thời điểm lấy đúng từ các phần đã viết.
+- Những thứ hợp: gạch đầu dòng Màu; Hướng (hướng theo hành Cần và hướng tốt theo cung phi, rồi nói hướng trùng nhau để ưu tiên); Giờ làm việc quan trọng (giờ đồng hồ); Tuổi cộng sự hợp (kèm "chỉ để tham khảo, không loại ai vì tuổi"). Tất cả lấy từ bảng Cần / Thừa ở phần 2 và cung phi trong số liệu.
+- Lưu ý: 2–3 dòng in nghiêng: giờ và nơi sinh đã dùng (sát ranh giới hoặc giờ dò thì nói chưa chắc, sinh ở giờ bên cạnh thì lá số đổi); độ chắc chắn (khá với tính cách, nghề, mốc đã qua khi người xem đã nêu mốc và khớp; chưa nêu mốc thì tối đa trung bình; trung bình với từng năm, từng tháng); câu "Đây là tri thức văn hóa truyền thống để tham khảo."
+Khoảng 220–320 chữ.` },
 ];
 const TD_QUY_TAC = `Bạn là người luận Tử vi, Bát tự theo truyền thống Việt Nam, đang viết bản luận chi tiết trọn đời cho người xem đọc trên điện thoại.
 Bản luận chia nhiều phần; mỗi lần chỉ viết đúng một phần được yêu cầu ở cuối tin nhắn.
@@ -1435,14 +1465,14 @@ Quy tắc bắt buộc:
 function tdKe(ctx) {
   return ctx.kind === "viec"
     ? { phan: VIEC_PHAN, quyTac: VIEC_QUY_TAC, loai: "viec", guide: "viec", nut: "✨ Luận đủ các cách và tổng kết", ten: "luận xem việc", phut: "khoảng 2 phút" }
-    : { phan: TD_PHAN, quyTac: TD_QUY_TAC, loai: "trondoi", guide: "trondoi", nut: "✨ Luận giải chi tiết trọn đời", ten: "luận trọn đời", phut: "khoảng 4–6 phút" };
+    : { phan: TD_PHAN, quyTac: TD_QUY_TAC, loai: "trondoi", guide: "trondoi", nut: "✨ Luận giải chi tiết trọn đời", ten: "luận trọn đời", phut: "khoảng 5–8 phút" };
 }
 const NHAC_VIET = `NHẮC LẠI CÁCH VIẾT (bắt buộc): câu chính viết như kể cho người chưa từng nghe về tử vi – không có các chữ cung, môn, sao, thần, khóa, truyền, hào, quẻ, can chi, mệnh, không vong, phục ngâm, phản ngâm; những chữ đó chỉ được để trong ngoặc cuối câu (tối đa 4 chữ). Viết ngắn, đúng số gạch đầu dòng đã nêu. Viết xong tự rà lại từng câu.`;
 const TD_QUA_SERVER = typeof callServer === "function";
 function tdSoLieu(ctx) { return ctx.parts.map(p => p.label.toUpperCase() + "\n" + p.text).join("\n\n"); }
 async function tdGoi(ctx, i, huongDan, soLieu, hoiThem, onText) {
   const K = tdKe(ctx), n = K.phan.length;
-  const daViet = K.phan[i].canTruoc ? (ctx.tdBai || []).slice(0, i).filter(Boolean).join("\n\n") : "";
+  const chi = K.phan[i].chiLay, daViet = K.phan[i].canTruoc ? (ctx.tdBai || []).slice(0, i).filter((_, k) => !chi || chi.includes(k)).filter(Boolean).join("\n\n") : "";
   if (TD_QUA_SERVER) {
     const me = self_();
     return await callServer({ action: "luan", luotId: ctx.logId, luan: { xung: me && me.gioi === "nu" ? "chị" : "anh", mon: ctx.mon, nguoi: ctx.nguoi || "", hoi: ctx.hoi || "", hoiThem,
@@ -1517,7 +1547,16 @@ async function doLuanTronDoi(box, ctx, tu = 0) {
   }
   ctx.luan = ctx.tdBai.join("\n\n");
   ve("");
-  out.insertAdjacentHTML("beforeend", `<div class="small-note">Đã viết xong ${n} phần.${ctx.tdConLai != null ? ` Hôm nay ${goi} còn ${ctx.tdConLai} lần ${K.ten}.` : ""}</div>`);
+  let kiem = "";
+  if (K.loai === "trondoi") {   // tự kiểm bản luận bằng bộ tính (lời tuyệt đối, gieo sợ hãi, thiếu rào đón…)
+    try {
+      PY.FS.writeFile("/tmp/td-bai.md", ctx.luan);
+      const kb = await py("nc", ["kiembai", "--file", "/tmp/td-bai.md"]);
+      const dau = String(kb.text || "").split("\n").find(d => d.startsWith("TỰ KIỂM BẢN LUẬN"));
+      if (dau) kiem = " " + dau.replace("TỰ KIỂM BẢN LUẬN:", "Tự kiểm bản luận:").replace(/\s*\(A: gửi được.*\)$/, "") + ".";
+    } catch (e) { kiem = ""; }
+  }
+  out.insertAdjacentHTML("beforeend", `<div class="small-note">Đã viết xong ${n} phần.${kiem}${ctx.tdConLai != null ? ` Hôm nay ${goi} còn ${ctx.tdConLai} lần ${K.ten}.` : ""}</div>`);
   try { await persistCtx(ctx, { luan: ctx.luan, hoiThem }); } catch (e) {}
   const sv = $(".btnSave", box); if (sv && ctx.logId) { sv.textContent = "✓ Đã lưu vào sổ"; sv.disabled = true; }
   btn.disabled = false; btn.textContent = "✨ Luận lại từ đầu";
