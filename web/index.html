@@ -940,6 +940,32 @@ async function guideFor(kind) {
   };
   return (map[kind] || []).filter(Boolean).join("\n\n---\n\n") + "\n\n---\n\n" + chung;
 }
+/* Khách hết lần luận trong ngày: nút "Xin thêm lần luận" → máy chủ ghi Sheet và email cho chủ trang. */
+function hetLuanHtml(j) {
+  const ten = { luan: "luận giải", trondoi: "luận trọn đời", viec: "luận xem việc" }[j.loai] || "luận";
+  return `<div class="notice" style="margin-top:8px">${esc(j.loi || "")} Muốn luận thêm hôm nay, ${xg()} bấm “Xin thêm lần luận”; tôi sẽ xem và cấp thêm. Được cấp rồi thì ${xg()} bấm lại nút luận là được.
+    <div class="btns"><button class="gold small" data-xinluan="${esc(j.loai || "luan")}">${j.daXin ? "Đã gửi yêu cầu – gửi lại" : "Xin thêm lần " + ten}</button></div></div>`;
+}
+function moXinLuan(loai) {
+  openSheet(`<h3>Xin thêm lần luận</h3>
+    <p class="hint" style="margin-top:0">Tôi sẽ nhận yêu cầu và cấp thêm lần luận cho ${xg()}. Khi được cấp, ${xg()} bấm lại nút luận là luận tiếp được, không cần tải lại trang.</p>
+    <label for="xnNhan">Lời nhắn <span class="hint">(không bắt buộc)</span></label>
+    <textarea id="xnNhan" maxlength="300" placeholder="vd: Tôi muốn luận thêm cho chồng và con"></textarea>
+    <div class="small-note" id="xnChk" style="color:#8e2323"></div>
+    <div class="btns"><button class="ghost" id="xnNo">Đóng</button><button class="primary" id="xnOk">Gửi yêu cầu</button></div>`);
+  $("#xnNo").onclick = closeSheet;
+  $("#xnOk").onclick = async () => {
+    $("#xnOk").disabled = true;
+    let j = null; try { j = await callServer({ action: "xinluan", loai, loiNhan: $("#xnNhan").value.trim() }); } catch (e) { j = null; }
+    if (j && j.ok) {
+      openSheet(`<h3>Đã gửi yêu cầu</h3><p class="hint" style="margin-top:0">${j.daGui ? "Yêu cầu của " + xg() + " đã gửi trước đó." : "Tôi đã nhận yêu cầu của " + xg() + "."} Khi tôi cấp thêm, ${xg()} bấm lại nút luận là được.</p><div class="btns"><button class="primary full" id="xnX">Đóng</button></div>`);
+      $("#xnX").onclick = closeSheet; return;
+    }
+    $("#xnOk").disabled = false;
+    $("#xnChk").textContent = j ? j.loi : "Chưa kết nối được máy chủ. Mời thử lại sau ít phút.";
+  };
+}
+document.addEventListener("click", e => { const b = e.target.closest("[data-xinluan]"); if (b) moXinLuan(b.dataset.xinluan); });
 async function doLuan(box, ctx) {
   const out = $(".luan", box), btn = $(".btnLuan", box);
   if (!SRV.url) { out.innerHTML = `<div class="notice">Trang đang chạy thử, chưa nối máy chủ nên chưa có phần luận.</div>`; return; }
@@ -959,6 +985,7 @@ async function doLuan(box, ctx) {
   if (!j || !j.ok) {
     if (j && j.ma_loi === "sai_ma") { openCodeSheet(); return fail("Cần mã truy cập mới."); }
     if (j && j.ma_loi === "chua_kich_hoat") { KHACH.kichHoat = ""; localSave(); kiemKichHoat(); return fail(j.loi); }
+    if (j && j.ma_loi === "het_luan_khach") { fail(""); out.innerHTML = hetLuanHtml(j); return; }
     return fail((j && j.loi) || "Chưa luận được.");
   }
   ctx.luan = j.text;
@@ -1556,7 +1583,8 @@ async function doLuanTronDoi(box, ctx, tu = 0) {
     if (!r || !r.ok) {
       if (r && r.ma_loi === "sai_ma" && typeof openCodeSheet === "function") openCodeSheet();
       ve("");
-      out.insertAdjacentHTML("beforeend", `<div class="notice err" style="margin-top:8px">Phần ${i + 1} (${esc(K.phan[i].ten)}) chưa viết được: ${esc((r && r.loi) || "lỗi không rõ")}</div>
+      if (r && r.ma_loi === "het_luan_khach" && typeof hetLuanHtml === "function") out.insertAdjacentHTML("beforeend", hetLuanHtml(r));
+      else out.insertAdjacentHTML("beforeend", `<div class="notice err" style="margin-top:8px">Phần ${i + 1} (${esc(K.phan[i].ten)}) chưa viết được: ${esc((r && r.loi) || "lỗi không rõ")}</div>
         ${i > 0 && (!r || r.ma_loi !== "het_bo") ? `<div class="btns"><button class="primary full tdTiep">Viết tiếp từ phần ${i + 1}</button></div>` : ""}`);
       const tiep = $(".tdTiep", out); if (tiep) tiep.onclick = () => doLuanTronDoi(box, ctx, i);
       btn.disabled = false; btn.textContent = "✨ Luận lại từ đầu";

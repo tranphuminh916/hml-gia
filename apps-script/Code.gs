@@ -12,7 +12,10 @@
  *   LUAN_MOI_KHACH_NGAY  số lần luận tối đa mỗi khách mỗi ngày, mặc định 5
  *   LUAN_TRON_DOI_MOI_KHACH_NGAY  số lần luận trọn đời (nhiều phần) mỗi khách mỗi ngày, mặc định 2
  *   LUAN_VIEC_MOI_KHACH_NGAY      số lần luận "xem việc – đủ các cách" (3 phần) mỗi khách mỗi ngày, mặc định 3
- *   LUAN_TOI_DA_NGAY     tổng số lần gọi luận tối đa mỗi ngày, mặc định 50 (mỗi phần của bộ trọn đời tính 1 lần)
+ *   LUAN_TOI_DA_NGAY     tổng số lần gọi luận tối đa mỗi ngày (luận thường + xem việc), mặc định 50
+ *   LUAN_TRON_DOI_TOI_DA_NGAY  số bộ luận trọn đời tối đa mỗi ngày của cả trang, mặc định 20 (tính riêng, không trừ vào 50)
+ *   Cấp thêm lần luận cho một khách: ghi số vào các ô "Thêm luận/ngày", "Thêm trọn đời/ngày", "Thêm xem việc/ngày"
+ *   của khách đó trong Sheet. Số này được cộng thêm vào giới hạn mỗi ngày của khách, giữ đến khi chủ xóa.
  *   CAN_KICH_HOAT        mặc định bật: khách đăng ký bằng số điện thoại, chủ gửi mã kích hoạt; đặt 0 để tắt
  *   BAO_EMAIL            email nhận báo khách mới, khách xin thêm lượt (mặc định email chủ); đặt 0 để không gửi
  *   LUOT_XEM_MOI_KHACH   số lượt xem mỗi khách được dùng, mặc định 3; đặt 0 để không giới hạn.
@@ -25,8 +28,13 @@
 var TAB_KHACH = 'Khách';
 var TAB_LUOT = 'Lượt xem';
 var COT_KHACH = ['Mã khách', 'Lần đầu', 'Lần cuối', 'Họ tên', 'Giới tính', 'Ngày sinh', 'Lịch', 'Giờ sinh', 'Nơi sinh', 'Liên hệ', 'Lượt đã xem', 'Số lần luận',
-                 'Trạng thái', 'Mã kích hoạt', 'Kích hoạt lúc', 'Lượt được xem', 'Xin thêm lượt'];
+                 'Trạng thái', 'Mã kích hoạt', 'Kích hoạt lúc', 'Lượt được xem', 'Xin thêm lượt',
+                 'Thêm luận/ngày', 'Thêm trọn đời/ngày', 'Thêm xem việc/ngày', 'Xin thêm lần luận'];
 var COT_DA_XEM = 11, COT_DUOC_XEM = 16, COT_XIN_THEM = 17;
+// Cấp thêm lần luận: cột R, S, T (cộng vào giới hạn mỗi ngày); U ghi yêu cầu xin thêm của khách.
+var COT_THEM = { luan: 18, trondoi: 19, viec: 20 }, COT_XIN_LUAN = 21;
+var TEN_LOAI = { luan: 'luận giải', trondoi: 'luận trọn đời', viec: 'luận xem việc đủ các cách' };
+var CHU_COT = { 18: 'R', 19: 'S', 20: 'T', 21: 'U' };
 var NHAC_VIET = 'NHẮC LẠI CÁCH VIẾT (bắt buộc): câu chính viết như kể cho người chưa từng nghe về tử vi – không có các chữ cung, môn, sao, thần, khóa, truyền, hào, quẻ, can chi, mệnh, không vong, phục ngâm, phản ngâm; những chữ đó chỉ được để trong ngoặc cuối câu (tối đa 4 chữ). Viết ngắn, đúng số gạch đầu dòng đã nêu. Viết xong tự rà lại từng câu.';
 var MUC_GIO_SINH = 'Tìm giờ sinh';           // dò giờ sinh: không tính lượt xem
 var GS_SO_LIEU_TOI_DA = 10000, GS_HUONG_DAN_TOI_DA = 20000, GS_MOI_KHACH_NGAY = 10;
@@ -106,6 +114,7 @@ function xuLy_(req) {
     if (req.action === 'luot') return luuLuot_(req, P);
     if (req.action === 'dungluot') return dungLuot_(req, P);
     if (req.action === 'xinluot') return xinLuot_(req, P);
+    if (req.action === 'xinluan') return xinLuan_(req, P);
     if (req.action === 'dangky') return dangKy_(req, P);
     if (req.action === 'kichhoat') return kichHoat_(req);
     if (req.action === 'toi') return toi_(req, P);
@@ -502,6 +511,66 @@ function baoXinLuot_(P, k, loiNhan) {
   } catch (e) { /* gửi thư lỗi thì thôi, yêu cầu vẫn ghi ở cột "Xin thêm lượt" */ }
 }
 
+/* ------------------------------------------------------------------ cấp thêm lần luận */
+// Chủ ghi số vào ô "Thêm luận/ngày" (R), "Thêm trọn đời/ngày" (S), "Thêm xem việc/ngày" (T) của khách: số đó được cộng
+// vào giới hạn mỗi ngày của khách, giữ đến khi chủ xóa. Khách hết lần luận bấm "Xin thêm lần luận" → ghi cột U, email cho chủ.
+function themLuan_(khachId, loai) {
+  var cot = COT_THEM[loai];
+  if (!cot) return 0;
+  var sh = tab_(TAB_KHACH, COT_KHACH), dong = timDong_(sh, 1, khachId);
+  if (!dong) return 0;
+  var n = Math.floor(Number(String(sh.getRange(dong, cot).getValue() == null ? '' : sh.getRange(dong, cot).getValue()).trim()));
+  return isNaN(n) || n < 0 ? 0 : Math.min(n, 100);
+}
+function xinLuan_(req, P) {
+  var id = idHopLe_(req.khachId);
+  if (!id) return { ok: false, ma_loi: 'du_lieu', loi: 'Thiếu mã khách.' };
+  var loai = COT_THEM[req.loai] ? req.loai : 'luan';
+  var cache = CacheService.getScriptCache(), kx = 'xn_' + id + '_' + loai;
+  if (cache.get(kx)) return { ok: true, daGui: true };     // mỗi loại tối đa 1 email trong 6 giờ
+  var loiNhan = String(req.loiNhan || '').replace(/\s+/g, ' ').trim().slice(0, 300);
+  var kh = canKichHoat_(P);
+  var kq = voiKhoa_(function () {
+    var sk = tab_(TAB_KHACH, COT_KHACH), dong = timDong_(sk, 1, id);
+    if (!dong) return { ma_loi: 'chua_dang_ky' };
+    var r = sk.getRange(dong, 1, 1, COT_KHACH.length).getValues()[0];
+    if (kh && String(r[12] || '').trim() !== TT_DA) return { ma_loi: 'chua_dang_ky' };
+    sk.getRange(dong, COT_XIN_LUAN).setValue(sach_(bayGio_() + ' · ' + TEN_LOAI[loai] + (loiNhan ? ' · ' + loiNhan : ''), 400));
+    return { dong: dong, ten: String(r[3] || ''), sdt: String(r[9] || ''), them: Number(r[COT_THEM[loai] - 1]) || 0,
+      gid: typeof sk.getSheetId === 'function' ? sk.getSheetId() : null };
+  });
+  if (kq.ma_loi) return { ok: false, ma_loi: 'chua_kich_hoat', loi: 'Tài khoản chưa được kích hoạt.' };
+  cache.put(kx, '1', 21600);
+  baoXinLuan_(P, kq, loai, loiNhan);
+  return { ok: true };
+}
+function baoXinLuan_(P, k, loai, loiNhan) {
+  var to = String(P.getProperty('BAO_EMAIL') || '').trim();
+  if (to === '0') return;
+  try {
+    if (!to) to = Session.getEffectiveUser().getEmail();
+    if (!to) return;
+    var cot = CHU_COT[COT_THEM[loai]], mac = loai === 'viec' ? Number(P.getProperty('LUAN_VIEC_MOI_KHACH_NGAY') || 3)
+      : loai === 'trondoi' ? Number(P.getProperty('LUAN_TRON_DOI_MOI_KHACH_NGAY') || 2) : Number(P.getProperty('LUAN_MOI_KHACH_NGAY') || 5);
+    var url = SpreadsheetApp.getActiveSpreadsheet().getUrl();
+    var o = url + (k.gid != null ? '#gid=' + k.gid + '&range=' + cot + k.dong : '');
+    MailApp.sendEmail(to, 'Sổ Tử Vi – khách xin thêm lần luận: ' + k.ten + ' – ' + k.sdt, [
+      'Khách xin thêm lần ' + TEN_LOAI[loai] + ' trên trang Sổ Tử Vi:',
+      '',
+      'Họ tên: ' + k.ten,
+      'Số điện thoại: ' + k.sdt,
+      'Mỗi ngày đang được: ' + (mac + k.them) + ' lần (mặc định ' + mac + (k.them ? ', đã cấp thêm ' + k.them : '') + ')',
+      loiNhan ? 'Lời nhắn: ' + loiNhan : 'Lời nhắn: (không có)',
+      '',
+      'Muốn cho thêm: ghi số lần muốn cộng thêm mỗi ngày vào ô cột ' + cot + ' của khách này.',
+      'Ví dụ ghi ' + (k.them + 2) + ' thì mỗi ngày khách được ' + (mac + k.them + 2) + ' lần. Xóa ô đó là về mặc định.',
+      'Ô cần sửa: ' + o,
+      '',
+      'Không muốn cho thêm thì không cần làm gì.'
+    ].join('\n'));
+  } catch (e) { /* gửi thư lỗi thì thôi, yêu cầu vẫn ghi ở cột "Xin thêm lần luận" */ }
+}
+
 // Chạy hàm này một lần trong trình soạn thảo để cấp quyền gửi email (Google sẽ hỏi quyền).
 function thuGuiEmail() {
   var to = Session.getEffectiveUser().getEmail();
@@ -586,23 +655,30 @@ function luan_(req, P) {
     cache.put(kTd, String(con - 1), 21600);
     hoan = function () { cache.put(kTd, String(con), 21600); };
   } else {
-    var moiKhach = viec ? Number(P.getProperty('LUAN_VIEC_MOI_KHACH_NGAY') || 3)
-      : td ? Number(P.getProperty('LUAN_TRON_DOI_MOI_KHACH_NGAY') || 2) : Number(P.getProperty('LUAN_MOI_KHACH_NGAY') || 5);
+    var loaiL = viec ? 'viec' : td ? 'trondoi' : 'luan';
+    var moiKhach = (viec ? Number(P.getProperty('LUAN_VIEC_MOI_KHACH_NGAY') || 3)
+      : td ? Number(P.getProperty('LUAN_TRON_DOI_MOI_KHACH_NGAY') || 2) : Number(P.getProperty('LUAN_MOI_KHACH_NGAY') || 5))
+      + themLuan_(khachId, loaiL);     // chủ cấp thêm cho khách này trong Sheet
     var kKhach = (viec ? 'v_' : td ? 't_' : 'l_') + khachId + '_' + ngay;
     var daDung = Number(cache.get(kKhach) || 0);
     if (daDung >= moiKhach) {
-      return { ok: false, ma_loi: 'het_luot', loi: 'Hôm nay ' + xung + ' đã dùng hết ' + moiKhach + ' lần luận' + (viec ? ' xem việc đủ các cách' : td ? ' trọn đời' : '') + '. Mời ' + xung + ' quay lại vào ngày mai.' };
+      return { ok: false, ma_loi: 'het_luan_khach', loai: loaiL, moiKhach: moiKhach, daXin: !!cache.get('xn_' + khachId + '_' + loaiL),
+        loi: 'Hôm nay ' + xung + ' đã dùng hết ' + moiKhach + ' lần ' + TEN_LOAI[loaiL] + '.' };
     }
+    // Trọn đời: giới hạn riêng theo bộ (LUAN_TRON_DOI_TOI_DA_NGAY, mặc định 20), không trừ vào LUAN_TOI_DA_NGAY.
+    var khoaDem = td && !viec ? 'DEM_TRON_DOI' : 'DEM_LUAN';
+    var tran = td && !viec ? Number(P.getProperty('LUAN_TRON_DOI_TOI_DA_NGAY') || 20) : toiDa;
+    var buoc = td && !viec ? 1 : tong;
     var dem = voiKhoa_(function () {
       var d = {};
-      try { d = JSON.parse(P.getProperty('DEM_LUAN') || '{}'); } catch (e0) { d = {}; }
+      try { d = JSON.parse(P.getProperty(khoaDem) || '{}'); } catch (e0) { d = {}; }
       if (d.ngay !== ngay) d = { ngay: ngay, so: 0 };
-      if (d.so + tong > toiDa) return null;    // bộ trọn đời giữ trước đủ số phần
-      d.so += tong;
-      P.setProperty('DEM_LUAN', JSON.stringify(d));
+      if (d.so + buoc > tran) return null;    // xem việc giữ trước đủ số phần
+      d.so += buoc;
+      P.setProperty(khoaDem, JSON.stringify(d));
       return d.so;
     });
-    if (dem === null) return { ok: false, ma_loi: 'het_luot', loi: 'Hôm nay trang đã hết lượt luận. Mời ' + xung + ' quay lại vào ngày mai.' };
+    if (dem === null) return { ok: false, ma_loi: 'het_luot', loi: 'Hôm nay trang đã hết lượt ' + (td && !viec ? 'luận trọn đời' : 'luận') + '. Mời ' + xung + ' quay lại vào ngày mai.' };
     cache.put(kKhach, String(daDung + 1), 21600);
     if (td) cache.put(kTd, String(tong - 1), 21600);
     conLai = Math.max(0, moiKhach - daDung - 1);
@@ -611,8 +687,8 @@ function luan_(req, P) {
       if (td) cache.remove(kTd);
       voiKhoa_(function () {
         var d = {};
-        try { d = JSON.parse(P.getProperty('DEM_LUAN') || '{}'); } catch (e0) { d = {}; }
-        if (d.ngay === ngay) { d.so = Math.max(0, d.so - tong); P.setProperty('DEM_LUAN', JSON.stringify(d)); }
+        try { d = JSON.parse(P.getProperty(khoaDem) || '{}'); } catch (e0) { d = {}; }
+        if (d.ngay === ngay) { d.so = Math.max(0, d.so - buoc); P.setProperty(khoaDem, JSON.stringify(d)); }
       });
     };
   }
