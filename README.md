@@ -11,6 +11,15 @@ Nhánh này chứa trang web "Sổ Tử Vi" để gửi link cho khách. Nhánh 
   - `Index.html`: trang khung. Thay `__BASE__` bằng `https://cdn.jsdelivr.net/gh/tranphuminh916/hml-gia@<commit>/web/`.
 - `tools/`: script dựng lại `py-bundle.json`; `giosinh.py` là bản sao công cụ dò giờ sinh (bản gốc ở nhánh `tuvi-skill`).
 
+## Xem chỉ tay
+
+Tab "Chỉ tay" ở thanh dưới cùng. Khách chọn người cần xem, tay thuận, rồi chọn ảnh lòng bàn tay trái, tay phải và (không bắt buộc) cạnh bàn tay phía ngón út.
+
+- Ảnh được nén ngay trên máy khách (cạnh dài tối đa 1500 điểm ảnh) rồi gửi kèm yêu cầu luận. Máy chủ chuyển ảnh cho Claude xem; **ảnh không ghi vào Sheet**, Sheet chỉ ghi thông tin đã gửi và bài luận.
+- Mỗi lần xem tính 1 lượt xem và 1 lần luận như các mục khác. Cần có khóa API Claude (không có phần luận thì không xem chỉ tay được).
+- Cách luận theo skill "xem-chi-tay": kiểm ảnh, ba trường phái Tây – Ấn – Đông, tổng kết chỗ các trường phái cùng nói; không đoán tuổi thọ, không chẩn đoán bệnh.
+- Sau khi cập nhật trang này phải dán lại `apps-script/Code.gs` (có thêm phần nhận ảnh) và đổi commit trong tệp `Index` của Apps Script.
+
 ## Dò giờ sinh
 
 Bấm "Tìm giờ sinh" trên thẻ thông tin. Có 7 câu hỏi, câu nào không rõ thì bỏ qua:
