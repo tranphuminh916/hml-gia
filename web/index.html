@@ -146,6 +146,9 @@ label.ct-slot{display:block;margin:0;cursor:pointer;text-align:center;font-weigh
 .ct-slot.co .ct-pic{border-style:solid;border-color:var(--gold)}
 .ct-cap{font-size:12.5px;color:#4b4038;margin-top:4px;line-height:1.3}
 .ct-cap .hint{font-size:11.5px}
+.ct-warn{font-size:11.5px;color:#9a5a00;line-height:1.3;margin-top:3px}.ct-warn:empty{display:none}
+.ct-hd ol{margin:4px 0 0;padding-left:20px}.ct-hd li{margin:6px 0;font-size:14px;line-height:1.5}
+.ct-hd summary .hint{font-weight:500}
 .ct-x{position:absolute;top:4px;right:4px;width:26px;height:26px;border-radius:50%;background:rgba(0,0,0,.55);color:#fff;font-size:16px;line-height:26px;padding:0;border:none}
 .ct-thumbs{display:flex;gap:8px;margin:10px 0 2px;flex-wrap:wrap}
 .ct-thumbs figure{margin:0;text-align:center}.ct-thumbs img{width:70px;height:92px;object-fit:cover;border-radius:9px;border:1px solid var(--line);display:block}
@@ -292,6 +295,19 @@ nav.tabbar button{white-space:nowrap;font-size:11px;letter-spacing:-.1px}
 <section class="tab" id="tab-tay">
   <h2>Xem chỉ tay</h2>
   <div class="hint" style="margin:-4px 2px 10px">Chụp lòng bàn tay, Claude xem dáng tay, các đường chỉ và gò theo ba trường phái Tây, Ấn, Đông rồi tổng kết chỗ các trường phái cùng nói.</div>
+  <details class="sec ct-hd" open><summary><span>📸 Để kết quả chính xác nhất <span class="hint">(đọc trước khi chụp)</span></span></summary><div class="body">
+    <ol>
+      <li><b>Gửi đủ hai tay.</b> Mỗi trường phái lấy một tay làm chính (Tây phương lấy tay thuận; Đông phương: nam lấy tay trái, nữ lấy tay phải). Có đủ hai tay mới đối chiếu được; chỉ một tay thì chỉ xem được một nửa.</li>
+      <li><b>Chọn đúng tay thuận</b> (tay hay dùng để viết) và đặt mỗi ảnh vào đúng ô Tay trái, Tay phải.</li>
+      <li><b>Ánh sáng ban ngày.</b> Đứng gần cửa sổ để ánh sáng chiếu hơi nghiêng vào lòng bàn tay, đường chỉ sẽ nổi rõ. Không bật đèn flash, không để bóng điện thoại che tay, tránh nắng gắt.</li>
+      <li><b>Tư thế tay:</b> lòng bàn tay ngửa, các ngón hướng lên, khép tự nhiên và hơi xòe, thả lỏng; không gồng, không cong ngón.</li>
+      <li><b>Chụp thẳng từ trên xuống,</b> điện thoại song song với lòng bàn tay, cách khoảng 25–30 cm, lọt cả bàn tay và cổ tay. Dùng camera sau (nhờ người khác chụp hoặc tự chụp bằng tay kia), chạm vào lòng bàn tay trên màn hình để lấy nét.</li>
+      <li><b>Dùng ảnh gốc:</b> không bộ lọc làm đẹp, không chỉnh sửa, không phóng to. Tay sạch, khô; tháo nhẫn nếu che đường chỉ; nền trơn, khác màu da.</li>
+      <li><b>Muốn xem tình duyên:</b> thêm ảnh cạnh bàn tay phía ngón út, bàn tay nắm hờ để thấy các nét ngang ở cạnh.</li>
+      <li><b>Ghi điều muốn hỏi</b> vào ô "Muốn hỏi thêm" để phần luận tập trung đúng việc.</li>
+    </ol>
+    <div class="small-note">Trang tự báo khi ảnh hơi tối, bị lóa hoặc quá nhỏ. Bài luận cũng ghi rõ ảnh nào chưa đủ rõ và cần chụp lại thế nào. Đường chỉ tay thay đổi theo thời gian, nên xem lại sau 6–12 tháng.</div>
+  </div></details>
   <div class="card">
     <label for="ctNguoi">Xem cho ai</label>
     <select id="ctNguoi"></select>
@@ -301,11 +317,6 @@ nav.tabbar button{white-space:nowrap;font-size:11px;letter-spacing:-.1px}
     <label>Ảnh lòng bàn tay</label>
     <div class="ct-anh" id="ctAnh"></div>
     <div class="small-note" id="ctNote"></div>
-    <details class="sec"><summary>Cách chụp cho rõ</summary><div class="body hint">
-      <p>Mỗi tay một ảnh, lòng bàn tay ngửa, chụp thẳng từ trên xuống, lọt cả bàn tay và cổ tay. Các ngón khép tự nhiên, hơi xòe, không gồng.</p>
-      <p>Chụp gần cửa sổ lúc ban ngày, không bật đèn flash, không dùng bộ lọc làm đẹp; nền trơn khác màu da.</p>
-      <p>Muốn xem tình duyên: thêm ảnh cạnh bàn tay phía ngón út, nắm hờ để thấy các nét ngang ở cạnh.</p>
-    </div></details>
     <label for="ctMat">Muốn xem</label>
     <select id="ctMat"></select>
     <label for="ctHoi">Muốn hỏi thêm <span class="hint">(không bắt buộc)</span></label>
@@ -1691,7 +1702,7 @@ Cuối bài một dòng in nghiêng: "Xem chỉ tay là tri thức văn hóa tru
 }
 function ctInit() {
   $("#ctMat").innerHTML = CT_MAT.map(([v, t]) => `<option value="${v}">${t}</option>`).join("");
-  $("#ctAnh").innerHTML = CT_SLOT.map(([k, t]) => `<label class="ct-slot" data-k="${k}"><input type="file" accept="image/*"><div class="ct-pic"><span>＋</span></div><div class="ct-cap">${t}${k === "canh" ? `<br><span class="hint">(không bắt buộc)</span>` : ""}</div></label>`).join("");
+  $("#ctAnh").innerHTML = CT_SLOT.map(([k, t]) => `<label class="ct-slot" data-k="${k}"><input type="file" accept="image/*"><div class="ct-pic"><span>＋</span></div><div class="ct-cap">${t}${k === "canh" ? `<br><span class="hint">(không bắt buộc)</span>` : ""}</div><div class="ct-warn"></div></label>`).join("");
   $$("#ctAnh input[type=file]").forEach(inp => inp.addEventListener("change", () => { const f = inp.files && inp.files[0]; inp.value = ""; if (f) ctChon(inp.closest(".ct-slot").dataset.k, f); }));
   $("#ctAnh").addEventListener("click", e => { const x = e.target.closest(".ct-x"); if (!x) return; e.preventDefault(); e.stopPropagation(); ctBo(x.closest(".ct-slot").dataset.k); });
   $("#ctThuan").addEventListener("click", e => { const b = e.target.closest("[data-v]"); if (!b) return; CT.thuan = b.dataset.v; $$("#ctThuan .chip").forEach(c => c.classList.toggle("on", c === b)); });
@@ -1714,7 +1725,16 @@ async function ctNen(file, max = 1500, q = 0.82) {
     c.getContext("2d").drawImage(img, 0, 0, w, h);
     const blob = await new Promise(ok => c.toBlob(ok, "image/jpeg", q));
     if (!blob) throw new Error("Không nén được ảnh này.");
-    return blob;
+    // Kiểm nhanh chất lượng ảnh: độ sáng trung bình, phần bị lóa trắng, cạnh ngắn của ảnh gốc.
+    let sang = 128, loa = 0;
+    try {
+      const k = document.createElement("canvas"); k.width = k.height = 64;
+      const g = k.getContext("2d"); g.drawImage(c, 0, 0, 64, 64);
+      const d = g.getImageData(0, 0, 64, 64).data; let tong = 0, trang = 0;
+      for (let i = 0; i < d.length; i += 4) { const y = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2]; tong += y; if (y > 245) trang++; }
+      sang = tong / (d.length / 4); loa = trang / (d.length / 4);
+    } catch (e) {}
+    return { blob, sang, loa, canhNgan: Math.min(img.naturalWidth, img.naturalHeight) };
   } finally { URL.revokeObjectURL(url); }
 }
 function ctB64(blob) { return new Promise((ok, no) => { const r = new FileReader(); r.onload = () => ok(String(r.result).split(",")[1] || ""); r.onerror = () => no(r.error); r.readAsDataURL(blob); }); }
@@ -1722,9 +1742,13 @@ async function ctChon(k, file) {
   const slot = $(`#ctAnh .ct-slot[data-k="${k}"] .ct-pic`);
   slot.innerHTML = `<div class="spin"></div>`;
   try {
-    const blob = await ctNen(file);
+    const r = await ctNen(file);
     if (CT.anh[k]) URL.revokeObjectURL(CT.anh[k].url);
-    CT.anh[k] = { blob, url: URL.createObjectURL(blob) };
+    const canhBao = r.sang < 70 ? "Ảnh hơi tối – nên chụp lại gần cửa sổ, lúc ban ngày."
+      : (r.sang > 225 || r.loa > 0.25) ? "Ảnh bị lóa – tránh nắng gắt hoặc đèn chiếu thẳng vào tay."
+      : r.canhNgan < 900 ? "Ảnh nhỏ – nên chụp gần hơn, lọt vừa bàn tay và cổ tay."
+      : "";
+    CT.anh[k] = { blob: r.blob, url: URL.createObjectURL(r.blob), canhBao };
   } catch (e) { CT.anh[k] = null; toast(e.message || "Không đọc được ảnh."); }
   ctVeSlot(k);
 }
@@ -1733,6 +1757,7 @@ function ctVeSlot(k) {
   const s = $(`#ctAnh .ct-slot[data-k="${k}"]`), a = CT.anh[k];
   s.classList.toggle("co", !!a);
   $(".ct-pic", s).innerHTML = a ? `<img src="${a.url}" alt=""><button class="ct-x" type="button" aria-label="Bỏ ảnh">×</button>` : `<span>＋</span>`;
+  $(".ct-warn", s).textContent = a && a.canhBao ? a.canhBao : "";
 }
 function ctAnhChon() { return CT_SLOT.filter(([k]) => CT.anh[k]).map(([k, ten]) => ({ k, ten, blob: CT.anh[k].blob, url: CT.anh[k].url })); }
 function ctThongTin(p, anh, matTen, hoi) {
