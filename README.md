@@ -22,15 +22,16 @@ Tab "Chỉ tay" ở thanh dưới cùng. Khách chọn người cần xem, tay t
 
 ## Dò giờ sinh
 
-Bấm "Tìm giờ sinh" trên thẻ thông tin. Có 7 câu hỏi, câu nào không rõ thì bỏ qua:
-1. Giờ gia đình còn nhớ.
-2. Xoáy tóc.
-3. Dáng ngủ.
-4. Khuôn mặt.
-5. Điều chiếm tâm sức nhiều nhất từ 30 tuổi (cung an Thân).
+Bấm "Tìm giờ sinh" trên thẻ thông tin. Có tối đa 8 câu hỏi; câu nào không giúp phân biệt các giờ còn lại thì tự bỏ qua, câu nào không rõ thì bấm "Không rõ" (bản 2, 11/2026):
+1. Giờ gia đình còn nhớ: giờ đồng hồ, tên giờ âm lịch (giờ Tý hỏi thêm trước hay sau 12 giờ đêm), hoặc mốc như "gà gáy", "lên đèn".
+2. Cách sinh (mổ có hẹn trước thường rơi vào giờ hành chính).
+3. Xoáy tóc (dân gian, tính nhẹ).
+4. Dáng ngủ (dân gian, tính nhẹ).
+5. Mảng đời chiếm tâm sức nhất từ 30 tuổi (cung an Thân), có trừ tỉ lệ người chọn công việc, tiền bạc.
 6. Tính cách giống mô tả nào (sao chính cung Mệnh).
-7. Năm đời rẽ hướng (đại hạn).
+7. Tính vợ/chồng giống mô tả nào (sao chính cung Phu Thê).
+8. 1–3 năm đời rẽ hướng (đại hạn).
 
-Bộ tính lập sẵn lá số cho mọi giờ trong ngày sinh. Mỗi câu trả lời nhân thêm một hệ số, nên không giờ nào bị loại hẳn. Kết quả là ước đoán để tham khảo.
+Bộ tính lập sẵn lá số cho mọi giờ trong ngày sinh rồi chấm bằng phép Bayes: mỗi câu nhân một hệ số theo độ tin của câu đó, nên không giờ nào bị loại hẳn. Chi tiết trong `tvbt/docs/gio-sinh.md` (nhánh `tuvi-skill`). Kết quả là ước đoán để tham khảo.
 
 Kho này công khai, không chứa dữ liệu khách. Dữ liệu khách chỉ nằm trong Google Sheet của chủ trang.
