@@ -144,18 +144,26 @@ def phan_gio_sinh():
         return subprocess.run([sys.executable, "tvbt/giosinh.py"] + list(a), capture_output=True, text=True).stdout
     t = gs("--ngay", "1990-03-15", "--gioi", "nam", "--noi", "Hà Nội", "--tra-loi",
            '{"khoang":"toi","xoay":"mo","ngu":"sinh","mat":"sinh","than":"Tài Bạch","tinh":["g10"],"nam":[2013]}')
-    miss += thieu(t, ["| Giờ Tuất | 19:06–21:06 | Giáp Tuất | Tỵ | Tử Vi(M), Thất Sát(V) | Tài Bạch | Kim Tứ Cục | 70% |",
-                      "năm 2013 (24 tuổi) đúng lúc chuyển đại hạn (24 tuổi)",
-                      "KẾT LUẬN: Giờ Tuất (19:06–21:06 giờ đồng hồ), 70% – khá rõ.",
-                      "Giờ cần so thêm: Giờ Hợi (21:06–23:06)"])
+    miss += thieu(t, ["| Giờ Tuất | 19:06–21:06 | 19/2 | Giáp Tuất | Tỵ | Tử Vi(M), Thất Sát(V) | Thiên Tướng(H) | Tài Bạch | Kim Tứ Cục | 74% |",
+                      "| Giờ Tý (cuối ngày) | 23:06–24:00 | 20/2 | Bính Tý | Mão |",
+                      "KẾT LUẬN: Giờ Tuất (19:06–21:06 giờ đồng hồ), 74% – khá rõ.",
+                      "Giờ cần so thêm: Giờ Hợi (21:06–23:06)",
+                      "Câu tự bỏ qua: cach (không giúp phân biệt); nam (các giờ còn lại chuyển đại hạn cùng tuổi)"])
+    # bản 2: chỉ dấu hiệu dân gian thì không bao giờ "khá rõ"; tên giờ Tý chưa rõ trước/sau 12 giờ đêm thì có lưu ý
+    t = gs("--ngay", "1986-07-22", "--gioi", "nam", "--noi", "Nam Định", "--tra-loi", '{"xoay":"chinh","ngu":"chinh","than":"Mệnh"}')
+    miss += thieu(t, ["KẾT LUẬN: Giờ Ngọ (11:02–13:02 giờ đồng hồ), 23% – chưa rõ", "Lưu ý: Chưa có giờ gia đình nhớ"])
+    t = gs("--ngay", "1986-07-22", "--gioi", "nam", "--noi", "Nam Định", "--tra-loi", '{"khoang":"tengio:0"}')
+    miss += thieu(t, ["Lưu ý: Hai giờ Tý", "Câu tự bỏ qua: cach (giờ gia đình nhớ đã đủ hẹp)"])
+    t = gs("--ngay", "1990-03-15", "--gioi", "nam", "--noi", "Hà Nội", "--tra-loi", '{"khoang":"sang","nam":[2013]}')
+    miss += thieu(t, ["năm 2013 (24 tuổi) đúng lúc chuyển đại hạn (24 tuổi)"])
     t = gs("--ngay", "1970-05-10", "--gioi", "nu", "--noi", "TP Hồ Chí Minh", "--tra-loi", '{"khoang":{"gio":"23:40","sai":30}}')
     miss += thieu(t, ["lệch giờ đồng hồ -49 phút",
-                      "| Giờ Hợi | 21:49–23:49 | Đinh Hợi | Ngọ | Thiên Lương(M) | Phu Thê | Mộc Tam Cục | 72% |",
-                      "| Giờ Tý (cuối ngày) | 23:49–24:00 | Mậu Tý | Tỵ | Cự Môn(H) | Mệnh | Kim Tứ Cục | 19% |"])
+                      "| Giờ Hợi | 21:49–23:49 | 6/4 | Đinh Hợi | Ngọ | Thiên Lương(M) | Cự Môn(H) | Phu Thê | Mộc Tam Cục | 75% |",
+                      "| Giờ Tý (cuối ngày) | 23:49–24:00 | 7/4 | Mậu Tý | Tỵ | Cự Môn(H) | Thái Âm(H) | Mệnh | Kim Tứ Cục | 18% |"])
     import giosinh as G
     for ngay, gioi, noi in [("1990-03-15", "nam", "Hà Nội"), ("1970-05-10", "nu", "TP Hồ Chí Minh")]:
         r = G.buoc({"ngay": ngay, "gioi": gioi, "noi": noi}, {})
-        if len(r["ung_vien"]) != 13 or len(r["cau_hoi"]) != 7:
+        if len(r["ung_vien"]) != 13 or len(r["cau_hoi"]) != 8:
             miss.append("giosinh %s: %d khung giờ, %d câu" % (ngay, len(r["ung_vien"]), len(r["cau_hoi"])))
         for x in r["ung_vien"]:
             t = chay("tuvi", "--ngay", ngay, "--gio", x["gio_dai_dien"], "--gioi", gioi, "--noi", noi, "--nam-xem", "2026")
