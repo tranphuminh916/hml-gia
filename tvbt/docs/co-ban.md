@@ -105,6 +105,15 @@ Trình bày theo thứ tự: (1) **Bảng số liệu** (dán gọn các bảng 
    - Bếp theo "tọa hung hướng cát" (đặt ở phương xấu, quay về hướng tốt).
    - Trạch quái tính theo hướng **tọa** (lưng nhà). Nhà Đông tứ trạch gồm tọa Bắc, Nam, Đông, Đông Nam; còn lại là Tây tứ trạch. Nhà hợp với mệnh khi cùng nhóm.
    - Có `--huong` thì script in sẵn trạch quái của nhà và du niên của hướng, tọa đối với cung phi. Hai cách xét (theo tọa – Bát trạch minh cảnh; theo hướng nhà/cửa thuộc 4 hướng tốt – cách phổ biến hiện nay) có thể vênh nhau (vd mệnh Khảm, nhà hướng Đông Nam: hướng là Sinh Khí nhưng tọa Tây Bắc là Tây tứ trạch); script ghi rõ, phải nói cả hai.
+   - **Lập cực và xác định hướng (thêm 11/2026; nói rõ phái khi hai cách cho hướng khác nhau):**
+     - **Tâm nhà (lập cực):** giao hai đường chéo của phần có mái. Khuyết góc thì bù cho vuông, phần lồi nhỏ thì bỏ, nhà chữ L lấy điểm giữa hai cánh (trọng tâm). Đứng ở tâm đo la bàn, chia 8 cung mỗi cung 45°; nhà dài thì cung rộng cung hẹp chứ không chia ô vuông (Hiệp Kỷ: "24 phương của la bàn không co giãn").
+     - **Hướng là mặt nạp khí, không nhất thiết là cửa chính.** Có 4 cách, hỏi người dùng nhà mình thuộc cách nào:
+       1. Cửa chính (cách phổ biến ở Việt Nam, Bát trạch hay dùng): đứng trong nhà nhìn thẳng ra cửa.
+       2. Mặt lấy sáng, lấy khí: phía sáng, nhiều cửa sổ, ban công, cửa kính lớn là hướng; phía tối là tọa ("lấy chỗ tối làm tọa, chỗ sáng làm hướng"). Căn hộ chung cư, nhà có cửa phụ dùng nhiều hơn cửa chính thường theo cách này.
+       3. Động – tĩnh (Tưởng Đại Hồng, *Dương trạch chỉ nam*: "chỗ động là chỗ trống, chỗ thực là chỗ tĩnh; bên trống dẫn khí, bên thực thu khí"): phía đường, sân, nước, phía để trống là hướng; phía nhà cao, tường kín, phía kê đồ nặng là tọa. Nhà xếp "đầu nhẹ đuôi nặng" (đầu nhà ít đồ, nặng dần về cuối) thì đầu nhẹ là hướng.
+       4. Thẩm thị (*Dương trạch tam thập tắc*): nhà hiện đại xét cả hướng nhà lẫn hướng cửa – hướng nhà để lập bàn, cửa để xem nạp khí.
+     - Các cách cho cùng một hướng thì yên tâm; cho hai hướng khác nhau thì chạy cả hai, nói rõ kết luận nào phụ thuộc cách nào.
+     - **Linh thần – chính thần** (4 cung vượng, 4 cung suy theo nguyên vận): `nc.py linhchinh`, xem `docs/huyen-khong.md` mục 4.2.
    - **Đo hướng:** la bàn phong thủy đọc theo **bắc từ**. Điện thoại để chế độ "Bắc thực" (True North) thì ở Việt Nam số đo nhỏ hơn bắc từ khoảng 0,5° (miền Nam) đến 1,7° (Hà Nội) – cộng thêm chừng ấy (mô hình WMM2025, năm 2026). Chỉ quan trọng khi hướng sát ranh giới sơn hoặc ngưỡng kiêm hướng.
    - Nếu sinh giữa Tết và Lập Xuân, script in 2 phương án: phải hỏi người dùng theo trường phái nào.
 2. **Cửu tinh năm** (năm tính từ Lập Xuân, khoảng 4/2):

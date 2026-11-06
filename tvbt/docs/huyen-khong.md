@@ -6,6 +6,7 @@
 | Lệnh | Làm gì |
 |---|---|
 | `huyenkhong` | Hạ quái và thế quái, không vong, 4 cục, phục/phản ngâm, hợp thập, liên châu, tam ban, thất tinh đả kiếp, nhập tù, thành môn, cặp sao 9 cung, lưu niên/lưu nguyệt, đối chiếu sơn thủy thật |
+| `linhchinh` | Linh thần – chính thần: 4 cung nên cao đặc, 4 cung nên trống có nước theo nguyên vận (ba cách: đại vận hai nguyên, Đàm Dưỡng Ngô, từng vận 20 năm), đối chiếu tọa hướng và nước, núi thật |
 
 ## Đã kiểm chứng
 - **Huyền không.**
@@ -88,5 +89,28 @@ Muốn ép dùng một bàn: `--ban ha|the|ca-hai`.
 - Quyết định xây sửa vẫn phải dựa vào kỹ thuật, an toàn và giấy phép.
 - Có hai bàn hay hai phái thì nêu ngắn cả hai và nói bàn nào là chính.
 
+### 4.2 Linh thần – chính thần: 4 cung vượng, 4 cung suy theo nguyên vận (lệnh `linhchinh`)
+Lập cực ở tâm nhà, chia 8 cung (mỗi cung 45°). Theo câu "nhược ngộ chính thần chính vị trang, bát thủy nhập linh đường" (*Thiên ngọc kinh*): cung **chính thần** nên cao, đặc, tĩnh; cung **linh thần** nên thấp, trống, động, có nước. Script in ba cách định cung để đối chiếu:
+- **A. Đại vận hai nguyên** (Đại huyền không, Tam nguyên): thượng nguyên (vận 1–4) chính thần là Khảm, Khôn, Chấn, Tốn; hạ nguyên (vận 6–9) chính thần là Càn, Đoài, Cấn, Ly. Vận 5 chia đôi.
+- **B. Đàm Dưỡng Ngô** (*Huyền không lục pháp*, nhị nguyên bát vận): vận dài 18–27 năm theo quái tiên thiên. Linh thần ở cung "đại kim long" và nhóm của nó, đổi theo từng vận.
+- **C. Từng vận 20 năm** (Ôn Minh Viễn, Thẩm thị): chính thần là cung số vận, linh thần là cung đối diện, chiếu thần là cung hợp năm (Hà đồ).
+
+**Hiện nay (vận 9, 2024–2043) ba cách cùng kết luận:**
+- Chính thần (nên cao, đặc, yên): Ly (Nam), Càn (Tây Bắc), Đoài (Tây), Cấn (Đông Bắc). Ly mạnh nhất.
+- Linh thần (nên thấp, trống, có nước): Khảm (Bắc), Khôn (Tây Nam), Chấn (Đông), Tốn (Đông Nam). Khảm mạnh nhất, Tốn là chiếu thần.
+- Từ Lập Xuân 2044 sang thượng nguyên thì đảo lại.
+
+**Chạy:** `python3 tvbt/nc.py linhchinh [--nam 2026] [--huong 182] [--nuoc "Bắc,Đông"] [--nui "Nam"]`.
+
+**Luận:**
+1. Nói 4 cung nên cao, đặc và 4 cung nên trống, có nước của nhà; đối chiếu với nước, núi, nhà cao thật xung quanh. Nước ở chính thần, núi chắn ở linh thần là "linh chính điên đảo", sách coi là xấu nhất.
+2. Trong nhà: tủ kệ nặng, phòng ngủ ở chính thần; sân, lối đi, cửa sổ lớn, bể cá ở linh thần.
+3. **Cửa chính, các phái khác nhau:**
+   - Đàm Dưỡng Ngô: cửa (khí khẩu) ở linh thần, "tọa chính hướng linh".
+   - Tưởng Đại Hồng (*Dương trạch chỉ nam*): khen cửa mở ở cung đương nguyên (vd hạ nguyên cửa Ly).
+   - Nói cả hai, kèm kết quả Huyền không phi tinh và Bát trạch; chỗ các phép cùng nói mới chắc.
+4. Năm các cách khác nhau (vd 2017–2023: Đàm Dưỡng Ngô đã sang vận 9, tam nguyên còn vận 8): script ghi "KHÁC NHAU" – chỉ kết luận ở những cung các cách cùng xếp.
+
 ## Trường phái và giới hạn (nói rõ khi liên quan)
+- **Linh thần – chính thần:** các phái chia nguyên, chia vận khác nhau (tam nguyên 20 năm, nhị nguyên bát vận dài ngắn theo quái). Script in đủ ba cách, không tự chọn. Đây là phép đối chiếu, không thay Huyền không phi tinh. Nguồn: *Thiên ngọc kinh* và chú của Tưởng Đại Hồng (*Địa lý biện chính*), *Dương trạch chỉ nam*; bảng vận của Đàm Dưỡng Ngô theo bài của Trần Ích Phong; cách A theo các bài Đại huyền không phổ biến.
 **Huyền không**

@@ -631,6 +631,12 @@ def in_huyen_khong(do, van, nguon_van, nam_xem, thang=None, nuoc=(), nui=(), ban
     print()
     in_son_thuy(chinh, van_ht, list(nuoc), list(nui))
     print()
+    import linhchinh as LC
+    import toason as TS
+    LC.in_bang(nam_xem, TS.doc_son("%.2f" % ((do + 180) % 360))[0], list(nuoc), list(nui), gon=True)
+    print("(Linh thần – chính thần chỉ để đối chiếu; cách dùng và chỗ các phái khác nhau: nc.py linhchinh, "
+          "docs/huyen-khong.md mục 4.2.)")
+    print()
 
 
 # ---------------------------------------------------------------- CLI
