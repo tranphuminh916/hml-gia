@@ -56,7 +56,7 @@ Muốn chỉ chọn trong một số thứ trong tuần thì thêm `--thu T7,CN`
      - Nguyệt Phá;
      - Tam Nương, Nguyệt Kỵ, Dương Công;
      - Thọ tử (mọi việc);
-     - Sát chủ dương khi cưới hỏi, ăn hỏi, động thổ, nhập trạch, mua nhà, khai trương, ký kết, nhậm chức; Sát chủ âm khi an táng;
+     - Sát chủ dương khi cưới hỏi, ăn hỏi, động thổ, nhập trạch, mua nhà, khai trương, ký kết, nhậm chức; Sát chủ âm khi an táng, cưới hỏi, ăn hỏi, động thổ;
      - Vãng vong khi xuất hành, cưới hỏi, ăn hỏi, nhập trạch, nhậm chức, chữa bệnh, nhận người (xét cả bản tháng âm của lịch Việt Nam và bản tháng tiết của Hiệp Kỷ);
      - xung tuổi người chủ sự.
    - Gặp Sát chủ / Vãng vong với việc khác: chỉ ghi chú, không loại.
@@ -77,4 +77,7 @@ Muốn chỉ chọn trong một số thứ trong tuần thì thêm `--thu T7,CN`
 
 ## Trường phái và giới hạn (nói rõ khi liên quan)
 - **Chọn ngày:** việc nên/kiêng, cát thần, hung sát, hướng thần theo Hiệp Kỷ Biện Phương Thư (qua lunar-python), tính theo tháng tiết khí và giờ Bắc Kinh. Ngày giáp ranh tháng tiết có thể lệch. Hoàng đạo theo tháng âm như lịch Việt Nam. Thang 100 điểm là quy ước của skill.
-- Dương Công kỵ nhật theo bản Việt Nam (có 8/7); sách Trung Quốc ghi 1/7. Thọ tử theo bản Việt Nam (một can chi mỗi tháng); bản Trung Quốc (受死) xét chi. Sát chủ âm tháng 7/8: các nguồn chia đôi. Báo Lâm Đồng/Nghệ An và Chronos ghi Hợi/Sửu; xemlicham, mytour, vietaa ghi Sửu/Hợi. Từ 11/2026, khi xem an táng, script loại cả hai ngày. Xem thêm `docs/co-ban.md` phần trường phái.
+- Dương Công kỵ nhật theo bản Việt Nam (có 8/7); sách Trung Quốc ghi 1/7. Thọ tử theo bản Việt Nam (một can chi mỗi tháng); bản Trung Quốc (受死) xét chi. Sát chủ âm theo *Ngọc Hạp Chánh Tông* (Viên Tài Hà Tấn Phát), tr. 128–129, mục "Ngày Sát chủ".
+  - Sách dẫn thơ Hán văn "Nhứt Tỵ, nhị Tý, tam Dương vị / Tứ Thố, ngũ Hầu, lục Khuyển qui / Thất Trư, bát Ngưu, cửu Mã thị / Thập Kê, thập nhứt Hổ, thập nhị Long", nên tháng 7 là ngày Hợi, tháng 8 là ngày Sửu. Phần giải nghĩa từng tháng trong sách cũng ghi như vậy (theo bản chép của dự án calendar-hana). Báo Lâm Đồng/Nghệ An và Chronos ghi giống sách.
+  - Bảng đảo tháng 7/8 thành Sửu/Hợi đi theo một bài thơ Nôm (xemlicham, mytour, vietaa). Script chỉ dùng bảng này để tránh thêm khi an táng.
+  - Sách ghi ngày Sát chủ kỵ cất nhà, cưới gả; lịch Việt Nam ngày nay ghi kỵ an táng. Từ 11/2026 script loại ngày này với cả ba việc. Xem thêm `docs/co-ban.md` phần trường phái.

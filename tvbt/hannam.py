@@ -163,8 +163,8 @@ def in_han_nam(nam_sinh_am, gioi, nam_xem, so_nam=1):
                 r["sao"], t, y, ngay_cung))
         if r["han"]:
             print("- Hạn %s: %s." % (r["han"], Y_HAN[r["han"]]))
-            if r["tuoi"] == 10 and gioi != "nu":
-                print("  (Một số bảng chỉ xét hạn từ 11 tuổi.)")
+            if r["tuoi"] == 10:
+                print("  (Nhiều bảng chỉ liệt kê từ 11 tuổi; bảng có ghi tuổi 10 như ngaydep.com cũng ra hạn này.)")
         if r["tam_tai"]:
             print("- Năm Tam tai thứ %d/3 (%s): tục kiêng khởi công lớn, cưới hỏi, làm nhà; nên làm việc chắc chắn." % (
                 r["tam_tai_thu"], ", ".join(r["tam_tai_nam"])))
@@ -241,6 +241,15 @@ def tu_kiem():
         loi.append("tuổi Huỳnh Tuyền nữ")
     if [t for t in range(10, 99) if han(t, "nam") == "Tam Kheo"] != [11, 19, 20, 28, 37, 46, 55, 64, 73, 82, 91]:
         loi.append("tuổi Tam Kheo nam")
+    # tuổi 10: ngaydep.com (năm 2026, sinh 2017): nam Huỳnh Tuyền, nữ Toán Tận – đúng quy tắc cộng chữ số
+    if han(10, "nam") != "Huỳnh Tuyền" or han(10, "nu") != "Toán Tận":
+        loi.append("hạn tuổi 10")
+    # Hoang ốc "đếm tiếp" (hoatieu: 45 Tam Địa Sát; batdongsan: 21 Tam Địa Sát, 54 Tam Địa Sát, 41 Ngũ Thọ Tử;
+    # vnreview: 33 Lục Hoang Ốc; chogia: 34 Nhất Cát)
+    for t, ten in ((45, "Tam Địa Sát"), (21, "Tam Địa Sát"), (54, "Tam Địa Sát"), (41, "Ngũ Thọ Tử"),
+                   (33, "Lục Hoang Ốc"), (34, "Nhất Cát"), (40, "Tứ Tấn Tài"), (10, "Nhất Cát")):
+        if not (hoang_oc(t) or "").startswith(ten):
+            loi.append("Hoang ốc %d tuổi: %s" % (t, hoang_oc(t)))
     if sao(48, "nam") != "Thủy Diệu" or sao(48, "nu") != "Mộc Đức":
         loi.append("ví dụ 48 tuổi")
     # 1986 Bính Dần năm 2026 (41 tuổi): Tam tai Thân Dậu Tuất -> 2026 Ngọ không; 2028 Thân là Tam tai năm 1

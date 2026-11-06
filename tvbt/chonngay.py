@@ -31,9 +31,12 @@ THO_TU = {1: (2, 10), 2: (8, 4), 3: (7, 11), 4: (3, 5), 5: (4, 0), 6: (2, 6), 7:
           10: (4, 8), 11: (7, 3), 12: (7, 9)}          # (can, chi): Bính Tuất, Nhâm Thìn, ..., Tân Dậu
 # Sát chủ dương (kỵ xây dựng, nhà đất, cưới hỏi, nhận việc): Tý, Sửu, Sửu, Tuất, Thìn, Thìn, Sửu, Thìn, Sửu, Thìn, Mùi, Thìn
 SAT_CHU_DUONG = [None, 0, 1, 1, 10, 4, 4, 1, 4, 1, 4, 7, 4]
-# Sát chủ âm (kỵ an táng, mộ phần): Tỵ, Tý, Mùi, Mão, Thân, Tuất, Hợi, Sửu, Ngọ, Dậu, Dần, Thìn
-# Tháng 7 / 8 các nguồn chia đôi (rà 11/2026): baolamdong/baonghean, Chronos ghi Hợi / Sửu; xemlicham, mytour,
-# vietaa ghi Sửu / Hợi. Với an táng loại cả hai ngày (nhãn "bản đảo") cho chắc.
+# Sát chủ âm (kỵ an táng; sách Ngọc Hạp: kỵ cất nhà, cưới gả): Tỵ, Tý, Mùi, Mão, Thân, Tuất, Hợi, Sửu, Ngọ, Dậu, Dần, Thìn
+# Ngọc Hạp Chánh Tông (Viên Tài Hà Tấn Phát) tr. 128–129, mục "Ngày Sát chủ – kỵ cất nhà, cưới gả", thơ Hán văn
+# "Nhứt Tỵ, nhị Tý, tam Dương vị / Tứ Thố, ngũ Hầu, lục Khuyển qui / Thất Trư, bát Ngưu, cửu Mã thị / Thập Kê,
+# thập nhứt Hổ, thập nhị Long" – tháng 7 Hợi, tháng 8 Sửu (bản chép của dự án calendar-hana; khớp baolamdong,
+# baonghean, Chronos). Bản thơ Nôm và xemlicham, mytour, vietaa đảo 7/8 thành Sửu/Hợi: chỉ dùng để tránh thêm
+# khi an táng.
 SAT_CHU_AM = [None, 5, 0, 7, 3, 8, 10, 11, 1, 6, 9, 2, 4]
 # Vãng vong (kỵ xuất hành, cưới hỏi, chuyển nhà, nhậm chức): Dần, Tỵ, Thân, Hợi, Mão, Ngọ, Dậu, Tý, Thìn, Mùi, Tuất, Sửu
 VANG_VONG = [None, 2, 5, 8, 11, 3, 6, 9, 0, 4, 7, 10, 1]
@@ -164,7 +167,7 @@ def xet_ngay(d, tuoi_list, viec, theo_tiet=False):
     for k in ky:
         diem -= {"Thọ tử": 3, "Sát chủ dương": 2, "Vãng vong": 2}.get(k, 0)
         ghi.append({"Thọ tử": "Thọ tử (trăm sự kỵ)", "Sát chủ dương": "Sát chủ dương (kỵ làm nhà, cưới, nhà đất)",
-                    "Sát chủ âm": "Sát chủ âm (kỵ an táng)", "Vãng vong": "Vãng vong (kỵ đi xa, cưới, chuyển nhà)"}.get(
+                    "Sát chủ âm": "Sát chủ âm (kỵ an táng, cưới gả, cất nhà)", "Vãng vong": "Vãng vong (kỵ đi xa, cưới, chuyển nhà)"}.get(
                         k, k))
     for ten, c, z in tuoi_list:
         if XUNG(zn, z):
@@ -181,7 +184,7 @@ def xet_ngay(d, tuoi_list, viec, theo_tiet=False):
 # Việc nào thì ngày kỵ theo tháng nào loại hẳn (dùng chung cho chonngay và nc.py ngay)
 KY_LOAI = {"Thọ tử": None,                                                     # None = mọi việc
            "Sát chủ dương": {"cuoi", "anhoi", "dongtho", "nhaptrach", "muanha", "khaitruong", "kyhopdong", "nhamchuc"},
-           "Sát chủ âm": {"antang"},
+           "Sát chủ âm": {"antang", "cuoi", "anhoi", "dongtho"},     # an táng (tục) + cất nhà, cưới gả (Ngọc Hạp)
            "Sát chủ âm (bản đảo tháng 7/8)": {"antang"},
            "Vãng vong": {"xuathanh", "cuoi", "anhoi", "nhaptrach", "nhamchuc", "chuabenh", "thuenguoi"}}
 

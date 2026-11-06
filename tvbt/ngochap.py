@@ -265,8 +265,7 @@ def cham(d, viec, nguoi, thu_ok=None, theo_tiet=False):
         ky.append("Vãng vong")
     kl = CN.ky_loai(ky, viec)
     loai += kl
-    ghi += [k for k in ky if k not in kl and (k != "Sát chủ âm" or viec == "antang")
-            and not k.startswith("Sát chủ âm (")]
+    ghi += [k for k in ky if k not in kl and not k.startswith("Sát chủ âm")]
     if "诸事不宜" not in yi and bt_tranh and (dl["gan"] == bt_tranh or dl["zhi"] == bt_tranh):
         ghi.append("Bành Tổ: " + BANH_TO[bt_tranh])
         p2 = max(p2 - 4, 0)
@@ -401,7 +400,7 @@ def in_ngay(tu, den, viec, nguoi, thu_ok=None, theo_tiet=False, top=5, chi_tiet=
           "(trừ Tam Nương, Nguyệt Kỵ, Dương Công); người chủ sự 20; khả thi 15; độ tin 5. "
           "Ngày bị loại: lịch ghi kiêng đúng việc này, mọi việc không nên, Nguyệt Phá, Tam Nương, Nguyệt Kỵ, "
           "Dương Công, Thọ tử, xung tuổi người chủ sự; Sát chủ dương với cưới hỏi, làm nhà, nhà đất, khai trương, "
-          "ký kết, nhậm chức; Sát chủ âm với an táng; Vãng vong với đi xa, cưới hỏi, chuyển nhà, nhậm chức, chữa bệnh, "
+          "ký kết, nhậm chức; Sát chủ âm với an táng, cưới hỏi, động thổ; Vãng vong với đi xa, cưới hỏi, chuyển nhà, nhậm chức, chữa bệnh, "
           "nhận người.)")
     return rows
 
@@ -499,7 +498,8 @@ def tu_kiem():
                 break
             r = cham(d, v, [])
             xau = ("Thọ tử" in ky or ("Sát chủ dương" in ky and v in ("cuoi", "nhaptrach", "dongtho"))
-                   or (vv and v in ("cuoi", "nhaptrach", "xuathanh")) or ("Sát chủ âm" in ky and v == "antang"))
+                   or (vv and v in ("cuoi", "nhaptrach", "xuathanh"))
+                   or ("Sát chủ âm" in ky and v in ("antang", "cuoi", "dongtho")))
             if xau and r["nhom"] != "Tránh":
                 loi.append("%s %s ngày kỵ %s mà không bị loại" % (v, d, ky))
     # 3c2. Sát chủ âm tháng 7/8: các nguồn chia đôi, an táng loại cả ngày Hợi lẫn ngày Sửu
@@ -509,7 +509,12 @@ def tu_kiem():
         if r["nhom"] != "Tránh" or not any(k.startswith("Sát chủ âm") for k in r.get("loai", [])):
             loi.append("an táng %s (Sát chủ âm tháng 7/8) không bị loại" % d)
     if any(k.startswith("Sát chủ âm") for k in cham(dt.date(2026, 9, 22), "cuoi", [])["loai"]):
-        loi.append("Sát chủ âm loại nhầm việc cưới")
+        loi.append("bản đảo Sát chủ âm loại nhầm việc cưới")
+    # Ngọc Hạp Chánh Tông: ngày Sát chủ (bảng chính) kỵ cất nhà, cưới gả -> 12/09/2026 (2/8 Kỷ Sửu) loại cưới, động thổ
+    for v in ("cuoi", "dongtho"):
+        r = cham(dt.date(2026, 9, 12), v, [])
+        if r["nhom"] != "Tránh" or "Sát chủ âm" not in r["loai"]:
+            loi.append("Sát chủ âm 12/09/2026 không loại %s" % v)
     # 3d. Sửa dữ liệu lunar-python: 04/12/1953 tháng Hợi ngày Kỷ Sửu là Nguyệt Yếm (không phải Hà Khôi);
     #     11/09/1950 tháng Dậu ngày Kỷ Dậu có Nguyệt Hình, không có Nguyệt Yếm.
     d1, h2 = du_lieu_ngay(dt.date(1953, 12, 4)), du_lieu_ngay(dt.date(1950, 9, 11))["hung"]

@@ -30,10 +30,10 @@ python3 tvbt/nc.py hannam --ngay YYYY-MM-DD --gioi nam|nu        # ngày dương
   | 0 | Mộc Đức | Thủy Diệu |
 
   Cách xếp phổ biến: tốt là Thái Dương, Thái Âm, Mộc Đức; trung bình là Thổ Tú, Thủy Diệu, Vân Hớn; xấu là La Hầu, Kế Đô, Thái Bạch.
-- **Hạn (8 hạn)**: thứ tự Huỳnh Tuyền, Tam Kheo, Ngũ Mộ, Thiên Tinh, Toán Tận, Thiên La, Địa Võng, Diêm Vương. Cộng hai chữ số của tuổi mụ được S. Nam lấy vị trí (S + 7) mod 8, nữ lấy (5 − S) mod 8, đếm từ 0. Quy tắc này giải thích được vì sao bảng nhảy: nam Huỳnh Tuyền gặp ở 81, 89, 90; nữ ở 41, 49, 50. Tục thường chỉ xét hạn từ 10 tuổi; một số bảng nam bắt đầu từ 11.
+- **Hạn (8 hạn)**: thứ tự Huỳnh Tuyền, Tam Kheo, Ngũ Mộ, Thiên Tinh, Toán Tận, Thiên La, Địa Võng, Diêm Vương. Cộng hai chữ số của tuổi mụ được S. Nam lấy vị trí (S + 7) mod 8, nữ lấy (5 − S) mod 8, đếm từ 0. Quy tắc này giải thích được vì sao bảng nhảy: nam Huỳnh Tuyền gặp ở 81, 89, 90; nữ ở 41, 49, 50. Tục xét hạn từ 10 tuổi. Nhiều bảng chỉ liệt kê từ 11 tuổi, nhưng không bảng nào ghi tuổi 10 khác đi. Bảng có ghi tuổi 10 (ngaydep.com, năm 2026 cho người sinh 2017) ra nam Huỳnh Tuyền, nữ Toán Tận, đúng quy tắc trên.
 - **Tam tai**: tuổi Thân Tý Thìn gặp năm Dần Mão Thìn; Dần Ngọ Tuất gặp Thân Dậu Tuất; Tỵ Dậu Sửu gặp Hợi Tý Sửu; Hợi Mão Mùi gặp Tỵ Ngọ Mùi. Ba năm liền, script ghi năm thứ mấy.
 - **Kim lâu** (dùng cho làm nhà, cưới hỏi): tuổi mụ chia 9 dư 1 (Thân), 3 (Thê), 6 (Tử), 8 (Lục Súc). Cưới hỏi tục xét tuổi cô dâu; có nơi xét cả chú rể.
-- **Hoang ốc** (làm nhà): Nhất Cát, Nhì Nghi, Tam Địa Sát, Tứ Tấn Tài, Ngũ Thọ Tử, Lục Hoang Ốc. Hàng chục khởi ở cung tương ứng (10 tuổi ở Nhất Cát, 20 ở Nhì Nghi…), rồi đếm tiếp hàng đơn vị sang các cung sau. Tam Địa Sát, Ngũ Thọ Tử, Lục Hoang Ốc là xấu. Có sách đếm hàng đơn vị bắt đầu ngay tại cung hàng chục, nên kết quả lệch một cung.
+- **Hoang ốc** (làm nhà): Nhất Cát, Nhì Nghi, Tam Địa Sát, Tứ Tấn Tài, Ngũ Thọ Tử, Lục Hoang Ốc. Hàng chục khởi ở cung tương ứng (10 tuổi ở Nhất Cát, 20 ở Nhì Nghi…), rồi đếm tiếp hàng đơn vị sang các cung sau. Tam Địa Sát, Ngũ Thọ Tử, Lục Hoang Ốc là xấu. Cách nhanh cho cùng kết quả: cộng hai chữ số, chia 6 lấy dư (dư 0 là Lục Hoang Ốc). Đã đối chiếu 6 nguồn (hoatieu, batdongsan, vnreview, chogia, dienmayxanh, fptshop): tất cả đếm tiếp như trên, không nguồn nào đếm lệch một cung.
 - **Phạm Thái Tuế**: chi năm xem so với chi năm sinh.
   - Trùng chi: trực Thái Tuế, tức năm tuổi. Thìn, Ngọ, Dậu, Hợi còn tự hình.
   - Các kiểu khác: xung, hình, hại, phá.
@@ -43,6 +43,8 @@ python3 tvbt/nc.py hannam --ngay YYYY-MM-DD --gioi nam|nu        # ngày dương
 - Danh sách tuổi gặp từng hạn của hoatieu.vn, ví dụ nam Huỳnh Tuyền 18, 27, 36, 45, 54, 63, 72, 81, 89, 90, 98.
 - Bảng năm 2025 của thuvienphapluat.vn: Bính Dần 1986, nam Thái Bạch – Thiên Tinh, nữ Thái Âm – Tam Kheo.
 - Ví dụ 48 tuổi của báo Hà Tĩnh: nam Thủy Diệu, nữ Mộc Đức.
+- Tuổi 10 của ngaydep.com: nam Huỳnh Tuyền, nữ Toán Tận.
+- Hoang ốc: 45 và 54 Tam Địa Sát, 41 Ngũ Thọ Tử, 33 Lục Hoang Ốc, 34 Nhất Cát (hoatieu, batdongsan, vnreview, chogia).
 - Các phép này có trong `kiemtra.py` (module hannam).
 
 ## Cách nói kết quả
