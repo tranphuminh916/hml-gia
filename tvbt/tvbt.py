@@ -336,11 +336,14 @@ def doc_dau_vao(a):
             raise SystemExit("LỖI: ngày âm lịch tối đa là 30.")
         # chọn lịch (UTC+7 hay UTC+8) sao cho khớp với thời kỳ của chính ngày dương tìm được
         ngay, tz_dung, loi = None, None, None
+        # lịch nên dùng cho năm âm này (để báo lỗi theo đúng lịch của thời kỳ, không theo lịch thử sau cùng)
+        tz_ky_vong = a.lich_tz or mui_lich_am(dt.date(y, 6, 1), bool(tt.mien_nam))
         for tz in ([a.lich_tz] if a.lich_tz else [7, 8]):
             try:
                 cand = am_sang_duong(d, m, y, a.nhuan, tz)
             except (SystemExit, Exception) as e:
-                loi = e
+                if loi is None or tz == tz_ky_vong:
+                    loi = e
                 continue
             if a.lich_tz or mui_lich_am(cand, tt.mien_nam) == tz:
                 ngay, tz_dung = cand, tz
@@ -523,7 +526,11 @@ def bat_tu(tt, so_nam_luu=0, nam_xem=None, luu_nguyet=False):
     tru_ds = [(ten, GAN_LIST.index(gz[0]), ZHI_LIST.index(gz[1])) for ten, gz in tru]
     nb = quan_he_noi_bo(tru_ds)
     print("- Quan hệ trong tứ trụ: " + ("; ".join(nb) if nb else "không có hợp/xung/hình/hại"))
-    print("- Tuần không (theo trụ ngày): %s" % " ".join(CHI[c] for c in eloc.getDayXunKong()))
+    kv_ngay = eloc.getDayXunKong()
+    kv_tru = ["%s %s" % (ten, CHI[gz[1]]) for ten, gz in tru if ten != "Ngày" and gz[1] in kv_ngay]
+    print("- Tuần không (theo trụ ngày): %s%s" % (" ".join(CHI[c] for c in kv_ngay),
+                                               "; rơi vào trụ " + ", ".join(kv_tru) if kv_tru else
+                                               "; không trụ nào rơi vào"))
     print("- Thai nguyên: %s" % vn(ebk.getTaiYuan()))
     dv_ds = []
     # đại vận
@@ -966,6 +973,27 @@ def phong_thuy(tt, a):
         print("|---|---|---|")
         for ten, huong, tinh, _ in bat_trach(q):
             print("| %s | %s | %s |" % (ten, huong, tinh))
+    if a.huong is not None:
+        do = a.huong % 360
+        cung_h = CUNG_CUA_SON[son_tu_do(do)[0]]
+        cung_t = HUONG[(HUONG.index(cung_h) + 4) % 8]
+        trach = [k for k, v in QUE.items() if v[1] == cung_t][0]
+        nhom_t = "Đông" if trach in DONG_TU else "Tây"
+        print("- Nhà hướng %.1f°: hướng %s, tọa %s → %s trạch (%s tứ trạch; trạch quái lấy theo tọa)." % (
+            do, cung_h, cung_t, trach, nhom_t))
+        cach = (do - 22.5) % 45
+        cach = min(cach, 45 - cach)
+        if cach < 1.5:
+            print("! Hướng chỉ cách ranh giới hai phương Bát trạch %.1f°: đo lại cho chắc trước khi luận." % cach)
+        for nhan, q in ((("Tết", q1),) + ((("Lập Xuân", q2),) if q1 != q2 else ())):
+            dn = {huong: (ten, tinh) for ten, huong, tinh, _ in bat_trach(q)}
+            print("- Với cung phi %s (theo %s, %s tứ mệnh): hướng nhà là %s (%s), tọa là %s (%s); %s." % (
+                q, nhan, "Đông" if q in DONG_TU else "Tây", dn[cung_h][0], dn[cung_h][1], dn[cung_t][0],
+                dn[cung_t][1], "nhà cùng nhóm với mệnh" if (q in DONG_TU) == (trach in DONG_TU)
+                else "nhà KHÁC nhóm với mệnh"))
+            if ((q in DONG_TU) == (trach in DONG_TU)) != (dn[cung_h][1] in ("đại cát", "cát", "tiểu cát")):
+                print("  Hai cách xét cho kết quả khác nhau: theo tọa (trạch quái cùng nhóm mệnh – Bát trạch minh cảnh) "
+                      "và theo hướng nhà/cửa (hướng thuộc 4 hướng tốt – cách phổ biến hiện nay). Nói rõ cả hai.")
     print()
     nam = a.nam_xem
     lx_y = nam
@@ -1033,8 +1061,9 @@ def phong_thuy(tt, a):
 
 
 # ---------------------------------------------------------------- HỢP TUỔI (so tứ trụ với người khác)
-def tru_nguoi_khac(chuoi):
-    """'Tên:YYYY-MM-DD [HH:MM] [am|amnhuan]' (mặc định dương lịch, giờ đồng hồ Việt Nam)."""
+def tru_nguoi_khac(chuoi, sect=1):
+    """'Tên:YYYY-MM-DD [HH:MM] [am|amnhuan]' (mặc định dương lịch, giờ đồng hồ Việt Nam).
+    sect: cách tính giờ Tý muộn như --ty của đương số (1 = 23h đã sang ngày mới)."""
     if ":" not in chuoi:
         raise SystemExit("LỖI: --nguoi dạng 'Tên:YYYY-MM-DD [HH:MM] [am]', vd 'Anh Hùng:1979-02-11' hoặc "
                          "'Chị Lan:1988-06-20 am'.")
@@ -1060,6 +1089,7 @@ def tru_nguoi_khac(chuoi):
     t_bk = t - dt.timedelta(hours=off - 8)
     ebk = lunar_cua(t_bk).getEightChar()
     eloc = lunar_cua(t).getEightChar()
+    eloc.setSect(sect)          # lunar-python mặc định sect 2 (23h vẫn ngày cũ) – phải theo --ty như đương số
     tru = [("năm", ebk.getYear()), ("tháng", ebk.getMonth()), ("ngày", eloc.getDay())]
     if gio:
         tru.append(("giờ", eloc.getTime()))
@@ -1082,7 +1112,7 @@ def hop_tuoi(tt, ds):
     print("| Người | Ngày sinh (âm) | Tứ trụ | Nhật chủ | Họ là gì với đương số | Ngũ hành nổi (can+chi) | "
           "Quan hệ trụ năm / trụ ngày | Quan hệ chéo khác |")
     print("|---|---|---|---|---|---|---|---|")
-    nguoi = [tru_nguoi_khac(x) for x in ds]
+    nguoi = [tru_nguoi_khac(x, tt.sect) for x in ds]
     for n in nguoi:
         dem = {}
         for _, gz in n["tru"]:
@@ -1394,8 +1424,10 @@ def main():
     p.add_argument("--nam-xem", type=int, default=dt.date.today().year, help="năm xem vận hạn / cửu tinh")
     p.add_argument("--huong", type=float, help="độ hướng nhà (la bàn, 0-360) cho Huyền không")
     p.add_argument("--nam-xay", type=int, help="năm xây xong / nhập trạch (để lấy vận)")
-    p.add_argument("--van", type=int, help="ép vận Huyền không (1-9)")
+    p.add_argument("--van", type=int, choices=range(1, 10), metavar="1-9", help="ép vận Huyền không (1-9)")
     a = p.parse_args()
+    if a.huong is not None and not math.isfinite(a.huong):
+        raise SystemExit("LỖI: --huong phải là số độ (0-360).")
     phan = set(a.phan)
     if "tatca" in phan:
         phan = (phan - {"tatca"}) | {"battu", "tuvi", "phongthuy"}

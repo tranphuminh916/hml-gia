@@ -13,6 +13,10 @@
   - Hoàng đạo, Trực, 28 Tú, Tam Nương, Nguyệt Kỵ, Dương Công, xung tuổi: lấy đúng từ `chonngay` của v2, phần này đã khớp lunar-python trên 40.543 ngày.
   - Có bất biến: ngày lịch ghi kiêng đúng việc chính, hoặc ngày xung tuổi người chủ sự, không bao giờ lọt vào nhóm chọn.
 - **Rà soát độc lập.** Đã có một lượt rà soát độc lập; lỗi "ngày lịch ghi 'việc khác không nên' vẫn lọt vào nhóm chọn" đã sửa và có ca thử riêng.
+- **Rà soát 11/2026.**
+  - Thêm Thọ tử, Sát chủ dương, Sát chủ âm, Vãng vong (theo tháng âm, nguồn lịch Việt Nam). Trước bản này, riêng 2020–2029 có 79 ngày cưới, 60 ngày nhập trạch, 53 ngày động thổ là Thọ tử / Sát chủ dương / Vãng vong mà vẫn vào nhóm "Nên chọn". Nay chạy 1950–2060: 0 ngày như vậy lọt vào nhóm chọn.
+  - Kim Lâu, Hoang Ốc, Tam Tai của người chủ sự nay in trong lệnh `ngay`, tính theo **năm âm lịch** của khoảng ngày (trước đây `chonngay` lấy năm dương lịch: chọn ngày cưới 5–20/1/2027 bị tính sang năm Đinh Mùi 2027, tuổi mụ sai 1, Kim Lâu sai).
+  - Sửa 3 dòng thần sát nhập sai của lunar-python (tháng Hợi ngày Kỷ Sửu, tháng Mùi ngày Quý Dậu, tháng Dậu ngày Kỷ Dậu).
 
 ## Chạy
 Tham số ngày giờ giống `tvbt.py`: `--ngay YYYY-MM-DD --gio HH:MM --gioi nam|nu --noi "<tỉnh>"`, cộng `--am`, `--nhuan`, `--kinhdo`, `--utc`, `--mien`, `--gio-dong-ho`, `--ty` khi cần. Mọi lệnh có `--help`.
@@ -51,7 +55,12 @@ Muốn chỉ chọn trong một số thứ trong tuần thì thêm `--thu T7,CN`
      - ngày "mọi việc không nên";
      - Nguyệt Phá;
      - Tam Nương, Nguyệt Kỵ, Dương Công;
+     - Thọ tử (mọi việc);
+     - Sát chủ dương khi cưới hỏi, ăn hỏi, động thổ, nhập trạch, mua nhà, khai trương, ký kết, nhậm chức; Sát chủ âm khi an táng;
+     - Vãng vong khi xuất hành, cưới hỏi, ăn hỏi, nhập trạch, nhậm chức, chữa bệnh, nhận người (xét cả bản tháng âm của lịch Việt Nam và bản tháng tiết của Hiệp Kỷ);
      - xung tuổi người chủ sự.
+   - Gặp Sát chủ / Vãng vong với việc khác: chỉ ghi chú, không loại.
+   - Đầu bảng có dòng **Kim Lâu / Hoang Ốc / Tam Tai** theo năm âm lịch: Kim Lâu xét cho cưới hỏi (tuổi mụ cô dâu) và làm nhà; Hoang Ốc, Tam Tai cho làm nhà, động thổ. Phạm thì nói các cách dân gian (mượn tuổi, lùi năm) như kinh nghiệm tham khảo.
    - Nói lý do loại khi người dùng hỏi về một ngày cụ thể.
 2. Đưa 2–3 ngày tốt nhất. Mỗi ngày gồm:
    - lý do: lịch ghi nên làm việc này, Trực hợp, Hoàng đạo, cát thần lớn như Thiên Đức, Nguyệt Đức, Thiên Xá, Thiên Nguyện, Mẫu Thương;
@@ -68,3 +77,4 @@ Muốn chỉ chọn trong một số thứ trong tuần thì thêm `--thu T7,CN`
 
 ## Trường phái và giới hạn (nói rõ khi liên quan)
 - **Chọn ngày:** việc nên/kiêng, cát thần, hung sát, hướng thần theo Hiệp Kỷ Biện Phương Thư (qua lunar-python), tính theo tháng tiết khí và giờ Bắc Kinh. Ngày giáp ranh tháng tiết có thể lệch. Hoàng đạo theo tháng âm như lịch Việt Nam. Thang 100 điểm là quy ước của skill.
+- Dương Công kỵ nhật theo bản Việt Nam (có 8/7); sách Trung Quốc ghi 1/7. Thọ tử theo bản Việt Nam (một can chi mỗi tháng); bản Trung Quốc (受死) xét chi. Sát chủ âm: một nguồn đảo tháng 7/8 (script ghi chú khi an táng). Xem thêm `docs/co-ban.md` phần trường phái.

@@ -16,6 +16,7 @@
   - Hợp thập toàn bàn khớp 24 cục.
   - Niên tinh 2024–2027 đúng.
   - Chạy 360° × 9 vận không lỗi.
+  - Rà soát 11/2026: hạ quái và thế quái khớp hai bản cài đặt độc lập (voidforall/fengshui.skill theo bảng thay sao Thẩm thị; kth2/hidefate `independent_xuankong.py`, phương án sao 5 không thay) trên 9 vận × 24 sơn × 5 độ lệch (2.160 bàn); 4 cục, phục/phản ngâm, hợp thập, liên châu, phụ mẫu tam ban khớp; niên tinh 1864–2100 và nguyệt tinh 1900–2100 khớp. Sao 5 ở tọa/hướng: lấy âm dương của chính sơn tọa/hướng hay của sơn cùng nguyên long ở cung số vận đều cho cùng kết quả (cung có sao 5 luôn cùng chẵn lẻ với số vận).
 
 ## Chạy
 Tham số ngày giờ giống `tvbt.py`: `--ngay YYYY-MM-DD --gio HH:MM --gioi nam|nu --noi "<tỉnh>"`, cộng `--am`, `--nhuan`, `--kinhdo`, `--utc`, `--mien`, `--gio-dong-ho`, `--ty` khi cần. Mọi lệnh có `--help`.
@@ -31,7 +32,7 @@ Trình bày theo v2: (1) bảng số liệu, (2) luận theo mục, (3) lưu ý 
 Lệnh này **thay** phần Huyền không của v2 khi nhà có kiêm hướng, hoặc khi cần Thành môn, đả kiếp, lưu niên chồng bàn, bố trí theo sơn thủy thật.
 
 **Hỏi người dùng trước khi chạy:**
-1. **Độ hướng nhà.** Đứng trong nhà, nhìn ra cửa chính hoặc mặt tiền. Đo 2–3 lần, tránh xa sắt thép, xe và đồ điện.
+1. **Độ hướng nhà.** Đứng trong nhà, nhìn ra cửa chính hoặc mặt tiền. Đo 2–3 lần, tránh xa sắt thép, xe và đồ điện. Dùng **bắc từ** (la bàn); điện thoại để "Bắc thực" thì cộng thêm khoảng 0,5° (miền Nam) đến 1,7° (Hà Nội) – đáng kể khi gần ngưỡng 3°/4,5° hoặc ranh giới sơn.
 2. **Năm xây xong hoặc nhập trạch** (`--nam-xay`). Nếu từng sửa lớn (thay mái, cải tạo lớn), hỏi năm sửa, vì có phái tính lại vận theo năm đó. Đã biết vận thì dùng `--van`.
 3. **Phương có cửa, đường, sân trống, hồ, sông** (`--nuoc`). **Phương có nhà cao, tường cao, núi** (`--nui`). Ghi tên phương, ví dụ "Nam,Đông Nam", hoặc viết tắt B, ĐB, Đ, ĐN, N, TN, T, TB.
 4. **Năm, tháng muốn xem** (`--nam-xem`, `--thang-xem`). Tháng ở đây là tháng tiết khí: tháng 1 là tháng Dần, bắt đầu từ Lập Xuân.

@@ -3,7 +3,7 @@
 
 Cách dùng: python3 tvbt/nc.py <lệnh> [tham số]   (xem: python3 tvbt/nc.py <lệnh> --help)
 Các lệnh: ngay, vuongsuy, anhtuvi, anhbattu, vanthe, hoptac, luunhat, kiembai,
-          luchao, huyenkhong, lucnham2, cachcuc, hoichan, tukiem
+          luchao, huyenkhong, lucnham2, cachcuc, hoichan, hannam, tuoivn, tukiem
 """
 import argparse
 import datetime as dt
@@ -14,7 +14,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 MODULE = ["ngochap", "vuongsuy", "anh", "hoptac", "luunhat", "kiembai",
-          "luchao", "huyenkhong2", "lucnham2", "cachcuc_tv", "hoichan"]
+          "luchao", "huyenkhong2", "lucnham2", "cachcuc_tv", "hoichan", "hannam", "tuoivn"]
 
 
 def them_tham_so_sinh(p, gioi_bat_buoc=False):

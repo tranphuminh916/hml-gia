@@ -402,8 +402,11 @@ def _p22(c):
         return "can (%s) hợp chi %s, can thượng %s hợp chi thượng %s" % (C(c.ky), C(c.z), C(c.u1), C(c.u3))
     if hop(c.u1, c.ky) and hop(c.u3, c.z):
         return "can hợp can thượng %s, chi hợp chi thượng %s" % (C(c.u1), C(c.u3))
-    if hop(c.u1, c.ky):
-        return "riêng can hợp can thượng %s (hợp một phía, nhẹ hơn)" % C(c.u1)
+    if hop(c.ky, c.z) and (c.u1 == c.z or c.u3 == c.ky):   # "干支相会格": 乙酉日酉加乙，或乙加酉 …
+        return "can (%s) và chi %s lục hợp, %s" % (C(c.ky), C(c.z), "chi gia lên can" if c.u1 == c.z else
+                                                 "can gia lên chi")
+    if hop(c.u1, c.u3):          # chú Tất pháp phú: "独支干上神作六合格" (vd 戊辰日干上丑、支上子)
+        return "riêng can thượng %s hợp chi thượng %s (độc can chi thượng thần hợp)" % (C(c.u1), C(c.u3))
 
 
 def _p23(c):
@@ -558,6 +561,8 @@ def _p47(c):
     if d in (4, 10):
         if c.g in (1, 7) and d == c.ky:
             return "Quý nhân %s lâm %s là cung của can %s – quý nhân lâm thân" % (C(c.qn), C(d), CAN[c.g])
+        if d == c.z:                 # chú: "如辰戌二日占之，乃为贵人入宅，非坐狱论也"
+            return "Quý nhân %s lâm %s là chi ngày – quý nhân nhập trạch, không luận ngục" % (C(c.qn), C(d))
         return "Quý nhân %s lâm %s (nhập ngục)" % (C(c.qn), C(d))
 
 
@@ -872,7 +877,8 @@ TAT_PHAP = [
     (44, "Khóa truyền câu quý chuyển vô y", "quý nhân quá nhiều: không biết dựa ai, việc không quy về một mối", _p44),
     (45, "Trú dạ quý gia cầu lưỡng quý", "hai quý nhân chồng nhau: việc phải qua hai người có quyền", _p45),
     (46, "Quý nhân sai điệt sự sâm si", "quý nhân lệch chỗ: việc nhờ cậy không đều, lộn xộn", _p46),
-    (47, "Quý tuy tại ngục nghi lâm can", "quý nhân bị giam (Thìn/Tuất): khó nhờ; trừ khi lâm đúng cung can", _p47),
+    (47, "Quý tuy tại ngục nghi lâm can", "quý nhân bị giam (Thìn/Tuất): khó nhờ; trừ khi lâm đúng cung can (lâm thân) hoặc chi ngày (nhập trạch)",
+     _p47),
     (48, "Quỷ thừa Thiên Ất nãi thần kỳ", "quỷ cưỡi quý nhân: không phải người hại, thường là việc tâm linh/tín ngưỡng", _p48),
     (49, "Lưỡng quý thụ khắc nan can quý", "cả hai quý nhân đều bị khắc: chưa nên nhờ người trên", _p49),
     (50, "Nhị quý giai không hư hỷ kỳ", "quý nhân rỗng: lời hứa dễ đổi, tin vui chưa chắc", _p50),
@@ -1169,8 +1175,8 @@ KHOA_CACH = [
     ("Phú quý", "được quý nhân lớn giúp", _k_phu_quy),
     ("Hiên cái", "đi xe có lọng: thăng tiến, đi xa vẻ vang", lambda c: "Ngọ phát dụng, có Mão và Tý trong truyền"
      if c.so == 6 and 3 in c.tr and 0 in c.tr else None),
-    ("Chú ấn", "đúc ấn: có văn bằng, chức vụ", lambda c: "Tỵ và Tuất cùng nhập truyền"
-     if 5 in c.tr and 10 in c.tr else None),
+    ("Chú ấn", "đúc ấn: có văn bằng, chức vụ", lambda c: "Tuất gia Tỵ nhập truyền"      # 大全 q.8 "戌加巳中传"
+     if 10 in c.tr and c.vt[10] == 5 else None),
     ("Chước luân", "đẽo bánh xe: thành tài sau rèn giũa", _k_chuoc_luan),
     ("Dẫn tòng", "có người dẫn đường, theo hầu", _p1),
     ("Hanh thông", "thông suốt", _k_hanh_thong),
@@ -1184,8 +1190,12 @@ KHOA_CACH = [
     ("Vu dâm", "hai bên không thật lòng", _k_vu_dam),
     ("Cô quả", "lẻ loi, thiếu người giúp", _k_co_qua),
     ("Độ ách", "gặp ách cần vượt (ấu: lớp dưới; trưởng: người trên)", _k_do_ach),
-    ("Vô lộc", "dưới lấn trên: người trên khó yên", lambda c: "bốn khóa đều hạ tặc thượng" if c.n_tac == 4 else None),
-    ("Tuyệt tự", "trên ép dưới: lớp dưới thiệt", lambda c: "bốn khóa đều thượng khắc hạ" if c.n_khac == 4 else None),
+    # Lục Nhâm đại toàn q.9 "Vô lộc tuyệt tự khóa": "凡课四上俱克下，为无禄课 … 凡四下俱贼上，乃为绝嗣之格";
+    # tượng: "上克无禄，下克绝嗣" (ví dụ: Kỷ Tỵ ngày Dậu tướng giờ Dần = vô lộc; Canh Thìn Hợi tướng giờ Thìn = tuyệt tự).
+    ("Vô lộc", "trên ép dưới: người dưới chịu thiệt, chức lộc khó giữ", lambda c: "bốn khóa đều thượng khắc hạ"
+     if c.n_khac == 4 else None),
+    ("Tuyệt tự", "dưới phạm trên: người trên gặp hại, tiểu nhân vô lễ", lambda c: "bốn khóa đều hạ tặc thượng"
+     if c.n_tac == 4 else None),
     ("Truân phúc", "trước gian sau được", _k_truan_phuc),
     ("Xâm hại", "bị xâm phạm, ngầm hại", _k_xam_hai),
     ("Hình thương", "va chạm, tổn thương", _k_hinh_thuong),
@@ -1686,6 +1696,28 @@ def tu_kiem():
     # Bế khẩu cũng là khóa cách (cùng điều kiện điều 38)
     if not _co_cach(_mau(gz("Giáp Thân"), Z["Tỵ"], Z["Thân"]), "Bế khẩu"):
         loi.append("Giáp Thân Tỵ gia Thân: thiếu khóa cách Bế khẩu")
+    # Vô lộc / Tuyệt tự (Lục Nhâm đại toàn q.9): "三月己巳日寅时酉将占，四上俱克下，为无禄格";
+    # "正月庚辰日辰时亥将占，四下俱贼上，为绝嗣格"; "甲寅日亥将子时占，三传子亥戌亦是绝嗣"
+    for ngay, tg, gio_, ten in (("Kỷ Tỵ", "Dậu", "Dần", "Vô lộc"), ("Canh Thìn", "Hợi", "Thìn", "Tuyệt tự"),
+                                ("Giáp Dần", "Hợi", "Tý", "Tuyệt tự")):
+        g_, z_ = gz(ngay)
+        gn = [i for i in range(60) if i % 10 == g_ and i % 12 == z_][0]
+        kq = phan_tich(gn, Z[gio_], Z[tg], (13 - Z[tg]) % 12, 0)
+        if not _co_cach(kq, ten) or _co_cach(kq, {"Vô lộc": "Tuyệt tự", "Tuyệt tự": "Vô lộc"}[ten]):
+            loi.append("%s %s tướng giờ %s: sách là %s" % (ngay, tg, gio_, ten))
+    # Chú ấn: "丙子日未时子将，巳加子用，传遇天魁" – ba truyền Tỵ Tuất Mão, Tuất gia Tỵ
+    kq = phan_tich(12, 7, 0, 1, 0)
+    if not _co_cach(kq, "Chú ấn"):
+        loi.append("Bính Tý Tý tướng giờ Mùi: thiếu khóa cách Chú ấn")
+    if _co_cach(_mau(gz("Giáp Tý"), Z["Tỵ"], Z["Tuất"]), "Chú ấn"):
+        loi.append("Tỵ gia Tuất (ngược chiều) không phải Chú ấn")
+    # Điều 22 "独支干上神作六合格": 戊辰日干上丑、支上子
+    if not _co(_mau(gz("Mậu Thìn"), Z["Sửu"], Z["Tỵ"]), 22):
+        loi.append("Mậu Thìn can thượng Sửu, chi thượng Tý: không nhận ra điều 22")
+    # Điều 47: "如辰戌二日占之，乃为贵人入宅，非坐狱论也" – Giáp Thìn, Quý nhân Sửu gia Thìn (giờ ngày)
+    d47 = _p47(_mau(gz("Giáp Thìn"), Z["Sửu"], Z["Thìn"], 6)["c"])
+    if not d47 or "nhập trạch" not in d47:
+        loi.append("Giáp Thìn Sửu gia Thìn: điều 47 phải là quý nhân nhập trạch, được %r" % d47)
 
     # --- C. Chạy toàn bộ 60 ngày x 12 giờ x 12 nguyệt tướng; bất biến và tần suất ---
     rnd = random.Random(7)

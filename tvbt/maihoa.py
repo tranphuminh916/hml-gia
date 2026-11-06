@@ -96,10 +96,13 @@ def in_que(q, chi_thang, nguon):
     print("- Thể: %s (%s, %s theo tháng %s); Dụng: %s (%s) → Dụng %s" % (
         QUAI[q["the"]][0], the_h, vuong_suy(the_h, chi_thang), CHI[chi_thang],
         QUAI[q["dung"]][0], QUAI[q["dung"]][2], quan_he_the(the_h, QUAI[q["dung"]][2])))
-    for nhan, (a, b) in (("Hỗ", q["ho"]), ("Biến", q["bien"])):
-        dung_q = [x for x in (a, b) if True]
-        print("- %s quái: %s" % (nhan, "; ".join("%s (%s) %s" % (QUAI[x][0], QUAI[x][2],
-                                                               quan_he_the(the_h, QUAI[x][2])) for x in dung_q)))
+    a, b = q["ho"]
+    print("- Hỗ quái: %s" % "; ".join("%s (%s) %s" % (QUAI[x][0], QUAI[x][2], quan_he_the(the_h, QUAI[x][2]))
+                                      for x in (a, b)))
+    # Biến: Thể không động nên quái của Thể giữ nguyên trong quẻ biến; chỉ xét quái Dụng đã biến.
+    x = q["bien"][1] if q["dong"] <= 3 else q["bien"][0]
+    print("- Biến quái (Dụng biến thành): %s (%s) %s; quái còn lại của quẻ biến chính là Thể (không xét)" % (
+        QUAI[x][0], QUAI[x][2], quan_he_the(the_h, QUAI[x][2])))
     print("(Luận: Thể là mình/việc chính, Dụng là sự việc/đối phương. Dụng sinh Thể hoặc Thể khắc Dụng là thuận; "
           "Dụng khắc Thể là nghịch. Hỗ xem quá trình, Biến xem kết cục; Thể vượng theo mùa thì có sức.)")
     print()

@@ -150,9 +150,31 @@ def thai_than(s):
     return r.replace(" ,", ",").replace(", ", ", ").strip(" ,")
 
 
+def sua_than_sat(cat, hung, chi_thang, can_chi_ngay):
+    """Sửa hai dòng nhập liệu sai trong bảng thần sát của lunar-python 1.4.8 (rà soát 11/2026; đối chiếu quy tắc
+    Hiệp Kỷ – Hà Khôi tháng Hợi ở Dần, Nguyệt Yếm tháng Hợi ở Sửu / tháng Dậu ở Mão, Quy Kỵ tháng mạnh ở Sửu, Nguyệt
+    Hình tháng Dậu ở Dậu – khớp thư viện cnlunar, và với các ngày cùng chi trong cùng tháng của chính lunar-python):
+    - tháng Hợi ngày Kỷ Sửu: cả dòng cát thần / hung sát là của ngày khác (Hà Khôi, Thiên Lao, Lục Hợp...) → thay bằng
+      bộ chung của các ngày Sửu tháng Hợi (Nguyệt Yếm, Địa Hỏa, Cửu Không, Đại Sát, Quy Kỵ | Thủ Nhật, Thiên Vu, Phúc
+      Đức, Ngọc Vũ, Ngọc Đường) cộng Nguyệt Đức Hợp (can Kỷ, tháng Hợi);
+    - tháng Mùi ngày Quý Dậu: dòng hung sát là của ngày khác (Kiếp Sát, Thiên Tặc, Ngũ Hư) → bộ chung của các ngày Dậu
+      tháng Mùi (Tai Sát, Thiên Hỏa, Huyết Kỵ, Ngũ Ly, Câu Trận);
+    - tháng Dậu ngày Kỷ Dậu: ghi Nguyệt Yếm thay cho Nguyệt Hình."""
+    cat, hung = list(cat), list(hung)
+    if chi_thang == "亥" and can_chi_ngay == "己丑" and "河魁" in hung:
+        hung = ["月厌", "地火", "九空", "大煞", "归忌"]
+        cat = ["月德合", "守日", "天巫", "福德", "玉宇", "玉堂"]
+    if chi_thang == "未" and can_chi_ngay == "癸酉" and "劫煞" in hung:
+        hung = ["灾煞", "天火", "血忌", "五离", "勾陈"]
+    if chi_thang == "酉" and can_chi_ngay == "己酉" and "月厌" in hung:
+        hung[hung.index("月厌")] = "月刑"
+    return cat, hung
+
+
 def du_lieu_ngay(d):
     l = Solar.fromYmd(d.year, d.month, d.day).getLunar()
-    return dict(yi=l.getDayYi(), ji=l.getDayJi(), cat=l.getDayJiShen(), hung=l.getDayXiongSha(),
+    cat, hung = sua_than_sat(l.getDayJiShen(), l.getDayXiongSha(), l.getMonthZhi(), l.getDayInGanZhi())
+    return dict(yi=l.getDayYi(), ji=l.getDayJi(), cat=cat, hung=hung,
                 hy=HUONG[l.getDayPositionXiDesc()], tai=HUONG[l.getDayPositionCaiDesc()],
                 phuc=HUONG[l.getDayPositionFuDesc()], qn_duong=HUONG[l.getDayPositionYangGuiDesc()],
                 qn_am=HUONG[l.getDayPositionYinGuiDesc()], thai=thai_than(l.getDayPositionTai()),
@@ -237,6 +259,16 @@ def cham(d, viec, nguoi, thu_ok=None, theo_tiet=False):
     p2 = max(p2, 0)
     if "月破" in dl["hung"]:
         loai.append("Nguyệt Phá")
+    # Ngày kỵ theo tháng âm lịch Việt Nam (Thọ tử, Sát chủ, Vãng vong); Vãng vong xét cả bản tháng tiết (往亡 lunar-python)
+    ky = list(v2["ky"])
+    if "往亡" in dl["hung"] and "Vãng vong" not in ky:
+        ky.append("Vãng vong")
+    kl = CN.ky_loai(ky, viec)
+    loai += kl
+    ghi += [k for k in ky if k not in kl and (k != "Sát chủ âm" or viec == "antang")
+            and not k.startswith("Sát chủ âm (")]
+    if "Sát chủ âm (bản đảo tháng 7/8)" in ky and viec == "antang":
+        ghi.append("Sát chủ âm theo bản đảo tháng 7/8 (một nguồn) – nên tránh nếu được")
     if "诸事不宜" not in yi and bt_tranh and (dl["gan"] == bt_tranh or dl["zhi"] == bt_tranh):
         ghi.append("Bành Tổ: " + BANH_TO[bt_tranh])
         p2 = max(p2 - 4, 0)
@@ -317,6 +349,12 @@ def in_ngay(tu, den, viec, nguoi, thu_ok=None, theo_tiet=False, top=5, chi_tiet=
         print("- Người chủ sự %s: sinh năm %s %s (%d)%s%s" % (ten, CN.CAN[c], CN.CHI[z], y,
               "; hành cần " + ", ".join(HANH[h] for h in sorted(hs[0])) if hs[0] else "",
               "; hành kỵ " + ", ".join(HANH[h] for h in sorted(hs[1])) if hs[1] else ""))
+    if nguoi:
+        nam_am = CN.nam_am_cua_khoang(tu, den)
+        print("TUỔI THEO NĂM (Kim Lâu xét cho cưới hỏi – thường tính tuổi cô dâu – và làm nhà; Hoang Ốc, Tam Tai xét "
+              "khi làm nhà, động thổ; năm tính theo âm lịch):")
+        for ten, y, c, z, hs in nguoi:
+            print(CN.dong_tuoi(ten, y, nam_am))
     print("- Việc nên/kiêng, cát thần, hung sát theo Hiệp Kỷ Biện Phương Thư (lịch Trung Quốc, tính theo tháng tiết khí); "
           "Hoàng đạo theo %s như lịch Việt Nam." % ("tháng tiết khí" if theo_tiet else "tháng âm"))
     print()
@@ -364,7 +402,9 @@ def in_ngay(tu, den, viec, nguoi, thu_ok=None, theo_tiet=False, top=5, chi_tiet=
     print("(Thang 100 điểm: hợp việc 35 = nên/kiêng 25 + trực 10; ngày 25 = Hoàng đạo 10 + tú 5 + thần sát 10 "
           "(trừ Tam Nương, Nguyệt Kỵ, Dương Công); người chủ sự 20; khả thi 15; độ tin 5. "
           "Ngày bị loại: lịch ghi kiêng đúng việc này, mọi việc không nên, Nguyệt Phá, Tam Nương, Nguyệt Kỵ, "
-          "Dương Công, xung tuổi người chủ sự.)")
+          "Dương Công, Thọ tử, xung tuổi người chủ sự; Sát chủ dương với cưới hỏi, làm nhà, nhà đất, khai trương, "
+          "ký kết, nhậm chức; Sát chủ âm với an táng; Vãng vong với đi xa, cưới hỏi, chuyển nhà, nhậm chức, chữa bệnh, "
+          "nhận người.)")
     return rows
 
 
@@ -444,6 +484,38 @@ def tu_kiem():
     r = cham(dt.date(2026, 2, 17), "dongtho", [])
     if "馀事勿取" in r["dl"]["yi"] and r["nhom"] != "Tránh":
         loi.append("ngày 'việc khác không nên' không bị loại")
+    # 3c. Ngày kỵ theo tháng âm lịch (rà soát 11/2026): 09/04/2026 = 22/2 Quý Sửu là Sát chủ dương (baolamdong.vn);
+    #     Thọ tử tháng Giêng là Bính Tuất; Thọ tử bị loại với mọi việc, Sát chủ dương với cưới/nhập trạch/động thổ,
+    #     Vãng vong với xuất hành/cưới/nhập trạch.
+    if "Sát chủ dương" not in CN.xet_ngay(dt.date(2026, 4, 9), [], "chung")["ky"]:
+        loi.append("Sát chủ dương 09/04/2026")
+    if CN.ngay_ky_thang((1, 1, 2026, False), 2, 10) != ["Thọ tử"]:
+        loi.append("Thọ tử tháng Giêng")
+    d0 = dt.date(2026, 1, 1)
+    for i in range(0, 400, 1):
+        d = d0 + dt.timedelta(i)
+        ky = CN.xet_ngay(d, [], "chung")["ky"]
+        vv = "Vãng vong" in ky or "往亡" in du_lieu_ngay(d)["hung"]
+        for v in ("cuoi", "nhaptrach", "dongtho", "xuathanh", "antang"):
+            if not (ky or vv):
+                break
+            r = cham(d, v, [])
+            xau = ("Thọ tử" in ky or ("Sát chủ dương" in ky and v in ("cuoi", "nhaptrach", "dongtho"))
+                   or (vv and v in ("cuoi", "nhaptrach", "xuathanh")) or ("Sát chủ âm" in ky and v == "antang"))
+            if xau and r["nhom"] != "Tránh":
+                loi.append("%s %s ngày kỵ %s mà không bị loại" % (v, d, ky))
+    # 3d. Sửa dữ liệu lunar-python: 04/12/1953 tháng Hợi ngày Kỷ Sửu là Nguyệt Yếm (không phải Hà Khôi);
+    #     11/09/1950 tháng Dậu ngày Kỷ Dậu có Nguyệt Hình, không có Nguyệt Yếm.
+    d1, h2 = du_lieu_ngay(dt.date(1953, 12, 4)), du_lieu_ngay(dt.date(1950, 9, 11))["hung"]
+    h1 = d1["hung"]
+    h3 = du_lieu_ngay(dt.date(1950, 8, 6))["hung"]          # tháng Mùi ngày Quý Dậu
+    if "月厌" not in h1 or "归忌" not in h1 or "河魁" in h1 or "六合" in d1["cat"] or "月厌" in h2 or "月刑" not in h2 \
+            or "劫煞" in h3 or "灾煞" not in h3:
+        loi.append("sửa Hà Khôi / Nguyệt Yếm của lunar-python")
+    # 3e. Kim Lâu / Hoang Ốc / Tam Tai theo năm âm lịch: 05–20/01/2027 vẫn là năm Bính Ngọ 2026
+    if CN.nam_am_cua_khoang(dt.date(2027, 1, 5), dt.date(2027, 1, 20)) != [2026] or \
+            CN.nam_am_cua_khoang(dt.date(2027, 1, 20), dt.date(2027, 3, 1)) != [2026, 2027]:
+        loi.append("năm âm lịch của khoảng chọn ngày sai")
     # 4. Khớp v2: Hoàng đạo/Trực/Tú lấy đúng từ chonngay của v2
     r = cham(dt.date(2026, 11, 9), "khaitruong", doc_tuoi(["Chị:1984"]))
     if not (r["v2"]["truc"] == "Kiến" and r["v2"]["tu"] == "Trương" and r["v2"]["hd"]):

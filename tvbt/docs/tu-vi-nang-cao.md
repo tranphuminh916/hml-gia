@@ -121,6 +121,8 @@ Luôn nhắc: đây là tham khảo, không thay đánh giá năng lực, uy tí
 
 ## Trường phái và giới hạn (nói rõ khi liên quan)
 - **Vượng suy:** thang A theo bazi-enrich (MIT): đắc lệnh ±3–5, trường sinh, đắc địa theo tàng can, đắc thế; thang B đếm điểm (can 5; Tý Mão Dậu 8; Ngọ Hợi 5+3; chi khác 5/2/1; chi tháng tính 2 lần). Hai thang chỉ để tham khảo cho bước chọn dụng thần, không thay phán đoán.
+  - Thang A cộng điểm **trường sinh của can âm đi nghịch** (Ất trường sinh ở Ngọ, tử ở Hợi; Đinh/Kỷ trường sinh ở Dậu; Tân ở Tý; Quý ở Mão). Nhiều nhà (phái Trích Thiên Tủy) cho rằng xét vượng suy thì can âm theo hành như can dương. Vì vậy với Nhật chủ **can âm** sinh tháng có trường sinh/tử "âm" (Ất tháng Ngọ, Hợi, Tý; Đinh Kỷ tháng Dậu, Dần, Mão; Tân tháng Tý, Tỵ; Quý tháng Mão, Thân, Dậu) thang A lệch khoảng 3 điểm so với cách xét theo hành: ví dụ 09/06/1990 12:00 Hà Nội (Ất Tỵ sinh tháng Ngọ, Hỏa 25/60) thang A ra "trung hòa" còn thang B ra "nhược". Gặp các trường hợp này ưu tiên thang B và đắc lệnh theo hành, nói rõ.
+  - Hỷ kỵ mặc định (khi không truyền `--dung/--ky` cho `vanthe`, `luunhat`, `hoptac`) là phù ức đơn giản. Khi cả hai thang cùng "cực vượng" hoặc cùng "cực nhược" (khoảng 4% lá số) script in `!` vì có thể là cách tòng / chuyên vượng, hỷ kỵ khi đó ngược với phù ức.
 - **Cách cục Bát tự:** tháng Tý Ngọ Mão Dậu lấy bản khí; tháng khác lấy tàng can thấu (bỏ Tỷ Kiếp), không thấu thì lấy bản khí. Ám hợp chỉ xét bản khí. Bán hợp tính khi có chi giữa; củng hợp là cặp sinh–mộ.
 - **Vận thế:** điểm là quy ước của skill (tham khảo Johnson-Jia, Apache-2.0), chỉ để thấy xu hướng.
 - **Hợp tác:** thang điểm quy ước (tham khảo xuemian168, weizeW); hành cần/kỵ mặc định là phù ức đơn giản nếu không truyền.

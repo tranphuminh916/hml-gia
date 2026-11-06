@@ -252,6 +252,18 @@ def hy_ky_mac_dinh(tru3):
     return ta, nguoi
 
 
+def canh_bao_cuc_doan(tru3):
+    """Cảnh báo khi hỷ/kỵ mặc định (phù ức) có thể ngược: cả hai thang cùng cực vượng / cùng cực nhược thì có
+    thể là cách tòng, chuyên vượng – khi đó sách lấy thuận thế (chuyên vượng ưa Tỷ Ấn; tòng cách ưa hành mạnh)."""
+    pa, ma, _, _ = V.thang_a(tru3)
+    tl, mb = V.thang_b(tru3)[2:4]
+    if ("cực vượng" in ma and "cực vượng" in mb) or ("cực nhược" in ma and "cực nhược" in mb):   # ~4% lá số
+        return ("Vượng suy ở mức cực đoan (thang A: %s, thang B: %s): có thể là cách tòng / chuyên vượng – hỷ kỵ "
+                "mặc định theo phù ức có thể NGƯỢC; phải xét tay (4.1, mục cách cục đặc biệt) rồi truyền --dung/--ky."
+                % (ma, mb))
+    return None
+
+
 def diem_nam(tt, tru3, ls, dung, ky, nam):
     """Điểm Bát tự và Tử vi của một năm (năm Bát tự tính từ Lập Xuân; Tử vi theo năm âm lịch)."""
     from lunar_python import Solar
@@ -480,7 +492,7 @@ def chay_van_the(a):
     tt = _tt(a)
     nam_nay = dt.date.today().year
     tu = max(a.tu_nam or max(tt.dong_ho.year + 1, nam_nay - 10), tt.dong_ho.year)
-    den = a.den_nam or nam_nay + 15
+    den = a.den_nam or max(nam_nay + 15, tu + 15)      # người sinh sau năm nay + 15 vẫn có khoảng mặc định
     if a.tu_nam and a.tu_nam < tt.dong_ho.year:
         print("! Bỏ các năm trước năm sinh: bắt đầu từ %d." % tu)
     if den - tu > 100 or den < tu:
@@ -489,6 +501,11 @@ def chay_van_the(a):
     if (dung is None) != (ky is None):
         raise SystemExit("LỖI: cần cả --dung và --ky (hoặc bỏ cả hai).")
     hang, dung, ky, md = van_the(tt, tu, den, dung, ky)
+    if md:
+        _, _, tru = B.tu_tru(tt)
+        cb = canh_bao_cuc_doan([(nh, gz[0], gz[1]) for nh, gz in tru])
+        if cb:
+            print("! " + cb)
     in_van_the(hang, dung, ky, md)
     f = ghi_anh(html_van_the(hang, a.ten, nam_nay, dung, ky), a.ra, 980)
     print("Đã vẽ biểu đồ vận thế: %s" % f)
@@ -522,4 +539,9 @@ def tu_kiem():
         loi.append("2020 Tý phải xung chi ngày Ngọ")
     if "<polyline" not in html_van_the(hang, "", 2026, dung, ky):
         loi.append("biểu đồ không có đường")
+    # cảnh báo cực đoan: Giáp sinh tháng Mão, toàn Mộc Thủy (cực vượng) phải cảnh báo; lá số 2000-01-01 thì không
+    cuc = [("Năm", "甲", "寅"), ("Tháng", "乙", "卯"), ("Ngày", "甲", "寅"), ("Giờ", "癸", "亥")]
+    if not canh_bao_cuc_doan(cuc) or canh_bao_cuc_doan([("Năm", "己", "卯"), ("Tháng", "丙", "子"),
+                                                         ("Ngày", "戊", "午"), ("Giờ", "丁", "巳")]):
+        loi.append("cảnh báo cực vượng/cực nhược cho hỷ kỵ mặc định")
     return loi

@@ -4,6 +4,7 @@
 
 ## Đã kiểm chứng
 - Chuyển bàn thời gia (hủy bổ, trí nhuận) và bảng cách cục: giữ nguyên của v2. Tự kiểm tra của v2 vẫn ĐẠT sau khi vá.
+- Chuyển bàn: 1.080/1.080 bàn (18 cục × 60 giờ) trùng thư viện taobi; định cục hủy bổ và Mao Sơn trùng trên 11.455 thời điểm 1950–2050 (xem co-ban.md, mục Đã kiểm chứng).
 - **Phi bàn** (phái Mao Sơn / Đạo Âm): khớp toàn bộ thần, sao, môn, can của 3 bàn mẫu đã công bố:
   - dương 1 cục 23/12/2006 giờ Bính Thân;
   - âm 4 cục ngày Quý Hợi giờ Đinh Tỵ (2/8/2006);

@@ -237,7 +237,9 @@ KHAC_UNG = {(4, 2): ("Thanh Long phản thủ", "đại cát"), (2, 4): ("Phi đ
 KICH_HINH = {4: 3, 5: 2, 6: 8, 7: 9, 8: 4, 9: 4}          # Lục nghi kích hình: nghi -> cung
 NHAP_MO = {1: (6, "Ất kỳ nhập mộ (có sách lấy cung Khôn)"), 2: (6, "Bính kỳ nhập mộ"), 3: (8, "Đinh kỳ nhập mộ")}
 LOC_VI = {1: 3, 2: 4, 3: 9}                                 # Tam kỳ lâm lộc vị (Ất Mão, Bính Tỵ, Đinh Ngọ)
-THIEN_PHU_THOI = {0: 35, 5: 35, 1: 20, 6: 20, 2: 30, 7: 30, 3: 40, 8: 40, 4: 50, 9: 50}  # can ngày -> giờ (chỉ số 60)
+# Thiên phụ thời (天辅时): can ngày -> các giờ (chỉ số 60). Giáp/Kỷ: Kỷ Tỵ (5, Kim hàm ngọc kính) hoặc Giáp Tuất
+# (10, Lưu Quảng Bân); Ất Canh Giáp Thân, Bính Tân Giáp Ngọ, Đinh Nhâm Giáp Thìn, Mậu Quý Giáp Dần (các sách thống nhất).
+THIEN_PHU_THOI = {0: (5, 10), 5: (5, 10), 1: (20,), 6: (20,), 2: (30,), 7: (30,), 3: (40,), 8: (40,), 4: (50,), 9: (50,)}
 
 
 def _an(gz):
@@ -258,6 +260,10 @@ def vuong_suy(hanh, chi_thang):
     return "tử"
 
 
+# Thời can nhập mộ (时干入墓): giờ Bính Tuất, Đinh Sửu, Mậu Tuất, Nhâm Thìn, Quý Mùi
+THOI_MO = {i for i in range(60) if (i % 10, i % 12) in {(2, 10), (3, 1), (4, 10), (8, 4), (9, 7)}}
+
+
 def cach_cuc(b, gz_nam, gz_thang):
     """Trả về list (cung hoặc 0 = toàn bàn, tên cách, tính chất, ghi chú)."""
     kq = []
@@ -273,6 +279,8 @@ def cach_cuc(b, gz_nam, gz_thang):
                     kq.append((p, ten, tinh, "%s thiên bàn trên %s địa bàn" % (CAN[tc], CAN[dc])))
                 if tc == 6:
                     for c, nhan in ((can_nam, "Tuế"), (can_thang, "Nguyệt"), (can_ngay, "Nhật"), (can_gio, "Thời")):
+                        if nhan == "Thời" and b.get("gia"):
+                            continue    # niên/nguyệt/nhật gia: 'giờ' của bàn là can chi năm/tháng/ngày, đã xét ở trên
                         if dc == c and c != 6:
                             kq.append((p, "%s cách" % nhan, "hung", "Canh thiên bàn trên can %s %s" % (
                                 {"Tuế": "năm", "Nguyệt": "tháng", "Nhật": "ngày", "Thời": "giờ"}[nhan], CAN[c])))
@@ -344,8 +352,12 @@ def cach_cuc(b, gz_nam, gz_thang):
         return kq
     if cg % 2 == cn % 2 and _KHAC[HANH_CAN_[cg]] == HANH_CAN_[cn]:
         kq.append((0, "Ngũ bất ngộ thời", "hung", "can giờ %s khắc can ngày %s (cùng âm dương)" % (CAN[cg], CAN[cn])))
-    if THIEN_PHU_THOI[cn] == b["gz_gio"]:
-        kq.append((0, "Thiên phụ thời", "cát", "giờ %s của ngày can %s" % (ten_gz(b["gz_gio"]), CAN[cn])))
+    if b["gz_gio"] in THIEN_PHU_THOI[cn]:
+        kq.append((0, "Thiên phụ thời", "cát", "giờ %s của ngày can %s%s" % (
+            ten_gz(b["gz_gio"]), CAN[cn], " (ngày Giáp/Kỷ: sách lấy Kỷ Tỵ hoặc Giáp Tuất, tùy phái)" if cn in (0, 5) else "")))
+    if b["gz_gio"] in THOI_MO:
+        kq.append((0, "Thời mộ (can giờ nhập mộ)", "hung – việc mờ mịt, khó mở, không nên khởi sự",
+                   "giờ %s" % ten_gz(b["gz_gio"])))
     return kq
 
 

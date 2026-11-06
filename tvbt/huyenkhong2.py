@@ -652,6 +652,8 @@ def them_lenh(sub):
 
 
 def chay(a):
+    if not -1e6 < a.huong < 1e6:            # loại nan, inf
+        raise SystemExit("LỖI: --huong phải là số độ (0-360).")
     if a.van is None and a.nam_xay is None:
         raise SystemExit("LỖI: cần --nam-xay (năm xây xong/nhập trạch) hoặc --van để biết vận của nhà. "
                          "Hãy hỏi người dùng.")

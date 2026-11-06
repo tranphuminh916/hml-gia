@@ -170,6 +170,9 @@ def chay(a):
     md = dung is None
     if md:
         dung, ky = anh.hy_ky_mac_dinh(tru3)
+        cb = anh.canh_bao_cuc_doan(tru3)
+        if cb:
+            print("! " + cb)
     ky = ky or set()
     def f(s):
         try:

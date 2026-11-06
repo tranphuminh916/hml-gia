@@ -240,7 +240,7 @@ Văn phong:
 - **Bán hợp** chỉ tính cặp có chi ở giữa (Tý, Ngọ, Mão, Dậu); không tính "củng hợp" (cặp sinh – mộ). **Hình** ba ngôi (Dần–Tỵ–Thân, Sửu–Tuất–Mùi) được tính theo từng cặp.
 
 ## Giới hạn
-- `hoptuoi` tính theo giờ đồng hồ, không dùng giờ mặt trời thực. Người sinh trước 1975 được giả định theo giờ miền Bắc. Không có giờ sinh thì chỉ có 3 trụ; ngày giao tiết thì script cảnh báo.
+- `hoptuoi` tính theo giờ đồng hồ, không dùng giờ mặt trời thực. Người sinh trước 1975 được giả định theo giờ miền Bắc. Không có giờ sinh thì chỉ có 3 trụ; ngày giao tiết thì script cảnh báo. Người sinh 23h–24h: trụ ngày theo `--ty` của đương số (mặc định đã sang ngày mới), giống `battu` và `nc.py hoptac`.
 - Ngày đổi tháng trong lưu nguyệt Bát tự tính theo 12h trưa giờ Bắc Kinh, có thể lệch 1 ngày.
 - Chưa tính sao lưu theo tháng (Kình, Đà… của tháng). Lưu nhật, lưu thời có ở `nc.py luunhat` (`tu-vi-nang-cao.md`).
 - Chỉ so tuổi khi người dùng tự đưa ngày sinh của người kia.

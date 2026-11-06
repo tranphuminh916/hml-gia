@@ -19,6 +19,7 @@
   - Khớp 8 quẻ mẫu trong Tăng San Bốc Dịch (Truân biến Chấn, Bác biến Quan, Thăng, Bí, Tụy biến Bĩ, Đoài biến Tụng, Khốn biến Giải, Tỷ). Phần đã khớp: lục thân, chi, thế ứng, tuần không, phục thần, hóa tiến/thoái/không, nguyệt phá.
   - Khớp 1 quẻ có ngày giờ dương lịch đầy đủ (10/11/2013, 20:21).
   - Chạy 4.096 tổ hợp hào × 3 ngày không lỗi.
+  - Rà soát 11/2026: khớp thư viện PyPI `najia` 2.0.1 (cài đặt độc lập) trên đủ 4.096 tổ hợp hào: cung, thế ứng, nạp giáp, lục thân quẻ chủ và quẻ biến, cung quẻ biến, phục thần, lục xung, lục hợp, du hồn, quy hồn; lục thần và tuần không khớp trên 60 can chi ngày. 0 lỗi.
 - **Hội chẩn.** Ba phần đều dùng lại hàm đã kiểm chứng ở trên và của v2.
 
 ## Chạy

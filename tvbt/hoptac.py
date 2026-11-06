@@ -57,6 +57,9 @@ def doc_nguoi(s):
     else:
         d, k = anh.hy_ky_mac_dinh(tru3)
         md = True
+        cb = anh.canh_bao_cuc_doan(tru3)
+        if cb:
+            print("! %s: %s" % (ten, cb))
     hanh = V.thang_b(tru3)[4]
     noi_bat = sorted(range(5), key=lambda i: -hanh[i])[:2]
     return dict(ten=ten, tt=tt, tru=tru3, gioi=gioi, dung=d, ky=k or set(), md=md, hanh=hanh, noi_bat=noi_bat,
