@@ -178,7 +178,7 @@ nav.tabbar button{white-space:nowrap;font-size:11px;letter-spacing:-.1px}
   <details class="sec">
     <summary>Về trang này</summary>
     <div class="body hint">
-      <p>Mọi con số (can chi, sao, cục, quẻ, ngày tốt) do bộ tính đã kiểm chứng tính ngay trên máy của <span class="xg">anh/chị</span> (bản <b id="verLbl">637f91e</b>). <span id="aiNote" hidden>Phần luận do Claude (trí tuệ nhân tạo) viết dựa trên số liệu đó.</span></p>
+      <p>Mọi con số (can chi, sao, cục, quẻ, ngày tốt) do bộ tính đã kiểm chứng tính ngay trên máy của <span class="xg">anh/chị</span> (bản <b id="verLbl">1d6cbc5</b>). <span id="aiNote" hidden>Phần luận do Claude (trí tuệ nhân tạo) viết dựa trên số liệu đó.</span></p>
       <p>Đây là tri thức văn hóa truyền thống để tham khảo, không phải dự báo khoa học.</p>
       <button class="ghost small" id="btnSelfTest" disabled>Chạy tự kiểm bộ tính (khoảng 30–60 giây)</button>
       <div id="selfTestOut" class="out" style="margin-top:8px"></div>
@@ -344,7 +344,7 @@ nav.tabbar button{white-space:nowrap;font-size:11px;letter-spacing:-.1px}
 <script>
 "use strict";
 /* ============================================================ hằng số */
-const BAN_SCRIPT = "637f91e";
+const BAN_SCRIPT = "1d6cbc5";
 const PYO_BASES = ["https://cdn.jsdelivr.net/pyodide/v0.27.7/full/", "https://cdn.jsdelivr.net/npm/pyodide@0.27.7/"];
 const TINH = ["Hà Nội","TP Hồ Chí Minh","Hải Phòng","Đà Nẵng","Cần Thơ","An Giang","Bà Rịa - Vũng Tàu","Bắc Giang","Bắc Kạn","Bạc Liêu","Bắc Ninh","Bến Tre","Bình Định","Bình Dương","Bình Phước","Bình Thuận","Cà Mau","Cao Bằng","Đắk Lắk","Đắk Nông","Điện Biên","Đồng Nai","Đồng Tháp","Gia Lai","Hà Giang","Hà Nam","Hà Tĩnh","Hải Dương","Hậu Giang","Hòa Bình","Hưng Yên","Khánh Hòa","Kiên Giang","Kon Tum","Lai Châu","Lâm Đồng","Lạng Sơn","Lào Cai","Long An","Nam Định","Nghệ An","Ninh Bình","Ninh Thuận","Phú Thọ","Phú Yên","Quảng Bình","Quảng Nam","Quảng Ngãi","Quảng Ninh","Quảng Trị","Sóc Trăng","Sơn La","Tây Ninh","Thái Bình","Thái Nguyên","Thanh Hóa","Thừa Thiên Huế","Tiền Giang","Trà Vinh","Tuyên Quang","Vĩnh Long","Vĩnh Phúc","Yên Bái"];
 const QUAN_HE = ["Bản thân","Vợ","Chồng","Con","Bố","Mẹ","Anh chị em","Cộng sự","Bạn bè","Khách hàng","Khác"];
@@ -979,7 +979,7 @@ async function guideFor(kind) {
   const chung = [section(cb, "## Điểm khác nhau giữa các trường phái"), section(cb, "## Giới hạn")].join("\n\n");
   const map = {
     laso: [section(cb, "### 4.1"), section(cb, "### 4.2"), D["luan-chi-tiet"], D["cach-cuc-tu-vi"], section(D["tu-vi-nang-cao"], "### 4.1"), section(D["tu-vi-nang-cao"], "### 4.2")],
-    thang: [section(cb, "### 4.1"), section(cb, "### 4.2"), section(D["luan-chi-tiet"], "### 4.0"), section(D["luan-chi-tiet"], "### 4.1"), section(D["luan-chi-tiet"], "### 4.3"), section(D["luan-chi-tiet"], "### 4.5")],
+    thang: [section(cb, "### 4.1"), section(cb, "### 4.2"), section(D["luan-chi-tiet"], "### 4.0"), section(D["luan-chi-tiet"], "### 4.1"), section(D["luan-chi-tiet"], "### 4.3"), section(D["luan-chi-tiet"], "### 4.5"), D["han-nam"] || ""],
     tuan: [section(D["luan-chi-tiet"], "### 4.5"), section(D["tu-vi-nang-cao"], "### 4.4")],
     vanthe: [section(D["luan-chi-tiet"], "### 4.1"), section(D["luan-chi-tiet"], "### 4.5"), section(D["tu-vi-nang-cao"], "### 4.2")],
     hop: [section(D["luan-chi-tiet"], "### 4.6"), section(D["tu-vi-nang-cao"], "### 4.3")],
@@ -1100,6 +1100,7 @@ async function runLaso() {
     } else if (mode === "thang") {
       ctx.mon = "Vận hạn từng tháng"; ctx.title = `Vận hạn từng tháng năm ${Y} – ${p.ten}`;
       await run("Vận hạn năm và từng tháng", "tvbt", ["battu", ...(coGio ? ["tuvi"] : []), ...A, "--nam-xem", Y, "--luu-nguyet"]);
+      await run("Sao hạn năm, Tam tai, Thái Tuế (tục dân gian)", "nc", ["hannam", "--ngay", p.ngay, "--gioi", p.gioi || "nam", "--nam-xem", Y, ...(p.am ? ["--am"] : []), ...(p.nhuan ? ["--nhuan"] : [])], { soft: true });
     } else if (mode === "tuan") {
       const tu = ymd(vnNow()), den = addDays(tu, 6);
       ctx.mon = "Vận 7 ngày tới"; ctx.title = `Vận ${fmtDate(tu)} – ${fmtDate(den)} – ${p.ten}`;
@@ -1586,7 +1587,7 @@ Khoảng 150–250 chữ cho cả phần.` },
   { ten: "Tổng kết: chỗ nào đáng tin", canTruoc: true, yeu: `Viết "## Tổng kết" và "## Nên làm gì". Dựa vào kết quả trong mục "CÁC PHẦN ĐÃ VIẾT"; không đổi kết quả của cách nào.
 - Câu đầu in đậm: kết luận chung trong một câu, lời thường (ví dụ "**Việc này nghiêng về khó, chưa nên vội.**").
 - Bảng | Cách | Kết quả | Ý chính |: một hàng cho mỗi cách Kỳ môn, Lục Nhâm, Lục hào, Mai hoa (cột Kết quả ghi như "Thuận (+1)"; Ý chính dưới 12 chữ, lời thường). Nếu có vận 7 ngày thì thêm hàng "Vận 7 ngày (nền)", cột Kết quả ghi mức nền và "không tính điểm".
-- Một dòng: số cách thuận trên 4, tổng điểm, và độ tin (4/4 cùng chiều: cao; 3/4: khá; còn lại: thấp – khi đó nói rõ là chưa rõ ràng, không ép kết luận).
+- Một dòng: số cách thuận, tổng điểm, và mức đồng thuận. Nếu số liệu ghi Lục hào lập "theo thời gian (Mai hoa)" (không gieo xu) thì Lục hào và Mai hoa là cùng một quẻ: chỉ tính chung một phiếu, tổng là 3 (ghi rõ "Lục hào cùng quẻ Mai hoa"); có gieo xu thì tổng là 4. Tất cả cùng chiều: đồng thuận cao; thiếu một phiếu: khá; còn lại: thấp – khi đó nói rõ là chưa rõ ràng, không ép kết luận. Các cách lập cùng một thời điểm nên đây là mức đồng thuận, không phải xác suất.
 - "**Chỗ đáng tin:**" 2–3 gạch đầu dòng – ý mà từ hai cách trở lên cùng nói, ghi tên các cách trong ngoặc.
 - "**Chỗ chưa chắc:**" 1–2 gạch đầu dòng – chỗ các cách nói ngược nhau.
 - "## Nên làm gì": 3–4 gạch đầu dòng nên làm, nên tránh, cụ thể; thời điểm hoặc hướng chỉ nêu khi từ hai cách trở lên cùng chỉ ra.
