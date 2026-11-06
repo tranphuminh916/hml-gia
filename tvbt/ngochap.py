@@ -10,6 +10,7 @@ import datetime as dt
 from lunar_python import Solar
 
 import chonngay as CN
+import toason as TS
 
 # ---------------------------------------------------------------- Từ điển
 VIEC_HV = {
@@ -216,13 +217,14 @@ def doc_tuoi(ds):
     return kq
 
 
-def cham(d, viec, nguoi, thu_ok=None, theo_tiet=False):
-    """Trả về dict kết quả một ngày, kèm điểm thang 100 và lý do loại."""
+def cham(d, viec, nguoi, thu_ok=None, theo_tiet=False, toa=None, kieu_toa=None):
+    """Trả về dict kết quả một ngày, kèm điểm thang 100 và lý do loại. toa = chỉ số tọa sơn (toason) nếu xét nhà/mộ,
+    kieu_toa = duong | sua | am (mặc định theo việc)."""
     ten_viec, chinh, phu, truc_tot, truc_xau, bt_tranh = VIEC[viec]
     v2 = CN.xet_ngay(d, [(t, c, z) for t, _, c, z, _ in nguoi], "chung", theo_tiet)
     dl = du_lieu_ngay(d)
     yi, ji = set(dl["yi"]), set(dl["ji"])
-    loai, ghi = [], []
+    loai, ghi, canh_ngay = [], [], []
     # 1. Hợp việc (35): nên/kiêng 25 + trực 10
     if "诸事不宜" in yi or "诸事不宜" in ji:
         p1 = 0
@@ -266,6 +268,11 @@ def cham(d, viec, nguoi, thu_ok=None, theo_tiet=False):
     kl = CN.ky_loai(ky, viec)
     loai += kl
     ghi += [k for k in ky if k not in kl and not k.startswith("Sát chủ âm")]
+    if toa is not None:
+        rt = TS.xet(d, toa, kieu_toa or KIEU_TOA[viec])
+        loai += ["tọa: " + ngan_gon(x) for _, x in rt["loai"]]
+        canh_ngay = ["tọa: " + x for c, x in rt["canh"] if c == "ngay"]
+        ghi += canh_ngay
     if "诸事不宜" not in yi and bt_tranh and (dl["gan"] == bt_tranh or dl["zhi"] == bt_tranh):
         ghi.append("Bành Tổ: " + BANH_TO[bt_tranh])
         p2 = max(p2 - 4, 0)
@@ -298,6 +305,8 @@ def cham(d, viec, nguoi, thu_ok=None, theo_tiet=False):
     if not dong_thuan:
         ghi.append("các cách tính chưa đồng thuận")
     diem = p1 + p_truc + p2 + p3 + p4 + p5
+    if toa is not None and canh_ngay:
+        diem -= 5                   # ngày có điều cần cân nhắc với tọa sơn (Âm phủ, khắc sơn gia, xung song sơn)
     if not chinh and "馀事勿取" in yi:
         diem = min(diem, 54)
     if loai:
@@ -310,6 +319,14 @@ def cham(d, viec, nguoi, thu_ok=None, theo_tiet=False):
         nhom = "Bình thường"
     return dict(d=d, v2=v2, dl=dl, diem=diem, nhom=nhom, loai=loai, ghi=ghi + [g for g in v2["ghi"] if "tính theo" in g],
                 phan=(p1 + p_truc, p2, p3, p4, p5), n_cat=n_cat, n_hung=n_hung)
+
+
+KIEU_TOA = {"dongtho": "duong", "antang": "am"}
+
+
+def ngan_gon(x):
+    """Câu kết luận tọa sơn -> nhãn ngắn cho cột ghi chú."""
+    return x.split(" (")[0].split(":")[0]
 
 
 def gio_tot(r, viec, nguoi):
@@ -331,7 +348,7 @@ def gio_tot(r, viec, nguoi):
     return kq
 
 
-def in_ngay(tu, den, viec, nguoi, thu_ok=None, theo_tiet=False, top=5, chi_tiet=True):
+def in_ngay(tu, den, viec, nguoi, thu_ok=None, theo_tiet=False, top=5, chi_tiet=True, toa=None, toa_ghi="", kieu_toa=None):
     if (den - tu).days > 92:
         raise SystemExit("LỖI: khoảng ngày tối đa 93 ngày – chia nhỏ ra.")
     if den < tu:
@@ -354,11 +371,23 @@ def in_ngay(tu, den, viec, nguoi, thu_ok=None, theo_tiet=False, top=5, chi_tiet=
             print(CN.dong_tuoi(ten, y, nam_am))
     print("- Việc nên/kiêng, cát thần, hung sát theo Hiệp Kỷ Biện Phương Thư (lịch Trung Quốc, tính theo tháng tiết khí); "
           "Hoàng đạo theo %s như lịch Việt Nam." % ("tháng tiết khí" if theo_tiet else "tháng âm"))
+    if toa is not None:
+        kieu_toa = kieu_toa or KIEU_TOA[viec]
+        print()
+        print("TỌA SƠN %s: %s%s" % ("MỘ" if kieu_toa == "am" else "NHÀ / CÔNG TRÌNH", TS.mo_ta(toa), toa_ghi))
+        print("- Loại: %s" % TS.TEN_KIEU[kieu_toa])
+        print("Thần sát theo năm, tháng (Hiệp Kỷ Biện Phương Thư – Luận phù sơn, Luận lập hướng, Nguyệt hung thần):")
+        print("| Từ ngày | Năm | Tháng | Không dùng được | Cần cân nhắc |")
+        print("|---|---|---|---|---|")
+        for d0, gn, gt, lo, ca in TS.tom_tat(tu, den, toa, kieu_toa):
+            print("| %s | %s | %s | %s | %s |" % (d0.strftime("%d/%m/%Y"), TS.vn(gn), TS.vn(gt), "; ".join(lo) or "-",
+                                               "; ".join(ca) or "-"))
+        print(TS.GHI_CHU)
     print()
     rows = []
     d = tu
     while d <= den:
-        rows.append(cham(d, viec, nguoi, thu_ok, theo_tiet))
+        rows.append(cham(d, viec, nguoi, thu_ok, theo_tiet, toa, kieu_toa))
         d += dt.timedelta(days=1)
     if chi_tiet:
         print("| Ngày | Âm lịch | Can chi | Hoàng/Hắc đạo | Trực | Tú | Nên | Kiêng | Điểm | Nhóm | Ghi chú |")
@@ -401,7 +430,8 @@ def in_ngay(tu, den, viec, nguoi, thu_ok=None, theo_tiet=False, top=5, chi_tiet=
           "Ngày bị loại: lịch ghi kiêng đúng việc này, mọi việc không nên, Nguyệt Phá, Tam Nương, Nguyệt Kỵ, "
           "Dương Công, Thọ tử, xung tuổi người chủ sự; Sát chủ dương với cưới hỏi, làm nhà, nhà đất, khai trương, "
           "ký kết, nhậm chức; Sát chủ âm với an táng, cưới hỏi, động thổ; Vãng vong với đi xa, cưới hỏi, chuyển nhà, nhậm chức, chữa bệnh, "
-          "nhận người.)")
+          "nhận người%s.)" % ("; với nhà/mộ đã cho tọa: phạm thần sát tọa sơn ở bảng trên, chi ngày xung tọa (ngày có điều cần "
+          "cân nhắc với tọa bị trừ 5 điểm)" if toa is not None else ""))
     return rows
 
 
@@ -415,6 +445,10 @@ def them_lenh(sub):
     p.add_argument("--hoang-dao-tiet", action="store_true")
     p.add_argument("--gon", action="store_true", help="không in bảng từng ngày")
     p.add_argument("--top", type=int, default=5)
+    g = p.add_mutually_exclusive_group()
+    g.add_argument("--toa", help="tọa sơn nhà/mộ (dùng với --viec dongtho hoặc antang): tên sơn (Tý, Nhâm, Cấn...) hoặc độ la bàn phía lưng")
+    g.add_argument("--huong", help="hướng nhà/mộ: tên sơn hoặc độ la bàn phía mặt tiền (tự đổi ra tọa)")
+    p.add_argument("--sua-nha", action="store_true", help="với --toa/--huong và dongtho: chỉ sửa nhà đang có, không xây mới")
     p.set_defaults(_chay=chay)
 
 
@@ -433,7 +467,16 @@ def chay(a):
             if x not in THU:
                 raise SystemExit("LỖI: --thu chỉ nhận T2, T3, T4, T5, T6, T7, CN (cách nhau bằng dấu phẩy).")
             thu_ok.add(THU.index(x))
-    in_ngay(tu, den, a.viec, doc_tuoi(a.tuoi), thu_ok, a.hoang_dao_tiet, a.top, not a.gon)
+    toa, toa_ghi = None, ""
+    if a.toa or a.huong:
+        if a.viec not in KIEU_TOA:
+            raise SystemExit("LỖI: --toa/--huong chỉ dùng với --viec dongtho (động thổ, xây sửa) hoặc antang (an táng, xây mộ).")
+        toa, do, cb = TS.doc_toa(a.toa, a.huong)
+        toa_ghi = TS.nguon_do(a, do) + ("\nCHÚ Ý: " + cb if cb else "")
+    if a.sua_nha and not (toa is not None and a.viec == "dongtho"):
+        raise SystemExit("LỖI: --sua-nha dùng cùng --viec dongtho và --toa/--huong.")
+    in_ngay(tu, den, a.viec, doc_tuoi(a.tuoi), thu_ok, a.hoang_dao_tiet, a.top, not a.gon, toa, toa_ghi,
+            "sua" if a.sua_nha else None)
 
 
 def tu_kiem():
@@ -531,4 +574,13 @@ def tu_kiem():
     r = cham(dt.date(2026, 11, 9), "khaitruong", doc_tuoi(["Chị:1984"]))
     if not (r["v2"]["truc"] == "Kiến" and r["v2"]["tu"] == "Trương" and r["v2"]["hd"]):
         loi.append("lệch v2 ngày 09/11/2026")
+    # 5. Tọa sơn (Hiệp Kỷ): năm Đinh Mùi 2027 khắc sơn Thủy Thổ -> tọa Tý xây mới loại cả tháng 3/2027;
+    #    an táng tọa Cấn 19/12/2026 chỉ cảnh báo (Âm phủ/khắc sơn theo ngày) và bị trừ 5 điểm; tháng Kỷ Hợi Âm phủ ở Cấn.
+    if any("tọa: Niên khắc sơn gia" not in cham(dt.date(2027, 3, d), "dongtho", [], toa=0)["loai"] for d in (1, 15, 31)):
+        loi.append("tọa Tý năm Đinh Mùi không bị loại vì niên khắc sơn gia")
+    a, b = cham(dt.date(2026, 12, 19), "antang", [], toa=3), cham(dt.date(2026, 12, 19), "antang", [])
+    if a["loai"] or a["diem"] != b["diem"] - 5 or not any(g.startswith("tọa: Ngày khắc sơn gia") for g in a["ghi"]):
+        loi.append("an táng tọa Cấn 19/12/2026")
+    if "tọa: Nguyệt Âm phủ tháng Kỷ Hợi ở tọa Cấn" not in cham(dt.date(2026, 11, 20), "antang", [], toa=3)["loai"]:
+        loi.append("Nguyệt Âm phủ tháng Kỷ Hợi tọa Cấn")
     return sorted(set(loi))[:30]

@@ -5,7 +5,8 @@
 ## Có gì
 | Lệnh | Làm gì | Dùng khi |
 |---|---|---|
-| `ngay` | Chọn ngày đầy đủ: việc nên/kiêng theo ngày và giờ, 60 cát thần, 91 hung sát, hướng Hỷ/Tài/Phúc thần, Quý nhân, Thai thần, Bành Tổ; gộp Hoàng đạo, Trực, 28 Tú, Tam Nương, Nguyệt Kỵ, Dương Công, xung tuổi; chấm 100 điểm, chia 3 nhóm | Mọi câu hỏi chọn ngày (thay `chonngay` của v2) |
+| `ngay` | Chọn ngày đầy đủ: việc nên/kiêng theo ngày và giờ, 60 cát thần, 91 hung sát, hướng Hỷ/Tài/Phúc thần, Quý nhân, Thai thần, Bành Tổ; gộp Hoàng đạo, Trực, 28 Tú, Tam Nương, Nguyệt Kỵ, Dương Công, xung tuổi; chấm 100 điểm, chia 3 nhóm. Có `--toa`/`--huong` thì xét thêm tọa sơn của nhà, mộ | Mọi câu hỏi chọn ngày (thay `chonngay` của v2) |
+| `toa` | Bảng 12 tháng của một năm cho một tọa sơn: tháng nào không dùng được, tháng nào cần cân nhắc (Hiệp Kỷ Biện Phương Thư) | Hỏi "năm nay/năm sau có làm nhà, sửa nhà, đặt mộ hướng này được không", trước khi chọn ngày cụ thể |
 
 ## Đã kiểm chứng
 - **Chọn ngày (`ngay`).**
@@ -18,11 +19,19 @@
   - Kim Lâu, Hoang Ốc, Tam Tai của người chủ sự nay in trong lệnh `ngay`, tính theo **năm âm lịch** của khoảng ngày (trước đây `chonngay` lấy năm dương lịch: chọn ngày cưới 5–20/1/2027 bị tính sang năm Đinh Mùi 2027, tuổi mụ sai 1, Kim Lâu sai).
   - Sửa 3 dòng thần sát nhập sai của lunar-python (tháng Hợi ngày Kỷ Sửu, tháng Mùi ngày Quý Dậu, tháng Dậu ngày Kỷ Dậu).
 
+- **Tọa sơn (11/2026).**
+  - Các lệ năm (Tuế phá, Tam sát, tọa sát/hướng sát, Phù thiên không vong, Niên khắc sơn gia kể cả lệ sau Đông chí, Âm phủ, Lục hại, Tử phù, Cứu thoái, Tuần sơn La hầu, Bệnh phù, Đại sát, Đại tướng quân, Kim thần, Phá bại ngũ quỷ) đã đối chiếu với **toàn bộ 50 bảng năm** (Giáp Tuất → Quý Hợi) trong quyển 15–19 của Hiệp Kỷ: khớp hết, chỗ lệch chỉ là lỗi chép của bản sách (vd năm Đinh Sửu ghi "艮" thay "庚").
+  - Lệ tháng đối chiếu với ví dụ trong sách: năm Giáp Tý tháng nào khắc sơn nào (q.2), năm Nhâm Thân sau Đông chí khắc sơn Kim, Đại nguyệt kiến năm Kỷ Mão, các tháng "hoàn vị".
+  - Âm phủ, Phù thiên theo 10 can khớp khởi lệ đã sửa của sách và khớp một bộ mã độc lập (FengShui-Skill/nianshen.py).
+
 ## Chạy
 Tham số ngày giờ giống `tvbt.py`: `--ngay YYYY-MM-DD --gio HH:MM --gioi nam|nu --noi "<tỉnh>"`, cộng `--am`, `--nhuan`, `--kinhdo`, `--utc`, `--mien`, `--gio-dong-ho`, `--ty` khi cần. Mọi lệnh có `--help`.
 
 ```bash
 python3 tvbt/nc.py ngay --tu 2026-11-01 --den 2026-11-30 --viec khaitruong --tuoi "An:1990:Thủy+Kim:Hỏa" [--thu T7,CN] [--gon]
+python3 tvbt/nc.py ngay --tu 2027-03-01 --den 2027-05-31 --viec dongtho --huong 180 [--sua-nha] --tuoi "Chủ nhà:1980"
+python3 tvbt/nc.py ngay --tu 2026-11-10 --den 2026-12-31 --viec antang --toa "Cấn" --tuoi "Người mất:1940"
+python3 tvbt/nc.py toa --nam 2027 --huong "Ngọ" [--kieu nha|sua|mo]
 ```
 
 ## Luận
@@ -75,7 +84,32 @@ Muốn chỉ chọn trong một số thứ trong tuần thì thêm `--thu T7,CN`
    - Gặp trường hợp này, nói rõ cho người dùng.
 5. Bành Tổ bách kỵ chỉ nhắc khi đúng việc, ví dụ ngày Hợi với cưới hỏi, ngày Tỵ với đi xa.
 
+### 4.2 Xét tọa sơn nhà, mộ (`--toa` / `--huong`, lệnh `toa`)
+Sách chọn ngày cổ (Hiệp Kỷ Biện Phương Thư, quyển 33 "Luận phù sơn", "Luận lập hướng"; quyển 34) nói: làm nhà, đặt mộ thì ngày phải hợp cả **tọa sơn** (phía lưng) và hướng, không chỉ hợp tuổi. Chỉ áp dụng cho `dongtho` (động thổ, xây, sửa) và `antang` (an táng, xây mộ).
+
+**Hỏi trước khi chạy:** nhà/mộ quay mặt về đâu. Tốt nhất là **độ la bàn** đo ở giữa nhà nhìn ra cửa chính (vd 182°) → `--huong 182`; biết tên sơn (vd "tọa Nhâm hướng Bính") thì `--toa Nhâm`. Chỉ biết "hướng Nam" là chưa đủ: một hướng gồm 3 sơn khác nhau (Bính, Ngọ, Đinh), kết quả có thể khác – hỏi lại hoặc chạy cả 3. Sửa nhà đang ở (không xây mới) thì thêm `--sua-nha`.
+
+**Script xét gì** (năm tính từ Lập xuân, tháng theo tiết khí):
+- **Loại ngày** (sách nói không được phạm hoặc phải có phép chế mà script không tính):
+  - năm: Tuế phá xung tọa, Tam sát ở tọa, Phục binh/Đại họa ở tọa, Âm phủ Thái Tuế (theo quái), Niên khắc sơn gia (xây mới không chế được; an táng chỉ dùng ngày/tháng có nạp âm khắc lại nạp âm năm; sửa nhà không động móng chỉ cảnh báo), Thái Tuế ở hướng, Tam sát ở hướng (xây mới), Tuần sơn La hầu ở hướng trong năm nó cùng cung Thái Tuế (năm Tý Sửu Mão Thìn Ngọ Mùi Dậu Tuất), ngồi Thái Tuế năm Tý Ngọ Mão Dậu hoặc Thái Tuế chồng Mậu Kỷ sát;
+  - tháng: Nguyệt phá xung tọa, Nguyệt Âm phủ, Nguyệt khắc sơn gia (sửa nhà: cảnh báo), Đại nguyệt kiến "hoàn vị" (với nhà);
+  - ngày: chi ngày xung tọa (sơn Thìn Tuất Sửu Mùi thì chỉ cảnh báo – sách nói một chữ xung tạm được).
+- **Cần cân nhắc** (sách xếp nhẹ hơn, có thể chế, hoặc các sách nói khác nhau): bàng Âm phủ, Phù thiên không vong, Lục hại, Tử phù, Cứu thoái, Tuần sơn La hầu, Bệnh phù, Đại sát (Đả đầu hỏa), Mậu Kỷ sát, Đại/Tiểu nguyệt kiến, Tam sát tháng, Thái Tuế ở tọa; với sửa nhà thêm Đại tướng quân, Kim thần, Phá bại ngũ quỷ, Thiên/Địa quan phù, Mậu Kỷ ở tọa; theo ngày: Âm phủ ngày, khắc sơn gia theo ngày, xung chi đồng cung (sơn can/duy). Ngày có điều cần cân nhắc theo ngày bị trừ 5 điểm.
+
+**Đọc kết quả:**
+1. Đầu kết quả có bảng theo tháng. Cả năm bị loại (vd năm Đinh Mùi 2027 khắc 13 sơn Thủy, Thổ – nhà tọa Tý, Nhâm, Sửu, Khôn… không xây mới được) thì nói ngay đầu bài, gợi ý lùi năm hoặc hỏi thầy về phép chế; đừng chỉ đưa "không có ngày".
+2. Nhắc giới hạn: script **chưa tính** phép chế sát bằng tứ trụ, Tam kỳ, Tử bạch, quý nhân lộc mã; Bính Đinh hỏa, quan phù phi cung theo tháng; long mạch, bổ long. Việc lớn (xây nhà, cải táng) nên mời thầy xem thêm tại chỗ.
+
 ## Trường phái và giới hạn (nói rõ khi liên quan)
+- **Tọa sơn:** theo Hiệp Kỷ Biện Phương Thư (bản Khâm định 1741, có sửa khởi lệ của Thông thư). Những chỗ script phải chọn cách hiểu:
+  - Sơn can/duy (Nhâm, Quý, Cấn, Giáp…) "đồng cung" với chi cùng cung bát quái chính châm (Nhâm Quý với Tý; Cấn với Sửu, Dần…) – theo lời bàn Tuần sơn La hầu ở q.34; bị xung qua đồng cung chỉ cảnh báo, vì bảng năm của sách chỉ ghi Tuế phá ở sơn chi.
+  - Bàng Âm phủ (theo can) chỉ cảnh báo: Hiệp Kỷ q.8 nói Khâm thiên giám chỉ dùng quái, "dùng can có lý nhưng không thân thiết nên không lấy".
+  - Sơn Kim sau Đông chí: theo lệ mộ vận (q.2) thì đổi, nhưng nhiều bảng năm vẫn ghi sơn Kim bị khắc cả năm – script không loại mà cảnh báo.
+  - Niên/nguyệt khắc sơn gia không xét khi chôn thêm vào mộ cũ (phụ táng) hoặc sửa không động móng (Thông thư, Hiệp Kỷ chép lại) – script chưa phân biệt phụ táng, nói rõ khi gặp.
+  - Âm phủ, Phù thiên ghi theo quái: quái Khảm Ly Chấn Đoài lấy sơn Tý Ngọ Mão Dậu (cách 24 sơn nạp giáp của sách); Âm phủ gồm cả bàng Âm phủ (hai can bị khắc). Bỏ "Âm phủ tam hợp" của Thông thư vì sách bác.
+  - Mậu Kỷ sát lấy theo Tuyển Trạch Tông Kính (chép trong q.33) nhưng Hiệp Kỷ nghi lệ này, nên chỉ cảnh báo. Đại nguyệt kiến chỉ loại ở tháng "hoàn vị" theo lời bàn q.34; Tiểu nguyệt kiến không kỵ an táng (theo Thông thư, sách đồng ý).
+  - Đại/Tiểu nguyệt kiến: q.33 nói xây mới (khai sơn lập hướng) không cần xét thần sát tu phương; q.34 lại nói Đại nguyệt kiến chiếm sơn, hướng đều hung – script vẫn cảnh báo (loại khi hoàn vị); chưa xét Đại nguyệt kiến chồng Mậu Kỷ, Ngũ hoàng.
+  - Can chi năm/tháng tính theo giờ Bắc Kinh (lunar-python); ngày giao tiết có thể lệch.
 - **Chọn ngày:** việc nên/kiêng, cát thần, hung sát, hướng thần theo Hiệp Kỷ Biện Phương Thư (qua lunar-python), tính theo tháng tiết khí và giờ Bắc Kinh. Ngày giáp ranh tháng tiết có thể lệch. Hoàng đạo theo tháng âm như lịch Việt Nam. Thang 100 điểm là quy ước của skill.
 - Dương Công kỵ nhật theo bản Việt Nam (có 8/7); sách Trung Quốc ghi 1/7. Thọ tử theo bản Việt Nam (một can chi mỗi tháng); bản Trung Quốc (受死) xét chi. Sát chủ âm theo *Ngọc Hạp Chánh Tông* (Viên Tài Hà Tấn Phát), tr. 128–129, mục "Ngày Sát chủ".
   - Sách dẫn thơ Hán văn "Nhứt Tỵ, nhị Tý, tam Dương vị / Tứ Thố, ngũ Hầu, lục Khuyển qui / Thất Trư, bát Ngưu, cửu Mã thị / Thập Kê, thập nhứt Hổ, thập nhị Long", nên tháng 7 là ngày Hợi, tháng 8 là ngày Sửu. Phần giải nghĩa từng tháng trong sách cũng ghi như vậy (theo bản chép của dự án calendar-hana). Báo Lâm Đồng/Nghệ An và Chronos ghi giống sách.

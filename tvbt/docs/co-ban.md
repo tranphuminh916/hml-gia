@@ -163,6 +163,7 @@ Trình bày theo thứ tự: (1) **Bảng số liệu** (dán gọn các bảng 
 2. **Tuổi theo năm**: Kim Lâu xét cho cưới hỏi (thường tính tuổi mụ cô dâu) và làm nhà; Hoang Ốc, Tam Tai xét khi làm nhà, động thổ. Nếu phạm, nói các cách dân gian thường làm (mượn tuổi người khác đứng ra làm, hoặc lùi năm) như kinh nghiệm tham khảo, không ép.
 3. Đưa ra 2–3 ngày tốt nhất kèm **giờ Hoàng đạo**, nói lý do chọn; nếu ngày tốt rơi vào cuối tuần hay ngày người dùng tiện thì nêu.
 4. `tvbt.py chonngay` dùng các tiêu chí phổ biến của lịch Việt Nam, kể cả **Thọ tử, Sát chủ dương/âm, Vãng vong** (theo tháng âm, từ 11/2026); Ngọc hạp thông thư đầy đủ (việc nên/kiêng, cát thần, hung sát) có ở `nc.py ngay` (xem `docs/chon-ngay.md`). Kim Lâu, Hoang Ốc, Tam Tai xét theo **năm âm lịch** của các ngày đang chọn (tháng 1 dương lịch trước Tết vẫn là năm âm cũ).
+5. **Làm nhà, sửa nhà, đặt mộ: hỏi tọa/hướng** (độ la bàn hoặc tên sơn) rồi chạy `nc.py ngay … --toa/--huong` (từ 11/2026). Ngày phải hợp cả tọa sơn theo năm, tháng, ngày (Tuế phá, Tam sát, Âm phủ, Niên khắc sơn gia…), không chỉ hợp tuổi – xem `docs/chon-ngay.md` mục 4.2.
 
 ## Điểm khác nhau giữa các trường phái (đã chọn mặc định – nói rõ khi liên quan)
 - **Trụ năm/tháng** theo tiết khí (Lập Xuân); **Tử vi và cung phi** theo năm âm lịch (Tết). Nếu cung phi theo Lập Xuân khác thì script in thêm phương án đó.
