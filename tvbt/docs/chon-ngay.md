@@ -77,4 +77,4 @@ Muốn chỉ chọn trong một số thứ trong tuần thì thêm `--thu T7,CN`
 
 ## Trường phái và giới hạn (nói rõ khi liên quan)
 - **Chọn ngày:** việc nên/kiêng, cát thần, hung sát, hướng thần theo Hiệp Kỷ Biện Phương Thư (qua lunar-python), tính theo tháng tiết khí và giờ Bắc Kinh. Ngày giáp ranh tháng tiết có thể lệch. Hoàng đạo theo tháng âm như lịch Việt Nam. Thang 100 điểm là quy ước của skill.
-- Dương Công kỵ nhật theo bản Việt Nam (có 8/7); sách Trung Quốc ghi 1/7. Thọ tử theo bản Việt Nam (một can chi mỗi tháng); bản Trung Quốc (受死) xét chi. Sát chủ âm: một nguồn đảo tháng 7/8 (script ghi chú khi an táng). Xem thêm `docs/co-ban.md` phần trường phái.
+- Dương Công kỵ nhật theo bản Việt Nam (có 8/7); sách Trung Quốc ghi 1/7. Thọ tử theo bản Việt Nam (một can chi mỗi tháng); bản Trung Quốc (受死) xét chi. Sát chủ âm tháng 7/8: các nguồn chia đôi. Báo Lâm Đồng/Nghệ An và Chronos ghi Hợi/Sửu; xemlicham, mytour, vietaa ghi Sửu/Hợi. Từ 11/2026, khi xem an táng, script loại cả hai ngày. Xem thêm `docs/co-ban.md` phần trường phái.

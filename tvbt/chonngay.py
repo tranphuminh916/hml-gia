@@ -32,7 +32,8 @@ THO_TU = {1: (2, 10), 2: (8, 4), 3: (7, 11), 4: (3, 5), 5: (4, 0), 6: (2, 6), 7:
 # Sát chủ dương (kỵ xây dựng, nhà đất, cưới hỏi, nhận việc): Tý, Sửu, Sửu, Tuất, Thìn, Thìn, Sửu, Thìn, Sửu, Thìn, Mùi, Thìn
 SAT_CHU_DUONG = [None, 0, 1, 1, 10, 4, 4, 1, 4, 1, 4, 7, 4]
 # Sát chủ âm (kỵ an táng, mộ phần): Tỵ, Tý, Mùi, Mão, Thân, Tuất, Hợi, Sửu, Ngọ, Dậu, Dần, Thìn
-# (vietaa.com đảo tháng 7 / 8 thành Sửu / Hợi – in cảnh báo khi rơi vào hai tháng này)
+# Tháng 7 / 8 các nguồn chia đôi (rà 11/2026): baolamdong/baonghean, Chronos ghi Hợi / Sửu; xemlicham, mytour,
+# vietaa ghi Sửu / Hợi. Với an táng loại cả hai ngày (nhãn "bản đảo") cho chắc.
 SAT_CHU_AM = [None, 5, 0, 7, 3, 8, 10, 11, 1, 6, 9, 2, 4]
 # Vãng vong (kỵ xuất hành, cưới hỏi, chuyển nhà, nhậm chức): Dần, Tỵ, Thân, Hợi, Mão, Ngọ, Dậu, Tý, Thìn, Mùi, Tuất, Sửu
 VANG_VONG = [None, 2, 5, 8, 11, 3, 6, 9, 0, 4, 7, 10, 1]
@@ -181,6 +182,7 @@ def xet_ngay(d, tuoi_list, viec, theo_tiet=False):
 KY_LOAI = {"Thọ tử": None,                                                     # None = mọi việc
            "Sát chủ dương": {"cuoi", "anhoi", "dongtho", "nhaptrach", "muanha", "khaitruong", "kyhopdong", "nhamchuc"},
            "Sát chủ âm": {"antang"},
+           "Sát chủ âm (bản đảo tháng 7/8)": {"antang"},
            "Vãng vong": {"xuathanh", "cuoi", "anhoi", "nhaptrach", "nhamchuc", "chuabenh", "thuenguoi"}}
 
 

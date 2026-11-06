@@ -188,7 +188,7 @@ Trình bày theo thứ tự: (1) **Bảng số liệu** (dán gọn các bảng 
 - **Chọn ngày**: Hoàng/Hắc đạo mặc định theo **tháng âm lịch** (như phần lớn lịch Việt Nam); sách Trung Quốc và lunar-python tính theo tháng tiết khí (`--hoang-dao-tiet`). 12 Trực luôn theo tiết khí. Trực nào hợp việc nào là kinh nghiệm phổ biến, các sách chênh nhau.
   - Dương Công kỵ nhật theo lịch Việt Nam: 13/1, 11/2, 9/3, 7/4, 5/5, 3/6, **8/7**, 29/7, 27/8, 25/9, 23/10, 21/11, 19/12 (không xét tháng nhuận). Sách Trung Quốc (杨公忌, 6tail/lunar) ghi **1/7** thay cho 8/7.
   - Thọ tử theo lịch Việt Nam là **một can chi** mỗi tháng âm (Bính Tuất, Nhâm Thìn, Tân Hợi, Đinh Tỵ, Mậu Tý, Bính Ngọ, Ất Sửu, Quý Mùi, Giáp Dần, Mậu Thân, Tân Mão, Tân Dậu); sách Trung Quốc (受死) chỉ xét chi nên nhiều ngày hơn.
-  - Sát chủ dương (Tý, Sửu, Sửu, Tuất, Thìn, Thìn, Sửu, Thìn, Sửu, Thìn, Mùi, Thìn) kỵ làm nhà, nhà đất, cưới hỏi; Sát chủ âm (Tỵ, Tý, Mùi, Mão, Thân, Tuất, Hợi, Sửu, Ngọ, Dậu, Dần, Thìn) kỵ an táng – một nguồn đảo tháng 7/8 (Sửu/Hợi), script ghi chú khi gặp. Vãng vong theo tháng âm (Dần, Tỵ, Thân, Hợi, Mão, Ngọ, Dậu, Tý, Thìn, Mùi, Tuất, Sửu); `nc.py ngay` xét thêm bản tháng tiết (往亡 của Hiệp Kỷ).
+  - Sát chủ dương (Tý, Sửu, Sửu, Tuất, Thìn, Thìn, Sửu, Thìn, Sửu, Thìn, Mùi, Thìn) kỵ làm nhà, nhà đất, cưới hỏi; Sát chủ âm (Tỵ, Tý, Mùi, Mão, Thân, Tuất, Hợi, Sửu, Ngọ, Dậu, Dần, Thìn) kỵ an táng. Tháng 7/8 các nguồn chia đôi (Hợi/Sửu hay Sửu/Hợi), nên khi xem an táng script loại cả hai ngày (từ 11/2026). Vãng vong theo tháng âm (Dần, Tỵ, Thân, Hợi, Mão, Ngọ, Dậu, Tý, Thìn, Mùi, Tuất, Sửu); `nc.py ngay` xét thêm bản tháng tiết (往亡 của Hiệp Kỷ).
 
 ## Giới hạn – phải nói khi liên quan
 - Đây là tri thức văn hóa truyền thống để tham khảo, không phải dự báo khoa học.
