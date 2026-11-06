@@ -3,7 +3,7 @@
 Nhánh này chứa trang web "Sổ Tử Vi" để gửi link cho khách. Nhánh `main` (trang HML) không liên quan và không bị sửa.
 
 - `web/`: giao diện trang (`index.html`) cùng dữ liệu đi kèm.
-  - `py-bundle.json`: bộ tính Tử vi – Bát tự của nhánh `tuvi-skill`, bản `6fab541` (đã có `giosinh.py` dò giờ sinh; Mệnh chủ theo năm sinh, cân lượng, độ sáng phụ tinh, thêm sao lưu, nguyệt hạn 2 phép), cộng thư viện lunar-python 1.4.8 (giấy phép MIT, xem `LICENSE-lunar-python.txt`).
+  - `py-bundle.json`: bộ tính Tử vi – Bát tự của nhánh `tuvi-skill`, bản `1d6cbc5` (rà soát 11/2026; dò giờ sinh bản 2, sao hạn năm `hannam`, xem tuổi kiểu Việt Nam `tuoivn`), cộng thư viện lunar-python 1.4.8 (giấy phép MIT, xem `LICENSE-lunar-python.txt`).
   - `docs.json`: hướng dẫn luận.
   - Bộ tính chạy ngay trên máy khách bằng Pyodide.
 - `apps-script/`: mã dán vào Google Apps Script, gắn với Google Sheet "Sổ Tử Vi – Khách".
