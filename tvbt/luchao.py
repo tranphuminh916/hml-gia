@@ -531,12 +531,28 @@ def chon_hao(q, muc):
             return pd, pd[0], "không hiện trong quẻ, lấy PHỤC THẦN", True
         return [], None, "không có", False
 
-    def diem(h):
-        return (4 if h["dong"] or h["co"].get("am_dong") else 0) + (2 if h["the"] or h["ung"] else 0) + \
-            (1 if h["diem"] >= 2 else 0)
-    ds2 = sorted(ds, key=lambda h: (-diem(h), -h["diem"]))
-    ghi = "một hào" if len(ds) == 1 else (
-        "%d hào cùng loại; chọn theo thứ tự: động > trì thế/ứng > vượng" % len(ds))
+    def tieu_chi(h):
+        c = h["co"]
+        return dict(vuong=bool(c.get("vuong_thang") or c.get("lam_nhat")),
+                    dong=bool(h["dong"] or c.get("am_dong")),
+                    khong_pha=not c.get("nguyet_pha"),
+                    khong_khong=not c.get("khong"),
+                    khong_thuong=not any(c.get(k) for k in ("nhat_khac", "nhat_pha", "xung_tan", "hoi_dau_khac")))
+    if len(ds) == 1:
+        return ds, ds[0], "một hào", False
+    # Tăng San Bốc Dịch, Lưỡng hiện chương 32: "舍其休囚而用旺相；舍其静爻而用动爻；舍其月破而用不破；
+    # 舍其旬空而用不空；舍其被伤而用不伤" (cổ pháp). Năm tiêu chí ngang nhau; hòa thì động > trì thế/ứng > lực.
+    def khoa(h):
+        t = tieu_chi(h)
+        return (-sum(t.values()), -t["dong"], -(h["the"] or h["ung"]), -h["diem"], h["vi"])
+    ds2 = sorted(ds, key=khoa)
+    ghi = ("%d hào cùng loại; chọn theo cổ pháp Tăng San Bốc Dịch: bỏ hưu tù lấy vượng tướng, bỏ tĩnh lấy động, "
+           "bỏ nguyệt phá, bỏ tuần không, bỏ hào bị thương (hòa thì động > trì thế/ứng > lực)" % len(ds))
+    kp = [x for x in ds if x["co"].get("khong") or x["co"].get("nguyet_pha")]
+    if kp:
+        ghi += ("; lưu ý Dã Hạc: ứng kỳ hay rơi vào hào %s nên xem cả thời điểm hào đó xuất không / thực phá"
+                % ", ".join("%d %s (%s)" % (x["vi"], CHI_VN[x["chi"]],
+                                           "tuần không" if x["co"].get("khong") else "nguyệt phá") for x in kp))
     return ds, ds2[0], ghi, False
 
 
@@ -1112,6 +1128,15 @@ def tu_kiem():
             s = buf.getvalue()
             if re.search(r"[一-鿿]", s):
                 loi.append("in ra chữ Hán ở %s" % hao)
+    # dụng thần lưỡng hiện: hai quẻ mẫu chương 32 Tăng San Bốc Dịch
+    q = lap_que([7, 7, 7, 8, 7, 7], 7, 36)        # Tiểu Súc, tháng Mùi ngày Canh Tý
+    ds, h, ghi, _ = chon_hao(q, "Thê Tài")
+    if [x["chi"] for x in ds] != [4, 7] or h["chi"] != 7 or "hào 3 Thìn (tuần không)" not in ghi:
+        loi.append("lưỡng hiện Tiểu Súc: chọn %s, ghi %s" % (h and h["chi"], ghi))
+    q = lap_que([8, 7, 8, 8, 6, 6], 7, 30)        # Sư hóa Hoán, tháng Mùi ngày Giáp Ngọ
+    ds, h, ghi, _ = chon_hao(q, "Quan Quỷ")
+    if sorted(x["chi"] for x in ds) != [1, 4] or "Thìn (tuần không)" not in ghi or "Sửu (nguyệt phá)" not in ghi:
+        loi.append("lưỡng hiện Sư hóa Hoán: %s" % ghi)
     # xu và thời gian
     v, _ = doc_xu(["SSS", "NNN", "SSN", "NNS", "SNS", "NSN"])
     if v != [6, 9, 7, 8, 7, 8]:

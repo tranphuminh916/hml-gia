@@ -13,7 +13,7 @@
   - 46 khóa ví dụ trong chú giải Tất pháp phú đều kích hoạt đúng điều tương ứng.
   - Quét 8.640 khóa (60 ngày × 12 giờ × 12 nguyệt tướng) không lỗi. Không điều nào khớp quá 50% số khóa.
   - Khóa cách Vô lộc / Tuyệt tự đúng 3 ví dụ của *Lục Nhâm đại toàn* q.9 (Kỷ Tỵ Dậu tướng giờ Dần = Vô lộc; Canh Thìn Hợi tướng giờ Thìn, Giáp Dần Hợi tướng giờ Tý = Tuyệt tự); Chú ấn đúng ví dụ Bính Tý Tý tướng giờ Mùi (Tuất gia Tỵ). Sửa 11/2026: trước đó Vô lộc và Tuyệt tự bị đảo.
-  - 32 thần sát đối chiếu thư viện liuren-ts-lib (npm) trên 2.564 tổ hợp ngày × tháng × năm: Lộc, Nhật Đức, Dịch Mã, Đinh mã, Thiên Mã, Thiên Đức, Nguyệt Đức, Thiên Hỷ, Thiên Y, Sinh/Tử khí, Thiên Quỷ, Thành Thần, Hoàng Ân, Giải Thần (thiên giải), Nguyệt phá, Tuế phá, Tang Môn, Điếu Khách, Bệnh Phù trùng nhau; riêng Kiếp Sát, Vong Thần khác vì thư viện tính theo tháng (xem Trường phái).
+  - 32 thần sát đối chiếu thư viện liuren-ts-lib (npm) trên 2.564 tổ hợp ngày × tháng × năm: Lộc, Nhật Đức, Dịch Mã, Đinh mã, Thiên Mã, Thiên Đức, Nguyệt Đức, Thiên Hỷ, Thiên Y, Sinh/Tử khí, Thiên Quỷ, Thành Thần, Hoàng Ân, Giải Thần (thiên giải), Nguyệt phá, Tuế phá, Tang Môn, Điếu Khách, Bệnh Phù trùng nhau; Kiếp Sát, Vong Thần từ 11/2026 cũng tính theo tháng như thư viện.
 
 ## Chạy
 Tham số ngày giờ giống `tvbt.py`: `--ngay YYYY-MM-DD --gio HH:MM --gioi nam|nu --noi "<tỉnh>"`, cộng `--am`, `--nhuan`, `--kinhdo`, `--utc`, `--mien`, `--gio-dong-ho`, `--ty` khi cần. Mọi lệnh có `--help`.
@@ -84,8 +84,8 @@ Lệnh: `python3 tvbt/nc.py lucnham2 --ngay YYYY-MM-DD --gio HH:MM [--nam-sinh 1
 
 ## Trường phái và giới hạn (nói rõ khi liên quan)
 **Lục Nhâm bổ sung**
-- **Dương nhận** can âm lấy lùi một ngôi (Ất Dần, Đinh Kỷ Tỵ, Tân Thân, Quý Hợi) theo sách thần sát đang dùng. *Lục Nhâm đại toàn* q.1 ghi "羊刃 卯辰午未午未酉戌子丑 日前一位" (mọi can tiến một ngôi: Ất Thìn, Đinh Kỷ Mùi, Tân Tuất, Quý Sửu). Khi Dương nhận can âm rơi vào khóa truyền, nói rõ có hai cách.
-- **Kiếp Sát, Vong Thần, Đào Hoa, Hoa Cái, Tướng Tinh** tính theo **chi ngày** (tam hợp). Nhiều bảng Lục Nhâm (và liuren-ts-lib) tính Kiếp Sát, Vong Thần theo **tháng** (nguyệt kiến): ví dụ tháng Dần thì Kiếp Sát Hợi, Vong Thần Tỵ.
+- **Dương nhận** (từ 11/2026): mọi can lấy **tiến một ngôi từ Lộc** theo *Lục Nhâm đại toàn* q.1 ("羊刃 卯辰午未午未酉戌子丑 日前一位"): Giáp Mão, Ất Thìn, Bính Ngọ, Đinh Mùi, Mậu Ngọ, Kỷ Mùi, Canh Dậu, Tân Tuất, Nhâm Tý, Quý Sửu. Một số bài thần sát trên mạng lấy can âm lùi một ngôi (Ất Dần, Đinh Kỷ Tỵ, Tân Thân, Quý Hợi) – không theo.
+- **Kiếp Sát, Vong Thần** (từ 11/2026) tính theo **tháng** (nguyệt kiến, tam hợp của chi tháng) như bảng thần sát tháng của *Lục Nhâm đại toàn* q.1 và thư viện liuren-ts-lib: tháng Dần thì Kiếp Sát Hợi, Vong Thần Tỵ. Đào Hoa, Hoa Cái, Tướng Tinh, Dịch Mã vẫn theo **chi ngày** (đại toàn có bảng "chi mã" theo chi ngày).
 - **Hoàng Ân, Giải Thần, Thiên Y** có dị bản. Script: Hoàng Ân tháng giêng Mùi rồi tiến 2; Giải Thần tháng giêng–hai Thân, mỗi hai tháng tiến 2; Thiên Y tháng giêng Thìn (trùng liuren-ts-lib). *Lục Nhâm đại toàn* q.1: Hoàng Ân "戌丑辰未卯酉子午亥寅巳申", giải thần "申申酉酉戌戌亥亥午午未未", thiên y "子卯午酉三轮".
 - **Thiên khấu** (khóa cách): sách lấy "ngày tứ ly, nguyệt túc gia ly thần" (nguyệt túc là cung Mặt Trăng đang đi qua). Script chưa tính nguyệt túc, chỉ dùng điều kiện rút gọn "chi hôm nay và hôm qua gia lên nhau" vào ngày Xuân/Thu phân, Đông/Hạ chí. Chỉ coi là gợi ý. **Thiên phiền** cũng chưa xét nguyệt túc.
 - **Thiên họa**: chỉ xét chi (chi hôm nay gia chi hôm qua hoặc ngược lại); sách xét cả can (cung ký của can hôm nay và hôm qua).

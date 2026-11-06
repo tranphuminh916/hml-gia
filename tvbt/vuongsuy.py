@@ -65,9 +65,13 @@ def thang_a(tru):
             v = 1 if n == "Tỷ Kiếp" else 0.7
             p += v
             ct.append("dư khí %s (%s) %+g" % (B.vn(g), n, v))
-    i = truong_sinh(nc, zt)
+    # Từ 11/2026: can âm xét vượng suy theo hành như can dương cùng hành (Trích Thiên Tủy – Nhậm Thiết Tiều chú:
+    # không dùng "âm sinh dương tử" khi xét mạnh yếu). Bazi-enrich gốc dùng trường sinh nghịch cho can âm.
+    nc_d = GAN[GAN.index(nc) - GAN.index(nc) % 2]
+    i = truong_sinh(nc_d, zt)
     p += TS_A[i]
-    ct.append("nhật chủ %s ở tháng %s: %s %+g" % (B.vn(nc), B.vn(zt), TS12[i], TS_A[i]))
+    ct.append("nhật chủ %s ở tháng %s: %s %+g%s" % (B.vn(nc), B.vn(zt), TS12[i], TS_A[i],
+                                                   "" if nc_d == nc else " (theo hành, như %s)" % B.vn(nc_d)))
     dia = 0
     for nh, g, z in tru:
         if nh in ("Năm", "Ngày", "Giờ"):
@@ -293,6 +297,12 @@ def tu_kiem():
         loi.append("thang B lá số 2000-01-01: %s/%s" % (ta, tong))
     if cach_cuc(tru)[0] != "Chính Tài cách":
         loi.append("cách cục 2000-01-01: %s" % cach_cuc(tru)[0])
+    # 1b. Can âm xét theo hành (từ 11/2026): Ất Tỵ sinh tháng Ngọ – Canh Ngọ, Nhâm Ngọ, Ất Tỵ, Nhâm Ngọ (09/06/1990 12:00)
+    #     Ất ở Ngọ tính như Giáp ở Ngọ (Tử −1), không phải Trường sinh +2 → thang A cùng chiều thang B: nhược.
+    tru = [("Năm", "庚", "午"), ("Tháng", "壬", "午"), ("Ngày", "乙", "巳"), ("Giờ", "壬", "午")]
+    pa, ma, _, _ = thang_a(tru)
+    if ma != "nhược" or thang_b(tru)[3] != "nhược":
+        loi.append("Ất Tỵ tháng Ngọ: thang A %s (%s), thang B %s" % (ma, pa, thang_b(tru)[3]))
     # 2. Kiến Lộc / Dương Nhận / tàng can thấu
     if cach_cuc([("Năm", "壬", "子"), ("Tháng", "丙", "寅"), ("Ngày", "乙", "子"), ("Giờ", "甲", "子")])[0] != "Thương Quan cách":
         loi.append("Ất sinh tháng Dần, Bính thấu phải là Thương Quan cách")

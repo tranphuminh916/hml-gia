@@ -128,6 +128,10 @@ Việc (`--viec`): taichinh, congviec, honnhan, suckhoe, kientung, dixa, timdo, 
   - Bản điện tử đã đối chiếu có hai ví dụ in Câu Trần và Đằng Xà đổi chỗ cho nhau.
 - Hành Thổ tính trường sinh theo Thủy: sinh ở Thân, mộ ở Thìn.
 - Đồng xu: mặc định ngửa (mặt chữ) = 3. Hỏa Châu Lâm lấy mặt lưng là dương, nên có thêm tùy chọn `--xu-dao`.
+- Dụng thần lưỡng hiện (hai hào cùng loại), từ 11/2026 chọn theo cổ pháp chương Lưỡng hiện 32 của Tăng San Bốc Dịch (đã đọc nguyên văn): bỏ hưu tù lấy vượng tướng, bỏ tĩnh lấy động, bỏ nguyệt phá, bỏ tuần không, bỏ hào bị thương.
+  - Script tính năm tiêu chí ngang nhau. Nếu hòa thì lấy hào động, rồi hào trì thế/ứng, rồi hào có lực cao hơn.
+  - Dã Hạc ghi thêm từ kinh nghiệm: ứng kỳ hay rơi vào hào tuần không / nguyệt phá. Vì vậy, khi có hào như thế, script nhắc xem cả thời điểm hào đó xuất không hoặc thực phá.
+  - Đã kiểm bằng hai quẻ mẫu trong chương: Tiểu Súc (tháng Mùi, ngày Canh Tý) và Sư hóa Hoán (tháng Mùi, ngày Giáp Ngọ).
 - Phản ngâm là hào hóa ra chi xung; phục ngâm là hào hóa ra cùng chi. Phản ngâm theo phương vị chỉ ghi nhẹ.
 - Lập theo giờ hoặc theo số thì chỉ có 1 hào động.
 - "Lực ước lượng" là điểm thô do script đặt, không có trong sách.

@@ -45,8 +45,10 @@ def vong(h, k):
 
 
 LOC = [2, 3, 5, 6, 5, 6, 8, 9, 11, 0]
-# Dương nhận = "lộc tiền nhất vị (tức đế vượng)": can dương tiến 1, can âm lùi 1 (Giáp Mão, Ất Dần, Bính Mậu Ngọ...)
-NHAN = [(LOC[g] + (1 if g % 2 == 0 else -1)) % 12 for g in range(10)]
+# Dương nhận = "lộc tiền nhất vị": mọi can tiến 1 ngôi từ Lộc. Lục Nhâm đại toàn q.1: "羊刃 卯辰午未午未酉戌子丑
+# 日前一位" (Giáp Mão, Ất Thìn, Bính Ngọ, Đinh Mùi, Mậu Ngọ, Kỷ Mùi, Canh Dậu, Tân Tuất, Nhâm Tý, Quý Sửu).
+# Trước 11/2026 can âm lấy lùi 1 ngôi theo một bài thần sát trên mạng; nay theo sách.
+NHAN = [(LOC[g] + 1) % 12 for g in range(10)]
 NHAT_DUC = [2, 8, 5, 11, 5, 2, 8, 5, 11, 5]      # Giáp Kỷ Dần, Ất Canh Thân, Bính Tân Tỵ, Đinh Nhâm Hợi, Mậu Quý Tỵ
 DU_DO = [1, 0, 2, 5, 8, 1, 0, 2, 5, 8]           # Giáp Kỷ Sửu, Ất Canh Tý, Bính Tân Dần, Đinh Nhâm Tỵ, Mậu Quý Thân
 TUAN_KY = {0: 1, 10: 1, 8: 0, 6: 0, 4: 11, 2: 11}  # chi đầu tuần -> Tuần kỳ
@@ -163,12 +165,13 @@ Y_THAN_SAT = {
 def than_sat(g, z, thang, nam):
     """Trả về list (tên, chi, cách tính). thang = chi nguyệt kiến (tháng tiết), nam = chi thái tuế."""
     dau = TH_DAU[z % 4]
+    dau_t = TH_DAU[thang % 4]           # Kiếp Sát, Vong Thần theo tháng (Lục Nhâm đại toàn q.1, bảng thần sát tháng)
     i = (thang - 2) % 12
     xun = (z - g) % 12
     ds = [
         ("Dịch Mã", (dau + 6) % 12, "chi ngày"), ("Đào Hoa (Hàm Trì)", (dau + 1) % 12, "chi ngày"),
-        ("Kiếp Sát", (dau + 9) % 12, "chi ngày"), ("Hoa Cái", (dau + 8) % 12, "chi ngày"),
-        ("Tướng Tinh", (dau + 4) % 12, "chi ngày"), ("Vong Thần", (dau + 3) % 12, "chi ngày"),
+        ("Kiếp Sát", (dau_t + 9) % 12, "tháng"), ("Hoa Cái", (dau + 8) % 12, "chi ngày"),
+        ("Tướng Tinh", (dau + 4) % 12, "chi ngày"), ("Vong Thần", (dau_t + 3) % 12, "tháng"),
         ("Lộc", LOC[g], "can ngày"), ("Dương Nhận", NHAN[g], "can ngày"),
         ("Quý nhân trú", L.QUY_NHAN[g][0], "can ngày"), ("Quý nhân dạ", L.QUY_NHAN[g][1], "can ngày"),
         ("Nhật Đức", NHAT_DUC[g], "can ngày"), ("Du Đô", DU_DO[g], "can ngày"),
@@ -1486,7 +1489,7 @@ def in_bo_sung(kq):
               "xuathanh, nha, thai, timnguoi.")
     print()
     print("! Ghi chú trường phái: mộ/trường sinh hành Thổ theo Thủy (Thân sinh, Thìn mộ) như chú Tất pháp phú; "
-          "Dương nhận can âm lấy lùi một ngôi; Thiên đức lấy cung ký của can. Tất pháp phú và khóa cách là "
+          "Dương nhận mọi can lấy tiến một ngôi từ Lộc, Kiếp Sát/Vong Thần theo tháng (Lục Nhâm đại toàn); Thiên đức lấy cung ký của can. Tất pháp phú và khóa cách là "
           "điều kiện máy kiểm, cần đọc cùng toàn khóa, không đọc riêng lẻ.")
 
 
@@ -1594,8 +1597,8 @@ def tu_kiem():
     ts = {t: c for t, c, _ in than_sat(0, 0, 2, 11)}     # ngày Giáp Tý, tháng Dần (tháng giêng), năm Hợi
     mong = {"Thiên Đức": 7, "Nguyệt Đức": 5, "Thiên Hỷ": 10, "Thiên Y": 4, "Thiên Mã": 6, "Giải Thần": 8,
             "Sinh Khí": 0, "Tử Khí": 6, "Thiên Quỷ": 9, "Thành Thần": 5, "Hoàng Ân": 7, "Nguyệt Phá": 8,
-            "Tuế Phá": 5, "Tang Môn": 1, "Điếu Khách": 9, "Bệnh Phù": 10, "Dịch Mã": 2, "Kiếp Sát": 5,
-            "Hoa Cái": 4, "Vong Thần": 11, "Tướng Tinh": 0, "Đào Hoa (Hàm Trì)": 9, "Du Đô": 1, "Lỗ Đô": 7,
+            "Tuế Phá": 5, "Tang Môn": 1, "Điếu Khách": 9, "Bệnh Phù": 10, "Dịch Mã": 2, "Kiếp Sát": 11,
+            "Hoa Cái": 4, "Vong Thần": 5, "Tướng Tinh": 0, "Đào Hoa (Hàm Trì)": 9, "Du Đô": 1, "Lỗ Đô": 7,
             "Nhật Đức": 2, "Tuần Kỳ": 1, "Tuần Nghi": 0, "Lục Đinh": 3, "Lộc": 2, "Dương Nhận": 3}
     for k, v in mong.items():
         if ts[k] != v:
@@ -1607,8 +1610,14 @@ def tu_kiem():
         loi.append("Thiên đức không khớp bảng sách (can lấy cung ký)")
     if [dict((t, c) for t, c, _ in than_sat(0, 0, m, 0))["Thiên Hỷ"] for m in (2, 5, 8, 11)] != [10, 1, 4, 7]:
         loi.append("Thiên hỷ phải là Xuân Tuất, Hạ Sửu, Thu Thìn, Đông Mùi")
-    if NHAN[1] != 2 or NHAN[2] != 6 or NHAN[4] != 6:
-        loi.append("Dương nhận phải là Giáp Mão, Ất Dần, Bính Mậu Ngọ (theo sách thần sát)")
+    if NHAN != [3, 4, 6, 7, 6, 7, 9, 10, 0, 1]:
+        loi.append("Dương nhận phải theo Lục Nhâm đại toàn: 卯辰午未午未酉戌子丑")
+    # Kiếp Sát, Vong Thần theo tháng: tháng Dần (giêng) Kiếp Sát Hợi, Vong Thần Tỵ (Lục Nhâm đại toàn q.1)
+    for ngay_chi in range(12):
+        d = dict((t, c) for t, c, _ in than_sat(ngay_chi % 2, ngay_chi, 2, 0))
+        if d["Kiếp Sát"] != 11 or d["Vong Thần"] != 5:
+            loi.append("Kiếp Sát/Vong Thần tháng Dần phải là Hợi/Tỵ")
+            break
     # Hành niên: nam 1 tuổi Bính Dần, nữ 1 tuổi Nhâm Thân (zhifou123 id=54, dajiazhao.com 推行年法)
     if [ten_gz(hanh_nien(t, "nam")) for t in (1, 2, 13)] != ["Bính Dần", "Đinh Mão", "Mậu Dần"]:
         loi.append("hành niên nam sai")
