@@ -716,6 +716,11 @@ def tu_vi(tt, nam_xem, phi=False, so_nam=1, luu_nguyet=False):
         print("Ô độ sáng các sách nói khác nhau (nói rõ khi luận):")
         for x in gc:
             print("- " + x)
+    gb = T.ghi_chu_bang(ls)
+    if gb:
+        print("Chỗ bảng an sao chọn khác bản in Thái Thứ Lang (nói rõ khi luận):")
+        for x in gb:
+            print("- " + x)
     print()
     if phi:
         pf, lai = T.phi_hoa(ls)
@@ -746,6 +751,11 @@ def tu_vi(tt, nam_xem, phi=False, so_nam=1, luu_nguyet=False):
         print("- Chưa vào đại hạn đầu (đại hạn đầu bắt đầu từ %d tuổi)." % ls["cuc"] if tuoi < ls["cuc"]
               else "- Tuổi %d vượt quá 12 đại hạn của lá số." % tuoi)
     print("- Tiểu hạn: cung %s (%s)" % (T.ten_cung(ls, vh["tieu_han"]), T.CHI[vh["tieu_han"]]))
+    ldh = T.luu_dai_han(ls, tuoi)
+    if ldh is not None:
+        print("- Lưu đại hạn (Thái Thứ Lang X.2: năm đầu ở cung đại hạn, năm 2 sang cung xung chiếu, năm 3 lùi một cung ngược chiều đại hạn, "
+              "năm 4 về lại cung xung chiếu, từ năm 5 đi theo chiều đại hạn): tuổi %d ở cung %s (%s)"
+              % (tuoi, T.ten_cung(ls, ldh), T.CHI[ldh]))
     for nhan, goc in (("ĐV", vh["dai_han"]), ("LN", vh["tieu_han"])):
         if goc is None:
             continue
@@ -766,6 +776,9 @@ def tu_vi(tt, nam_xem, phi=False, so_nam=1, luu_nguyet=False):
             for i, ten in enumerate(T.TU_HOA[cdh])))
     print("- Tứ hóa lưu niên (can %s): " % T.CAN[nc] + ", ".join(
         "%s %s (cung %s%s)" % (ten, hoa, T.ten_cung(ls, ls["vt"][ten]), ghi_goc(ten)) for hoa, ten in vh["hoa"]))
+    for x in T.ghi_chu_bang(ls, nc):
+        if x not in gb:
+            print("  " + x)
     print()
     if luu_nguyet:
         import lich_vn
@@ -821,18 +834,19 @@ def tu_vi(tt, nam_xem, phi=False, so_nam=1, luu_nguyet=False):
         print()
     if so_nam > 1:
         print("VẬN HẠN TỬ VI NHIỀU NĂM (cung chứa sao lưu; tứ hóa lưu niên ghi cung mà sao được hóa đang đóng)")
-        print("| Năm | Tuổi mụ | Đại hạn | Tiểu hạn | Thái Tuế | Lộc Tồn | Kình / Đà | Mã | Tang / Hổ | Khốc / Hư | "
-              "Lộc | Quyền | Khoa | Kỵ | Khôi / Việt | Xương / Khúc | Đào / Hồng / Hỷ | Kiếp Sát |")
-        print("|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|")
+        print("| Năm | Tuổi mụ | Đại hạn | Lưu đại hạn | Tiểu hạn | Thái Tuế | Lộc Tồn | Kình / Đà | Mã | Tang / Hổ | "
+              "Khốc / Hư | Lộc | Quyền | Khoa | Kỵ | Khôi / Việt | Xương / Khúc | Đào / Hồng / Hỷ | Kiếp Sát |")
+        print("|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|")
         for ny in range(nam_xem, nam_xem + so_nam):
             c2, z2 = (ny - 4) % 10, (ny - 4) % 12
             v2 = T.van_han(ls, c2, z2, ny - y + 1)
             L = v2["luu"]
             tc = lambda p: T.ten_cung(ls, p)
-            print("| %d %s %s | %d | %s | %s | %s | %s | %s / %s | %s | %s / %s | %s / %s | %s | %s / %s | %s / %s | "
+            ldh2 = T.luu_dai_han(ls, ny - y + 1)
+            print("| %d %s %s | %d | %s | %s | %s | %s | %s | %s / %s | %s | %s / %s | %s / %s | %s | %s / %s | %s / %s | "
                   "%s / %s / %s | %s |" % (
                 ny, T.CAN[c2], T.CHI[z2], ny - y + 1, tc(v2["dai_han"]) if v2["dai_han"] is not None else "–",
-                tc(v2["tieu_han"]), tc(L["Lưu Thái Tuế"]), tc(L["Lưu Lộc Tồn"]), tc(L["Lưu Kình Dương"]),
+                tc(ldh2) if ldh2 is not None else "–", tc(v2["tieu_han"]), tc(L["Lưu Thái Tuế"]), tc(L["Lưu Lộc Tồn"]), tc(L["Lưu Kình Dương"]),
                 tc(L["Lưu Đà La"]), tc(L["Lưu Thiên Mã"]), tc(L["Lưu Tang Môn"]), tc(L["Lưu Bạch Hổ"]),
                 tc(L["Lưu Thiên Khốc"]), tc(L["Lưu Thiên Hư"]),
                 " | ".join("%s (%s%s)" % (ten, tc(ls["vt"][ten]), ghi_goc(ten).replace(" – gốc cũng", "; gốc"))

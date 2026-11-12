@@ -137,7 +137,7 @@ def phan_luan_chi_tiet():
         "| 9 | 10/10/2026 – 08/11/2026 | Mậu Tuất | Phúc Đức (Mão) | Tham Lang → Phụ Mẫu |",
         "| 6 nhuận | 25/07/2025 – 22/08/2025 | Quý Mùi | Phu Thê (Hợi) |",
         "Thái Âm → Mệnh; gốc Hóa Khoa; năm Hóa Kỵ",
-        "| 2032 Nhâm Tý | 43 | Điền Trạch | Tử Tức | Huynh Đệ | Phu Thê |",
+        "| 2032 Nhâm Tý | 43 | Điền Trạch | Phụ Mẫu | Tử Tức | Huynh Đệ | Phu Thê |",
         "Nhâm Tuất – Quý Mão – Bính Thân",
         "Quý Dậu – Tân Dậu – Tân Hợi",
         "B ↔ C: năm: Quý–Đinh xung, Dậu–Mão xung, THIÊN KHẮC ĐỊA XUNG",
@@ -233,7 +233,7 @@ def phan_doi_chieu_viet_nam():
         "Mệnh chủ: Văn Khúc (theo chi năm sinh, cách sách Việt Nam; nếu tính theo chi cung Mệnh như sách Trung Quốc: Vũ Khúc)",
         "= 5 lượng 9 chỉ",
         "| Huynh Đệ | Ngọ (Canh) | Tử Vi(M) | Lộc Tồn, Địa Không(H) | Thiên Hỷ, Thiên Giải, Lưu Hà |",
-        "Đà La(H), Văn Xương(Đ), Thiên Mã(V)", "Văn Khúc(Đ)[Hóa Kỵ]", "Thiên Hư(Đ)",
+        "Đà La(H), Văn Xương(Đ), Thiên Mã(Đ)", "Văn Khúc(Đ)[Hóa Kỵ]", "Thiên Hư(Đ)",
         "LN.Mệnh tại Sửu (gốc Thiên Di)", "ĐV.Mệnh tại Tỵ (gốc Phu Thê)",
         "Lưu Thiên Khôi tại Tài Bạch (Mão), Lưu Thiên Việt tại Phu Thê (Tỵ), Lưu Văn Xương tại Tài Bạch (Mão), "
         "Lưu Văn Khúc tại Quan Lộc (Hợi), Lưu Đào Hoa tại Nô Bộc (Tý), Lưu Hồng Loan tại Nô Bộc (Tý), "
@@ -261,6 +261,29 @@ def phan_doi_chieu_viet_nam():
         miss.append("ghi chú ô độ sáng tranh cãi lá số A: %s" % T.ghi_chu_do_sang(ls_a))
     if T.DO_SANG_PHU["Văn Xương"] != T.DO_SANG_PHU["Văn Khúc"] or T.DO_SANG_PHU["Thiên Khốc"] != T.DO_SANG_PHU["Thiên Hư"]:
         miss.append("độ sáng phụ tinh")
+    # kiểm chéo 11/2026 (bản in Thái Thứ Lang): Thiên Mã Dần Tỵ đắc, Thân không xếp
+    if [T.do_sang_day_du("Thiên Mã", p) for p in (2, 5, 8, 11)] != ["Đ", "Đ", "", "H"]:
+        miss.append("độ sáng Thiên Mã")
+    # lưu đại hạn (TTL X.2): hai ví dụ của sách + dãy 10 năm của một đại hạn đi nghịch
+    v1 = T.luu_dai_han({"dai_han": {4: (23, 32)}, "chieu": 1}, 27)
+    v2 = T.luu_dai_han({"dai_han": {9: (34, 43)}, "chieu": -1}, 38)
+    day = [T.luu_dai_han({"dai_han": {5: (25, 34)}, "chieu": -1}, a) for a in range(25, 35)]
+    if v1 != 11 or v2 != 2 or day != [5, 11, 0, 11, 10, 9, 8, 7, 6, 5] or \
+            T.luu_dai_han({"dai_han": {5: (25, 34)}, "chieu": -1}, 24) is not None:
+        miss.append("lưu đại hạn: %s %s %s" % (v1, v2, day))
+    t = chay("tuvi", "--ngay", "2000-01-01", "--gio", "10:00", "--gioi", "nam", "--noi", "Hà Nội", "--nam-xem", "2026")
+    if "- Lưu đại hạn (Thái Thứ Lang X.2" not in t:
+        miss.append("lá số không in lưu đại hạn")
+    # Hoa Cái: bảng đa số (Tý → Thìn, Ngọ → Tuất), ghi chú bảng in TTL (Tý → Tuất, Ngọ → Thìn); Tân Hóa Quyền, Nhâm Văn Tinh
+    if [T.CHI[T.lap_la_so(1, 1, 0, c % 10, c % 12, "nam", 30)["vt"]["Hoa Cái"]] for c in (0, 6)] != ["Thìn", "Tuất"] or \
+            [T.CHI[T.hoa_cai_ttl(z)] for z in range(12)] != ["Tuất", "Sửu", "Thìn", "Mùi"] * 3:
+        miss.append("Hoa Cái và bảng in TTL")
+    gt = " ".join(T.ghi_chu_bang(T.lap_la_so(1, 1, 0, 6, 6, "nam", 30)))      # Canh Ngọ: có ghi chú Hoa Cái
+    gn = " ".join(T.ghi_chu_bang(T.lap_la_so(1, 1, 0, 7, 7, "nam", 30)))      # Tân Mùi: Hóa Quyền, không Hoa Cái
+    gnh = " ".join(T.ghi_chu_bang(T.lap_la_so(1, 1, 0, 8, 8, "nam", 30)))     # Nhâm Thân: Văn Tinh + Hoa Cái
+    if "Hoa Cái" not in gt or "Thiên Lương" not in gn or "Hoa Cái" in gn or "Dậu" not in gnh or "Hoa Cái" not in gnh \
+            or T.TU_HOA[7][1] != "Thái Dương":
+        miss.append("ghi chú bảng in TTL: %s | %s | %s" % (gt, gn, gnh))
     return miss
 
 

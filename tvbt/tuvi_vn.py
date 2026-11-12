@@ -97,7 +97,8 @@ DO_SANG_PHU = {
     "Thiên Phủ": "M B M B V Đ M Đ M B V Đ",      # miếu Dần Thân Tý Ngọ; vượng Thìn Tuất; đắc Tỵ Hợi Mùi; bình Mão Dậu Sửu
     "Văn Xương": "H Đ H Đ Đ Đ H Đ H Đ Đ Đ",      # đắc Tứ mộ + Tỵ Hợi (Thái Thứ Lang); Mão Dậu: TTL không xếp, đa số
     "Văn Khúc": "H Đ H Đ Đ Đ H Đ H Đ Đ Đ",       # sách khác xếp đắc/vượng/miếu (rà soát 11/2026) nên để Đ
-    "Thiên Mã": "- - V - - V - - Đ - - H",        # Dần Tỵ tốt nhất, Thân đắc, Hợi hãm (bài sao Thiên Mã, tuvi.vn)
+    "Thiên Mã": "- - Đ - - Đ - - - - - H",        # TTL chỉ ghi đắc Dần, Tỵ; Thân sách không xếp (xem DO_SANG_TRANH);
+                                                  # Hợi hãm như lá số tuvi.vn (kiểm chéo 11/2026: Dần Tỵ là Đ, không phải V)
     "Thiên Hình": "H H Đ Đ H H H H Đ Đ H H",      # đắc Dần Thân Mão Dậu
     "Thiên Diêu": "H H Đ Đ H H H H H Đ Đ H",      # đắc Dần Mão Dậu Tuất
     "Thiên Khốc": "Đ Đ H Đ H H Đ Đ H Đ H H",      # đắc Tý Ngọ Mão Dậu Sửu Mùi
@@ -253,6 +254,53 @@ def lap_la_so(thang, ngay, gio, can, chi, gioi, thang_do_dai=30, nhuan=False):
                 tieu_han_goc=tieu_han_goc, menh_chu=MENH_CHU[chi], menh_chu_cung=MENH_CHU[menh],
                 than_chu=THAN_CHU[chi] + (" (có sách ghi %s)" % ("Hỏa Tinh" if chi == 0 else "Linh Tinh")
                                           if chi in (0, 6) else ""))
+
+
+def hoa_cai_ttl(chi):
+    """Hoa Cái theo bản in Thái Thứ Lang (tr. 24, "sinh năm Ngọ … Thìn"): Dần Ngọ Tuất ở Thìn, Thân Tý Thìn ở Tuất –
+    ngược với bảng Trung Quốc và đa số lá số Việt Nam (mộ cung tam hợp: Dần Ngọ Tuất ở Tuất, Thân Tý Thìn ở Thìn).
+    Tỵ Dậu Sửu, Hợi Mão Mùi hai bảng như nhau. Script an theo đa số, chỉ in bảng TTL làm ghi chú."""
+    goc = ({0: 2, 1: 11, 2: 8, 3: 5}[chi % 4] + 2) % 12
+    return (goc + 6) % 12 if chi % 4 in (0, 2) else goc
+
+
+def ghi_chu_bang(ls, nam_can=None):
+    """Những chỗ bộ tính chọn khác bản in Thái Thứ Lang mà lá số này dính tới (kiểm chéo 11/2026)."""
+    ds = []
+    hc = hoa_cai_ttl(ls["chi"])
+    if hc != ls["vt"]["Hoa Cái"]:
+        ds.append("Hoa Cái: an ở %s theo bảng Trung Quốc và đa số lá số Việt Nam (mộ cung tam hợp); bản in Thái Thứ Lang "
+                  "(tr. 24) đặt ở %s (cung %s). Luận Hoa Cái nên nói rõ hai cách." % (
+                      CHI[ls["vt"]["Hoa Cái"]], CHI[hc], ten_cung(ls, hc)))
+    for c, nhan in ((ls["can"], "năm sinh"), (nam_can, "năm xem")):
+        if c == 7:
+            ds.append("Can Tân (%s): Hóa Quyền theo bảng thông dụng là Thái Dương; bản in Thái Thứ Lang (tr. 22) ghi "
+                      "Thiên Lương. Script dùng Thái Dương." % nhan)
+    if ls["can"] == 8:
+        ds.append("Lưu Niên Văn Tinh can Nhâm: an ở Dần (Lộc Tồn tiến 3 cung, đúng quy tắc chung); bản in Thái Thứ Lang "
+                  "(tr. 26) ghi Dậu, nhiều khả năng in nhầm.")
+    return ds
+
+
+def luu_dai_han(ls, tuoi_mu):
+    """Lưu đại hạn (Thái Thứ Lang X.2): năm đầu ở cung đại hạn G; năm 2 sang cung xung chiếu X = G+6; năm 3 lùi một
+    cung (ngược chiều đại hạn); năm 4 trở lại X; từ năm 5 đi tiếp mỗi năm một cung theo chiều đại hạn.
+    Ví dụ sách: Dương Nam, đại hạn 23–32 ở Thìn → 27 tuổi ở Hợi; Âm Nam, đại hạn 34–43 ở Dậu → 38 tuổi ở Dần.
+    Trả về cung (0..11) hoặc None khi chưa vào đại hạn đầu / quá 12 đại hạn."""
+    dh = [p for p, (a, b) in ls["dai_han"].items() if a <= tuoi_mu <= b]
+    if not dh:
+        return None
+    g = dh[0]
+    k = tuoi_mu - ls["dai_han"][g][0]
+    x = (g + 6) % 12
+    ch = ls["chieu"]
+    if k == 0:
+        return g
+    if k in (1, 3):
+        return x
+    if k == 2:
+        return (x - ch) % 12
+    return (x + ch * (k - 3)) % 12
 
 
 def ten_cung(ls, p):

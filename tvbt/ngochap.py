@@ -301,6 +301,14 @@ def cham(d, viec, nguoi, thu_ok=None, theo_tiet=False, toa=None, kieu_toa=None):
     # 5. Độ tin (5): các cách tính đồng thuận
     dong_thuan = not any("tính theo tháng" in g for g in v2["ghi"]) and not (
         (chinh & yi and v2["truc"] in truc_xau) or (v2["hd"] and chinh & ji))
+    # Tiết rơi 00:00–00:59 giờ Bắc Kinh = 23:xx giờ Việt Nam hôm trước: lịch Việt Nam đã sang tháng mới, còn trực, thần
+    # sát ngày (lunar-python, giờ Bắc Kinh) vẫn tính tháng cũ – báo rõ và hạ độ tin (kiểm chéo 11/2026)
+    lp = TS.lech_lich_trung_quoc(d)
+    if lp:
+        dong_thuan = False
+        g = TS.giao_tiet(d)
+        ghi.append("ngày giao tiết %s theo giờ Việt Nam (%s): trực, thần sát theo lịch Trung Quốc còn tính tháng %s, "
+                   "có thể khác lịch Việt Nam" % (g[0] if g else "", g[1] if g else "?", TS.vn(lp)))
     p5 = 5 if dong_thuan else 2
     if not dong_thuan:
         ghi.append("các cách tính chưa đồng thuận")
@@ -587,4 +595,9 @@ def tu_kiem():
         loi.append("an táng tọa Cấn 19/12/2026")
     if "tọa: Nguyệt Âm phủ tháng Kỷ Hợi ở tọa Cấn" not in cham(dt.date(2026, 11, 20), "antang", [], toa=3)["loai"]:
         loi.append("Nguyệt Âm phủ tháng Kỷ Hợi tọa Cấn")
+    # 6. Kiểm chéo 11/2026: Lập đông 2023 lúc 23:35 giờ Việt Nam (00:35 ngày 8 giờ Bắc Kinh) – ngày 7/11/2023 phải báo
+    #    lệch tháng giữa lịch Việt Nam và trực, thần sát của lịch Trung Quốc; ngày 5/3/2026 (Kinh trập 20:59) thì không
+    if not any("ngày giao tiết Lập đông" in g for g in cham(dt.date(2023, 11, 7), "dongtho", [])["ghi"]) or \
+            any("ngày giao tiết" in g for g in cham(dt.date(2026, 3, 5), "dongtho", [])["ghi"]):
+        loi.append("báo lệch tháng ngày giao tiết 23:xx giờ Việt Nam")
     return sorted(set(loi))[:30]

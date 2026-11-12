@@ -291,22 +291,78 @@ def hoan_vi(z_nam, thang):
 
 
 # ---------------------------------------------------------------- Can chi thời điểm
-def can_chi(d):
-    """Ngày d (date) -> năm (theo Lập xuân), tháng (theo tiết), ngày, và cờ 'sau Đông chí' (từ Đông chí đến hết năm
-    Lập xuân đó, sơn Kim dùng mộ vận của can năm sau – Hiệp Kỷ q.2). Xét lúc 12h trưa."""
-    trua = Solar.fromYmdHms(d.year, d.month, d.day, 12, 0, 0)
-    l = trua.getLunar()
+# Tiết (節) đổi tháng: tên Trung (lunar-python, cả khóa pinyin của năm kề) -> tên Việt
+_TIET = {"立春": "Lập xuân", "LI_CHUN": "Lập xuân", "惊蛰": "Kinh trập", "清明": "Thanh minh", "立夏": "Lập hạ",
+         "芒种": "Mang chủng", "小暑": "Tiểu thử", "立秋": "Lập thu", "白露": "Bạch lộ", "寒露": "Hàn lộ",
+         "立冬": "Lập đông", "大雪": "Đại tuyết", "DA_XUE": "Đại tuyết", "小寒": "Tiểu hàn", "XIAO_HAN": "Tiểu hàn"}
+
+
+def _bk(d, h, m=0, s=0):
+    """Giờ Việt Nam (UTC+7) của ngày d -> Solar theo giờ Bắc Kinh (UTC+8) mà lunar-python dùng."""
+    t = dt.datetime(d.year, d.month, d.day, h, m, s) + dt.timedelta(hours=1)
+    return Solar.fromYmdHms(t.year, t.month, t.day, t.hour, t.minute, t.second)
+
+
+def _thoi_diem(sol, d):
+    """Năm, tháng (tính chính xác), cờ sau Đông chí tại thời điểm sol (Solar giờ Bắc Kinh) của ngày d."""
+    l = sol.getLunar()
     t = Solar.fromYmd(d.year, 7, 1).getLunar().getJieQiTable()
-    sau_dc = (not trua.isBefore(t["DONG_ZHI"])) or trua.isBefore(t["立春"])
-    return l.getYearInGanZhiExact(), l.getMonthInGanZhiExact(), l.getDayInGanZhi(), sau_dc
+    sau_dc = (not sol.isBefore(t["DONG_ZHI"])) or sol.isBefore(t["立春"])
+    return l.getYearInGanZhiExact(), l.getMonthInGanZhiExact(), sau_dc
+
+
+def can_chi(d):
+    """Ngày d (date, lịch Việt Nam) -> năm (theo Lập xuân), tháng (theo tiết), ngày, cờ 'sau Đông chí' (từ Đông chí
+    đến hết năm Lập xuân đó, sơn Kim dùng mộ vận của can năm sau – Hiệp Kỷ q.2).
+    Quy ước (từ 11/2026, sau kiểm chéo): ngày có giao tiết theo giờ Việt Nam thuộc tháng MỚI cả ngày – cùng quy ước với
+    trực và thần sát ngày của lịch (lunar-python getMonthInGanZhi); trước đây lấy 12h trưa giờ Bắc Kinh nên có ngày
+    hai phần của bộ tính xét theo hai tháng khác nhau. Giờ giao tiết và tháng cũ: xem giao_tiet()."""
+    gn, gt, sau_dc = _thoi_diem(_bk(d, 23, 59, 59), d)
+    return gn, gt, Solar.fromYmd(d.year, d.month, d.day).getLunar().getDayInGanZhi(), sau_dc
+
+
+def giao_tiet(d):
+    """Ngày d có giao tiết (theo giờ Việt Nam)? -> (tên tiết, 'HH:MM' giờ VN, năm cũ, tháng cũ, sau_dc cũ) hoặc None."""
+    dau = _thoi_diem(_bk(d, 0, 0, 0), d)
+    cuoi = _thoi_diem(_bk(d, 23, 59, 59), d)
+    if dau[1] == cuoi[1]:
+        return None
+    ten, gio = "giao tiết", "?"
+    for k, sol in _bk(d, 12).getLunar().getJieQiTable().items():
+        if k not in _TIET:
+            continue
+        t = dt.datetime(sol.getYear(), sol.getMonth(), sol.getDay(), sol.getHour(), sol.getMinute()) - dt.timedelta(hours=1)
+        if t.date() == d:
+            ten, gio = _TIET[k], t.strftime("%H:%M")
+            break
+    return ten, gio, dau[0], dau[1], dau[2]
+
+
+def lech_lich_trung_quoc(d):
+    """Tháng của ngày d theo quy ước Việt Nam khác tháng theo ngày của lunar-python (giờ Bắc Kinh)? Xảy ra khi tiết rơi
+    00:00–00:59 giờ Bắc Kinh (23:xx giờ Việt Nam ngày hôm trước). -> tháng theo lunar-python hoặc None."""
+    lp = Solar.fromYmd(d.year, d.month, d.day).getLunar().getMonthInGanZhi()
+    return lp if lp != can_chi(d)[1] else None
+
+
+def ngu_hoang(d):
+    """Quái có Ngũ hoàng (sao 5 phi tinh) của năm và của tháng tại ngày d (lunar-python, phi thuận Lạc thư)."""
+    l = _bk(d, 12).getLunar()
+    vt = lambda c: CUNG_QUAI[(9 - c) % 9 + 1]       # sao trung cung c -> cung Lạc thư có sao 5
+    return vt(l.getYearNineStar().getIndex() + 1), vt(l.getMonthNineStar().getIndex() + 1)
 
 
 # ---------------------------------------------------------------- Xét một ngày
-def xet(d, toa, kieu):
+def xet(d, toa, kieu, _ep=None):
     """Xét tọa sơn toa (0..23) cho ngày d. kieu: 'duong' (xây mới – khai sơn lập hướng) | 'sua' (sửa nhà đang có –
     tu sơn: thần sát khai sơn + tu phương, hướng chỉ xét Thái Tuế, Tam sát) | 'am' (an táng, xây mộ).
     -> dict(loai=[(cấp, câu)], canh=[(cấp, câu)], nam=gc, thang=gc, ngay=gc); cấp: nam | thang | ngay."""
-    gn, gt, gd, sau_dc = can_chi(d)
+    kieu0 = kieu
+    if _ep:                                   # xét lại phần năm/tháng theo tháng cũ của ngày giao tiết
+        gn, gt, sau_dc = _ep
+        gd = can_chi(d)[2]
+    else:
+        gn, gt, gd, sau_dc = can_chi(d)
     # 'phu' = phụ táng vào mộ cũ, mộ tổ: xét như an táng nhưng bỏ khắc sơn gia (Hiệp Kỷ q.2 "旧茔附葬者皆不论",
     # q.34 "袝葬祖茔…亦不忌") và Âm phủ chính, bàng (q.34 "如祔葬及修造正傍俱不忌"). Sách không miễn sát nào khác.
     phu = kieu == "phu"
@@ -475,12 +531,25 @@ def xet(d, toa, kieu):
         else:
             L("thang", "Nguyệt khắc sơn gia: %s" % mt)
     dk = dai_nguyet_kien(zn, thang)
-    if toa in CUNG_SON[dk] or huong in CUNG_SON[dk]:
+    # Lời bàn Hiệp Kỷ q.34 (大月建小月建): Đại nguyệt kiến chỉ "không phạm được" khi hoàn vị, khi chồng Mậu Kỷ hay
+    # Ngũ hoàng, hoặc khi nhập trung cung; tháng khác có quý nhân lộc mã, lục đức tới thì sửa được; táng không kỵ.
+    nh_nam, nh_thang = ngu_hoang(d)
+    diep = []
+    if any(x in CUNG_SON[dk] for x in N["mau_ky"]):
+        diep.append("chồng Mậu Kỷ đô thiên năm %s" % vn(gn))
+    if dk in (nh_nam, nh_thang):
+        diep.append("chồng Ngũ hoàng %s" % ("năm" if dk == nh_nam else "tháng"))
+    if dk == "中":
+        (L if kieu != "am" else C)("thang", "Đại nguyệt kiến tháng %s nhập trung cung (Hiệp Kỷ q.34: không phạm được – "
+                                            "kỵ động thổ, sửa giữa nhà%s)" % (
+            gt, "" if kieu != "am" else "; lời bàn q.34 cho táng không kỵ"))
+    elif toa in CUNG_SON[dk] or huong in CUNG_SON[dk]:
         vt = "tọa" if toa in CUNG_SON[dk] else "hướng"
-        if hoan_vi(zn, thang):
+        if hoan_vi(zn, thang) or diep:
+            ly = "hoàn vị" if hoan_vi(zn, thang) else ", ".join(diep)
             (L if kieu != "am" else C)("thang", 
-                "Đại nguyệt kiến tháng %s ở %s (cung %s, hoàn vị – không phạm được%s)" % (
-                    gt, vt, QUAI_VN[dk], "" if kieu != "am" else "; Thông thư không kỵ táng"))
+                "Đại nguyệt kiến tháng %s ở %s (cung %s, %s – không phạm được%s)" % (
+                    gt, vt, QUAI_VN[dk], ly, "" if kieu != "am" else "; Thông thư không kỵ táng"))
         elif kieu != "am":
             C("thang", "Đại nguyệt kiến tháng %s ở %s (cung %s; kỵ động thổ, cần quý nhân lộc mã, lục đức chiếu)" % (
                 gt, vt, QUAI_VN[dk]))
@@ -505,6 +574,18 @@ def xet(d, toa, kieu):
         C("ngay", "Âm phủ ngày %s ở tọa %s (can ngày hóa khí khắc sơn)" % (gd, st))
     if not phu and KHAC[nap_am(gd)[1]] == mo_van(toa, cn, sau_dc)[2]:
         C("ngay", "Ngày khắc sơn gia: %s" % khac_son_gia(toa, gd, cn, sau_dc)[1])
+    # Ngày giao tiết: cả ngày tính tháng mới (như trực, thần sát ngày); việc làm trước giờ giao tiết thì xét thêm tháng cũ
+    if _ep is None:
+        g = giao_tiet(d)
+        if g:
+            ten, gio, gn_cu, gt_cu, sau_cu = g
+            C("ngay", "Ngày giao tiết %s lúc %s giờ Việt Nam: cả ngày tính tháng %s như lịch; việc làm trước %s thuộc "
+                      "tháng %s" % (ten, gio, vn(gt), gio, vn(gt_cu)))
+            r0 = xet(d, toa, kieu0, _ep=(gn_cu, gt_cu, sau_cu))
+            co = {x for _, x in loai + canh}
+            for c, x in r0["loai"] + r0["canh"]:
+                if c in ("nam", "thang") and x not in co:
+                    C("ngay", "Nếu làm trước %s (tháng %s): %s" % (gio, vn(gt_cu), x))
     return dict(loai=loai, canh=canh, nam=gn, thang=gt, ngay=gd, sau_dc=sau_dc)
 
 
@@ -705,4 +786,19 @@ def tu_kiem():
         loi.append("phụ táng phải bỏ khắc sơn gia và Âm phủ")
     if not any("Tuế phá" in x for _, x in xet(dt.date(2026, 3, 1), 0, "phu")["loai"]):
         loi.append("phụ táng vẫn phải xét Tuế phá")
+    # kiểm chéo 11/2026 (Hiệp Kỷ q.34): Đại nguyệt kiến chồng Mậu Kỷ đô thiên / Ngũ hoàng, hoặc nhập trung cung -> loại
+    dnk = lambda r, c: [x for k, x in r[c] if "Đại nguyệt kiến" in x]
+    r = xet(dt.date(2026, 4, 10), doc_son("Càn")[0], "duong")
+    if not any("Mậu Kỷ" in x for x in dnk(r, "loai")):
+        loi.append("Đại nguyệt kiến chồng Mậu Kỷ đô thiên phải loại (2026-04-10 tọa Càn)")
+    if not any("trung cung" in x for x in dnk(xet(dt.date(2033, 2, 20), doc_son("Khôn")[0], "duong"), "loai")):
+        loi.append("Đại nguyệt kiến nhập trung cung phải loại (2033-02-20)")
+    # giao tiết: cả ngày tính tháng mới như lịch Việt Nam, báo giờ giao tiết; lệch lịch Trung Quốc khi tiết rơi 23:xx
+    g = giao_tiet(dt.date(2026, 3, 5))
+    if can_chi(dt.date(2026, 3, 5))[1] != "辛卯" or not g or g[0] != "Kinh trập" or g[1] != "20:59":
+        loi.append("giao tiết Kinh trập 2026-03-05")
+    if lech_lich_trung_quoc(dt.date(2023, 11, 7)) != "壬戌" or lech_lich_trung_quoc(dt.date(2026, 3, 5)) is not None:
+        loi.append("lệch lịch Trung Quốc ngày giao tiết 23:xx (2023-11-07)")
+    if giao_tiet(dt.date(2026, 3, 6)) is not None:
+        loi.append("ngày thường không phải ngày giao tiết")
     return loi

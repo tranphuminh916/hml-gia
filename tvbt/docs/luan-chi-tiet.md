@@ -162,7 +162,7 @@ Mỗi năm phải đi đủ các bước dưới đây, ghi **cả mặt tốt l
    - Kỵ chồng lên Kỵ gốc là nặng (bản luận gọi là "Hóa Kỵ lặp hai lần");
    - Hóa Lộc lưu rơi vào sao có Kỵ gốc thì giải được một phần;
    - Lộc chồng Lộc thì lộc rõ.
-3. **Tứ hóa đại hạn** (script in sẵn): cho biết bối cảnh của cả 10 năm.
+3. **Tứ hóa đại hạn** (script in sẵn): cho biết bối cảnh của cả 10 năm. Đọc thêm cung **lưu đại hạn** của năm (script in sẵn; cách Thái Thứ Lang): sao ở cung đó cho biết năm này vận đại hạn nghiêng về việc gì.
 4. **Bát tự:**
    - Can chi năm là thập thần gì, thuộc dụng hay kỵ theo bảng Cần / Thừa.
    - Đọc cột "Quan hệ":
@@ -233,6 +233,7 @@ Văn phong:
   - Nguồn (rà soát độc lập 11/2026): phía tiểu hạn có Thái Thứ Lang *Tân Biên* mục 10.4 (cả ba cách ông nêu đều khởi từ tiểu hạn; cách "nghịch tháng, thuận giờ" là cách hay dùng), lichngaytot/tuvisonkhiem, tracuutuvi. Phía Đẩu Quân có 全书 卷二 ("于流年太岁宫起正月"), iztro, các trang Đài Loan, và *Tử Vi Chính Biện* (sách này gọi năm xem là "năm tiểu hạn", dễ đọc nhầm). Ở Việt Nam, "Đẩu Quân" trên lá số thường an theo năm sinh; muốn dùng cho năm xem phải dời theo năm.
   - Tứ hóa tháng (theo can tháng) giống nhau ở hai phép; chỉ cung tháng khác.
   - Khi luận tháng: người dùng đối chiếu với tuvi.vn hoặc sách Việt Nam thì lấy cột tiểu hạn làm chính; không nói gì thì luận theo cột tiểu hạn và nhắc một dòng rằng phép Đẩu Quân cho cung khác. Lưu nhật/lưu thời (`nc.py luunhat`) cũng mặc định tính từ tiểu hạn (thêm `--dau-quan` cho phép Đẩu Quân).
+- **Lưu đại hạn** (Thái Thứ Lang mục X.2, thêm từ kiểm chéo 11/2026): năm đầu đại hạn ở chính cung đại hạn; năm thứ 2 sang cung xung chiếu; năm thứ 3 lùi một cung (ngược chiều đại hạn); năm thứ 4 về lại cung xung chiếu; từ năm thứ 5 mỗi năm đi một cung theo chiều đại hạn (Dương Nam, Âm Nữ thuận; Âm Nam, Dương Nữ nghịch). Ví dụ sách: Dương Nam đại hạn 23–32 ở Thìn → 27 tuổi lưu đại hạn ở Hợi; Âm Nam đại hạn 34–43 ở Dậu → 38 tuổi ở Dần. Script in dòng "Lưu đại hạn" trong VẬN HẠN và cột "Lưu đại hạn" ở bảng nhiều năm. iztro không tính tầng này. Khi luận: đại hạn cho cả 10 năm, lưu đại hạn cho biết năm đó vận đại hạn "đi" tới cung nào, đọc cùng tiểu hạn.
 - **Cung đại vận, cung lưu niên** (nhãn "ĐV." và "LN." trên lá số tuvi.vn): lấy cung đại hạn (hoặc tiểu hạn) làm Mệnh rồi đặt 12 tên cung đi thuận. Script in đủ 12 cung trong phần VẬN HẠN.
 - **Sao lưu thêm** (từ 11/2026): Lưu Khôi, Lưu Việt (theo can năm xem, cùng bảng Khôi Việt), Lưu Văn Xương, Lưu Văn Khúc (theo can năm xem), Lưu Đào Hoa, Lưu Hồng Loan, Lưu Thiên Hỷ, Lưu Kiếp Sát (theo chi năm xem). Đã khớp với các sao "L." trên lá số tuvi.vn năm Quý Mão.
 - **Tháng nhuận** dùng cùng can chi, cùng cung với tháng chính. Có phái chia đôi tháng nhuận.
