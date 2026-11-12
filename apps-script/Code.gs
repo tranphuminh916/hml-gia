@@ -49,7 +49,7 @@ var TT_CHO = 'Chờ kích hoạt', TT_DA = 'Đã kích hoạt', TT_KHOA = 'Khóa
 var COT_LUOT = ['Thời gian', 'Mã lượt', 'Mã khách', 'Khách', 'Xem cho', 'Mục xem', 'Chi tiết / câu hỏi', 'Người thứ hai', 'Số liệu bộ tính', 'Bài luận', 'Hỏi thêm', 'Luận lúc'];
 // Firebase (Google nhắn mã kích hoạt). Cấu hình web của Firebase không phải mật khẩu: trang khách vốn phải biết nó.
 // Để trống apiKey = tắt, khách nhận mã do chủ gửi như cũ.
-var FIREBASE_CFG = { apiKey: '', authDomain: '', projectId: '', appId: '' };
+var FIREBASE_CFG = { apiKey: 'AIzaSyBvpk8-9cZywXn-Oe07uODcWhU9eq_jikc', authDomain: 'so-tu-vi.firebaseapp.com', projectId: 'so-tu-vi', appId: '1:161318137238:web:a75599706a8df28768c1b7' };
 var MUI_GIO = 'Asia/Ho_Chi_Minh';
 var MODEL_MAC_DINH = 'claude-sonnet-5-5';
 var MODEL_NHANH = 'claude-haiku-5-5';
