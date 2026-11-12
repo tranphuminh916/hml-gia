@@ -374,7 +374,7 @@ def in_ngay(tu, den, viec, nguoi, thu_ok=None, theo_tiet=False, top=5, chi_tiet=
     if toa is not None:
         kieu_toa = kieu_toa or KIEU_TOA[viec]
         print()
-        print("TỌA SƠN %s: %s%s" % ("MỘ" if kieu_toa == "am" else "NHÀ / CÔNG TRÌNH", TS.mo_ta(toa), toa_ghi))
+        print("TỌA SƠN %s: %s%s" % ("MỘ" if kieu_toa in ("am", "phu") else "NHÀ / CÔNG TRÌNH", TS.mo_ta(toa), toa_ghi))
         print("- Loại: %s" % TS.TEN_KIEU[kieu_toa])
         print("Thần sát theo năm, tháng (Hiệp Kỷ Biện Phương Thư – Luận phù sơn, Luận lập hướng, Nguyệt hung thần):")
         print("| Từ ngày | Năm | Tháng | Không dùng được | Cần cân nhắc |")
@@ -449,6 +449,8 @@ def them_lenh(sub):
     g.add_argument("--toa", help="tọa sơn nhà/mộ (dùng với --viec dongtho hoặc antang): tên sơn (Tý, Nhâm, Cấn...) hoặc độ la bàn phía lưng")
     g.add_argument("--huong", help="hướng nhà/mộ: tên sơn hoặc độ la bàn phía mặt tiền (tự đổi ra tọa)")
     p.add_argument("--sua-nha", action="store_true", help="với --toa/--huong và dongtho: chỉ sửa nhà đang có, không xây mới")
+    p.add_argument("--phu-tang", action="store_true",
+                   help="với --toa/--huong và antang: chôn thêm vào mộ cũ, mộ tổ (bỏ khắc sơn gia và Âm phủ theo Hiệp Kỷ)")
     p.set_defaults(_chay=chay)
 
 
@@ -475,8 +477,10 @@ def chay(a):
         toa_ghi = TS.nguon_do(a, do) + ("\nCHÚ Ý: " + cb if cb else "")
     if a.sua_nha and not (toa is not None and a.viec == "dongtho"):
         raise SystemExit("LỖI: --sua-nha dùng cùng --viec dongtho và --toa/--huong.")
+    if a.phu_tang and not (toa is not None and a.viec == "antang"):
+        raise SystemExit("LỖI: --phu-tang dùng cùng --viec antang và --toa/--huong.")
     in_ngay(tu, den, a.viec, doc_tuoi(a.tuoi), thu_ok, a.hoang_dao_tiet, a.top, not a.gon, toa, toa_ghi,
-            "sua" if a.sua_nha else None)
+            "sua" if a.sua_nha else ("phu" if a.phu_tang else None))
 
 
 def tu_kiem():

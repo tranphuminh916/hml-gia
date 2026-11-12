@@ -21,7 +21,7 @@
 - **Ảnh, vận thế, lưu nhật.**
   - Lá số dựng giống hệt `tvbt.tu_vi`: Mệnh tại Mùi, Thân tại Tỵ, Thổ Ngũ Cục ở lá số mẫu.
   - Đại vận lấy giống v2 (cùng hàm, cùng phép tính).
-  - Cung tháng Giêng theo phép Đẩu Quân cùng công thức với `tvbt/docs/luan-chi-tiet.md`.
+  - Cung tháng Giêng: mặc định tính từ cung tiểu hạn, cùng công thức với cột "tính từ tiểu hạn" của `tvbt/docs/luan-chi-tiet.md`; `--dau-quan` cho phép Đẩu Quân.
 - **Hợp tác (`hoptac`).** Đúng bảng hợp, xung, hình, hại, phá, ngũ hợp. Điểm đối xứng giữa hai người. Nhận đúng thiên khắc địa xung.
 - **Tự kiểm bản luận (`kiembai`).** Bài mẫu xấu bị xếp C hoặc D, bắt đủ 6 loại lỗi; bài mẫu tốt được A.
 - **Rà soát độc lập.** Toàn bộ phần này đã được một lượt rà soát độc lập, tìm ra 5 lỗi nặng và 10 lỗi nhỏ. Tất cả đã được sửa và có ca thử riêng. Các lỗi đã sửa:
@@ -102,7 +102,7 @@ Luôn nhắc: đây là tham khảo, không thay đánh giá năng lực, uy tí
 ### 4.4 Lưu nhật, lưu thời (lệnh `luunhat`)
 - **Dùng khi** người dùng hỏi "tháng này ngày nào thuận cho tôi" hoặc "giờ nào ký tốt". Truyền `--dung/--ky` đã chọn.
 - **Lưu nhật là tầng nhỏ nhất:** chỉ dùng để chọn giữa những ngày đã ổn ở tầng năm, tháng, và đã qua lệnh `ngay` (lịch nên/kiêng). Không lấy lưu nhật để phán ngày xấu.
-- **Cách tính cung ngày, cung giờ Tử vi:** theo phép Đẩu Quân, cùng mặc định với lưu nguyệt của `tvbt/docs/luan-chi-tiet.md`. Nhiều sách đếm từ cung tiểu hạn; nói rõ khi liên quan.
+- **Cách tính cung ngày, cung giờ Tử vi** (Thái Thứ Lang 10.5–10.6, iztro): mùng 1 ở cung tháng, các ngày sau đi thuận; giờ Tý ở cung ngày, các giờ sau đi thuận. Cung tháng mặc định tính từ cung tiểu hạn, cùng mặc định với lưu nguyệt của `tvbt/docs/luan-chi-tiet.md` (từ 11/2026; trước đó dùng Đẩu Quân). Thêm `--dau-quan` nếu người dùng theo phép Đẩu Quân (sách Trung Quốc); nói rõ khi liên quan.
 
 ### 4.5 Tự kiểm bản luận trước khi gửi (lệnh `kiembai` và bảng 7 mục) – BẮT BUỘC với bản luận dài
 1. Ghi bản luận ra file `.md`, chạy `python3 tvbt/nc.py kiembai --file <file>`, rồi sửa hết lỗi **[nặng]** và **[vừa]**. Chỉ gửi khi đạt hạng A hoặc B.

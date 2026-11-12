@@ -183,6 +183,7 @@ MO_CHI = {"水": 4, "土": 4, "木": 7, "火": 10, "金": 1}         # mộ: Th�
 NGU_TY = {0: 0, 5: 0, 1: 2, 6: 2, 2: 4, 7: 4, 3: 6, 8: 6, 4: 8, 9: 8}   # ngũ tý nguyên độn: can của giờ/tháng Tý
 KHAC = {"金": "木", "木": "土", "土": "水", "水": "火", "火": "金"}
 _HANH_VN = {"金": "Kim", "木": "Mộc", "水": "Thủy", "火": "Hỏa", "土": "Thổ"}
+SINH = {"金": "水", "水": "木", "木": "火", "火": "土", "土": "金"}
 
 
 NAP_AM = {"海中金": "Hải Trung Kim", "炉中火": "Lư Trung Hỏa", "大林木": "Đại Lâm Mộc",
@@ -306,6 +307,11 @@ def xet(d, toa, kieu):
     tu sơn: thần sát khai sơn + tu phương, hướng chỉ xét Thái Tuế, Tam sát) | 'am' (an táng, xây mộ).
     -> dict(loai=[(cấp, câu)], canh=[(cấp, câu)], nam=gc, thang=gc, ngay=gc); cấp: nam | thang | ngay."""
     gn, gt, gd, sau_dc = can_chi(d)
+    # 'phu' = phụ táng vào mộ cũ, mộ tổ: xét như an táng nhưng bỏ khắc sơn gia (Hiệp Kỷ q.2 "旧茔附葬者皆不论",
+    # q.34 "袝葬祖茔…亦不忌") và Âm phủ chính, bàng (q.34 "如祔葬及修造正傍俱不忌"). Sách không miễn sát nào khác.
+    phu = kieu == "phu"
+    if phu:
+        kieu = "am"
     huong = (toa + 12) % 24
     zt = song_son(toa)
     cung_toa = next(q for q, ds in CUNG_SON.items() if toa in ds)
@@ -344,30 +350,41 @@ def xet(d, toa, kieu):
         C("nam", "Tam sát năm %s %s với tọa %s" % (gn, dc_txt, st))
     if toa in N["phuc_binh"]:
         L("nam", "Phục binh/Đại họa năm %s ở tọa %s (tọa sát)" % (gn, st))
-    if toa in N["am_phu"]:
-        L("nam", "Âm phủ Thái Tuế năm %s ở tọa %s" % (gn, st))
+    if phu:
+        pass
+    elif toa in N["am_phu"]:
+        (C if kieu == "sua" else L)("nam", "Âm phủ Thái Tuế năm %s ở tọa %s%s" % (gn, st, (
+            " (sửa nhà: Tông Kính ghi tu tạo không kỵ, q.8 ghi kỵ khai sơn – cân nhắc)" if kieu == "sua" else "")))
     elif toa in N["am_phu_bang"]:
         C("nam", "Bàng Âm phủ năm %s ở tọa %s (Thông thư dùng; Hiệp Kỷ theo Khâm thiên giám chỉ dùng quái, không dùng can)" % (gn, st))
-    if toa in N["khac_son"]:
+    if not phu and toa in N["khac_son"]:
         _, mt = khac_son_gia(toa, gn, cn, sau_dc)
         if kieu == "am":
-            che_ngu_thang = KHAC[nap_am(gt)[1]] == nap_am(gn)[1]
-            che_ngay = KHAC[nap_am(gd)[1]] == nap_am(gn)[1]
+            hn = nap_am(gn)[1]
+            che_ngu_thang = KHAC[nap_am(gt)[1]] == hn
+            che_ngay = KHAC[nap_am(gd)[1]] == hn
+            hoa_thang, hoa_ngay = nap_am(gt)[1] == SINH[hn], nap_am(gd)[1] == SINH[hn]
             if che_ngu_thang:
                 C("thang", "Niên khắc sơn gia (%s), có nạp âm tháng %s chế lại – an táng dùng được nếu bên chế vượng, "
                            "bên khắc hưu tù" % (mt, gt))
+            elif hoa_thang:
+                C("thang", "Niên khắc sơn gia (%s), nạp âm tháng %s được năm sinh ra và sinh lại mộ vận – hóa khắc thành "
+                           "sinh (lời bàn Hiệp Kỷ q.34)" % (mt, gt))
             else:
-                C("thang", "Niên khắc sơn gia (%s): tháng này không chế được, an táng chỉ dùng ngày có nạp âm %s" % (
-                    mt, _HANH_VN[[k for k, v in KHAC.items() if v == nap_am(gn)[1]][0]]))
+                C("thang", "Niên khắc sơn gia (%s): tháng này không chế được, an táng chỉ dùng ngày có nạp âm %s (chế) "
+                           "hoặc %s (hóa khắc thành sinh)" % (
+                    mt, _HANH_VN[[k for k, v in KHAC.items() if v == hn][0]], _HANH_VN[SINH[hn]]))
                 if che_ngay:
                     C("ngay", "Niên khắc sơn gia, có nạp âm ngày %s chế lại" % gd)
+                elif hoa_ngay:
+                    C("ngay", "Niên khắc sơn gia, nạp âm ngày %s hóa khắc thành sinh (lời bàn q.34)" % gd)
                 else:
-                    L("ngay", "Niên khắc sơn gia, nạp âm ngày %s không chế được" % gd)
+                    L("ngay", "Niên khắc sơn gia, nạp âm ngày %s không chế, không hóa được" % gd)
         elif kieu == "sua":
             C("nam", "Niên khắc sơn gia: %s – chỉ kỵ nếu đào móng, động nền (sửa không động móng thì Thông thư không kỵ)" % mt)
         else:
             L("nam", "Niên khắc sơn gia: %s (xây mới không chế được)" % mt)
-    elif sau_dc and toa in son_bi_khac(gn, cn, False):
+    elif not phu and sau_dc and toa in son_bi_khac(gn, cn, False):
         C("nam", "Niên khắc sơn gia năm %s: bảng năm ghi sơn %s bị khắc; sau Đông chí mộ vận sơn Kim đã đổi nên script "
                  "không loại, vẫn nên tránh nếu được" % (gn, st))
     if toa == N["thai_tue"] and zn in (0, 3, 6, 9):
@@ -404,7 +421,10 @@ def xet(d, toa, kieu):
     if huong == N["benh_phu"] and kieu != "sua":
         C("nam", "Bệnh phù năm %s ở hướng %s" % (gn, sh))
     if huong in N["mau_ky"] and kieu != "sua":
-        C("nam", "Mậu Kỷ sát năm %s ở hướng %s (theo Tuyển Trạch Tông Kính; Hiệp Kỷ nghi lệ này)" % (gn, sh))
+        L("nam", "Mậu Kỷ đô thiên năm %s ở hướng %s (Hiệp Kỷ q.33: ở hướng còn nặng hơn ở tọa; sách không có phép chế)"
+          % (gn, sh))
+    if toa in N["mau_ky"] and kieu != "sua" and toa != N["thai_tue"]:
+        L("nam", "Mậu Kỷ đô thiên năm %s ở tọa %s (Hiệp Kỷ q.33–34 không có phép chế)" % (gn, st))
     if kieu != "am" and (toa == N["dau_hoa"] or (huong == N["dau_hoa"] and kieu == "duong")):
         C("nam", "Đả đầu hỏa (Đại sát) năm %s ở %s (kỵ tu tạo, không kỵ táng)" % (
             gn, "tọa " + st if toa == N["dau_hoa"] else "hướng " + sh))
@@ -418,7 +438,8 @@ def xet(d, toa, kieu):
             if toa == N[khoa]:
                 C("nam", "%s năm %s ở tọa %s (cần cát tinh chiếu)" % (ten, gn, st))
         if toa in N["mau_ky"]:
-            C("nam", "Mậu Kỷ sát năm %s ở tọa %s (theo Tông Kính; Hiệp Kỷ nghi lệ này)" % (gn, st))
+            L("nam", "Mậu Kỷ đô thiên năm %s ở tọa %s (Hiệp Kỷ q.33 Luận tu phương: phương Mậu Kỷ của năm 'tất bất khả "
+                     "tu')" % (gn, st))
     # --- THÁNG ---
     ct, zth = CAN.index(gt[0]), CHI.index(gt[1])
     thang = (zth - 2) % 12 + 1
@@ -428,22 +449,27 @@ def xet(d, toa, kieu):
     elif k == "song":
         C("thang", "Nguyệt phá tháng %s %s với tọa %s" % (gt, dc_txt, st))
     chinh, bang = am_phu(ct)
-    if toa in chinh:
-        L("thang", "Nguyệt Âm phủ tháng %s ở tọa %s" % (gt, st))
+    if phu:
+        pass
+    elif toa in chinh:
+        (C if kieu == "sua" else L)("thang", "Nguyệt Âm phủ tháng %s ở tọa %s" % (gt, st))
     elif toa in bang:
         C("thang", "Bàng Âm phủ tháng %s ở tọa %s" % (gt, st))
-    if KHAC[nap_am(gt)[1]] == mo_van(toa, cn, sau_dc)[2]:
+    if not phu and KHAC[nap_am(gt)[1]] == mo_van(toa, cn, sau_dc)[2]:
         _, mt = khac_son_gia(toa, gt, cn, sau_dc)
         if kieu == "am":
-            if KHAC[nap_am(gn)[1]] == nap_am(gt)[1]:
+            ht = nap_am(gt)[1]
+            if KHAC[nap_am(gn)[1]] == ht:
                 C("thang", "Nguyệt khắc sơn gia (%s), có nạp âm năm chế lại" % mt)
             else:
-                C("thang", "Nguyệt khắc sơn gia (%s): an táng chỉ dùng ngày có nạp âm %s" % (
-                    mt, _HANH_VN[[k for k, v in KHAC.items() if v == nap_am(gt)[1]][0]]))
-                if KHAC[nap_am(gd)[1]] == nap_am(gt)[1]:
+                C("thang", "Nguyệt khắc sơn gia (%s): an táng chỉ dùng ngày có nạp âm %s (chế) hoặc %s (hóa)" % (
+                    mt, _HANH_VN[[k for k, v in KHAC.items() if v == ht][0]], _HANH_VN[SINH[ht]]))
+                if KHAC[nap_am(gd)[1]] == ht:
                     C("ngay", "Nguyệt khắc sơn gia, có nạp âm ngày %s chế lại" % gd)
+                elif nap_am(gd)[1] == SINH[ht]:
+                    C("ngay", "Nguyệt khắc sơn gia, nạp âm ngày %s hóa khắc thành sinh (lời bàn q.34)" % gd)
                 else:
-                    L("ngay", "Nguyệt khắc sơn gia, nạp âm ngày %s không chế được" % gd)
+                    L("ngay", "Nguyệt khắc sơn gia, nạp âm ngày %s không chế, không hóa được" % gd)
         elif kieu == "sua":
             C("thang", "Nguyệt khắc sơn gia: %s – chỉ kỵ nếu đào móng, động nền" % mt)
         else:
@@ -475,9 +501,9 @@ def xet(d, toa, kieu):
     elif dong_cung(chi_son(xz)) == "song":
         C("ngay", "Ngày %s xung chi %s với tọa %s" % (gd, dc_txt, st))
     chinh, bang = am_phu(cd)
-    if toa in chinh or toa in bang:
+    if not phu and (toa in chinh or toa in bang):
         C("ngay", "Âm phủ ngày %s ở tọa %s (can ngày hóa khí khắc sơn)" % (gd, st))
-    if KHAC[nap_am(gd)[1]] == mo_van(toa, cn, sau_dc)[2]:
+    if not phu and KHAC[nap_am(gd)[1]] == mo_van(toa, cn, sau_dc)[2]:
         C("ngay", "Ngày khắc sơn gia: %s" % khac_son_gia(toa, gd, cn, sau_dc)[1])
     return dict(loai=loai, canh=canh, nam=gn, thang=gt, ngay=gd, sau_dc=sau_dc)
 
@@ -502,8 +528,9 @@ def them_lenh(sub):
     g = p.add_mutually_exclusive_group(required=True)
     g.add_argument("--toa", help="tọa sơn: tên (Tý, Nhâm, Cấn...) hoặc độ la bàn của phía lưng")
     g.add_argument("--huong", help="hướng: tên sơn hoặc độ la bàn phía mặt tiền (tự đổi ra tọa)")
-    p.add_argument("--kieu", choices=["nha", "sua", "mo"], default="nha",
-                   help="nha = xây mới, động thổ; sua = sửa nhà đang ở (tu sơn); mo = an táng, xây mộ")
+    p.add_argument("--kieu", choices=["nha", "sua", "mo", "phutang"], default="nha",
+                   help="nha = xây mới, động thổ; sua = sửa nhà đang ở (tu sơn); mo = an táng, xây mộ mới; "
+                        "phutang = chôn thêm vào mộ cũ, mộ tổ")
     p.set_defaults(_chay=chay)
 
 
@@ -517,7 +544,7 @@ def doc_toa(toa=None, huong=None):
 
 def chay(a):
     toa, do, cb = doc_toa(a.toa, a.huong)
-    kieu = {"nha": "duong", "sua": "sua", "mo": "am"}[a.kieu]
+    kieu = {"nha": "duong", "sua": "sua", "mo": "am", "phutang": "phu"}[a.kieu]
     lx = lambda y: Solar.fromYmd(y, 7, 1).getLunar().getJieQiTable()["立春"]
     tu, den = lx(a.nam), lx(a.nam + 1)
     tu = dt.date(tu.getYear(), tu.getMonth(), tu.getDay())
@@ -548,10 +575,13 @@ def in_bang(tu, den, toa, kieu, do="", cb=""):
 
 TEN_KIEU = {"duong": "dương trạch xây mới, động thổ (khai sơn lập hướng)",
             "sua": "sửa nhà đang có (tu sơn: thần sát khai sơn + tu phương; hướng chỉ xét Thái Tuế, Tam sát)",
-            "am": "âm trạch – an táng, xây mộ"}
+            "am": "âm trạch – an táng, xây mộ mới",
+            "phu": "phụ táng – chôn thêm vào mộ cũ, mộ tổ (như an táng nhưng không xét khắc sơn gia và Âm phủ, theo "
+                   "Hiệp Kỷ; sách không bàn hợp táng hay tuổi người đã chôn trước)"}
 GHI_CHU = ("(Ngoài bảng tháng, từng ngày còn xét: chi ngày xung tọa – loại, trừ sơn Thìn Tuất Sửu Mùi chỉ cảnh báo; Âm phủ và "
-           "khắc sơn gia theo ngày – cảnh báo. Chưa tính: phép chế sát bằng tứ trụ, Tam kỳ, Tử bạch, quý nhân lộc mã; "
-           "Bính Đinh hỏa và quan phù phi cung theo tháng; long mạch, bổ long. Cần thầy xem thêm.)")
+           "khắc sơn gia theo ngày – cảnh báo. Đã tính phép chế, hóa khắc sơn gia bằng nạp âm tháng, ngày khi an táng. Chưa tính: chế Tam sát bằng tam hợp cục, "
+           "chế sát bằng Tam kỳ, Tử bạch, quý nhân lộc mã; Bính Đinh hỏa và quan phù phi cung theo tháng; long mạch, "
+           "bổ long. Cần thầy xem thêm.)")
 
 
 # ---------------------------------------------------------------- Tự kiểm tra
@@ -659,4 +689,20 @@ def tu_kiem():
     r = xet(dt.date(2027, 3, 10), 0, "sua")
     if any("Niên khắc" in x for _, x in r["loai"]) or not any("Niên khắc" in x for _, x in r["canh"]):
         loi.append("sửa nhà: niên khắc sơn gia chỉ cảnh báo")
+    # rà soát độc lập 11/2026 (Hiệp Kỷ q.2, q.33, q.34):
+    # - năm Bính Ngọ Mậu Kỷ đô thiên ở Tuất, Hợi: xây mới tọa Thìn hướng Tuất là loại (không có phép chế)
+    if not any("Mậu Kỷ đô thiên" in x and "hướng Tuất" in x for _, x in xet(dt.date(2026, 3, 1), 8, "duong")["loai"]):
+        loi.append("Mậu Kỷ đô thiên ở hướng phải loại")
+    # - tọa Đinh (Hồng Phạm Kim, mộ vận Kỷ Sửu Hỏa) năm Bính Ngọ (Thủy) bị Niên khắc; an táng ngày Nhâm Tý (Mộc):
+    #   Thủy sinh Mộc, Mộc sinh Hỏa – hóa khắc thành sinh, không loại
+    r = xet(dt.date(2026, 4, 8), 13, "am")
+    if any("Niên khắc" in x for c, x in r["loai"]) or not any("hóa khắc thành sinh" in x for c, x in r["canh"] if c == "ngay"):
+        loi.append("Niên khắc: ngày nạp âm hóa khắc thành sinh")
+    # - phụ táng vào mộ cũ không xét khắc sơn gia, Âm phủ; vẫn xét các sát khác
+    ra, rp = xet(dt.date(2026, 3, 1), 13, "am"), xet(dt.date(2026, 3, 1), 13, "phu")
+    txt = lambda r: " ".join(x for _, x in r["loai"] + r["canh"])
+    if "Niên khắc" not in txt(ra) or "Âm phủ" not in txt(ra) or "khắc sơn gia" in txt(rp) or "Âm phủ" in txt(rp):
+        loi.append("phụ táng phải bỏ khắc sơn gia và Âm phủ")
+    if not any("Tuế phá" in x for _, x in xet(dt.date(2026, 3, 1), 0, "phu")["loai"]):
+        loi.append("phụ táng vẫn phải xét Tuế phá")
     return loi

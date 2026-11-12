@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """luunhat.py - Lưu nhật (từng ngày) và lưu thời (từng giờ) cho một lá số.
 - Bát tự: can chi ngày/giờ lưu là thập thần gì, hỷ hay kỵ, quan hệ với 4 chi gốc (xung, hợp, hình, hại, phá).
-- Tử vi (phép Đẩu Quân, cùng mặc định với luan-la-so-chi-tiet): cung tháng Giêng = từ cung Lưu Thái Tuế đếm nghịch
-  đến tháng sinh rồi đếm thuận đến giờ sinh; tháng sau đi thuận; mùng 1 của tháng ở cung tháng, các ngày sau đi thuận;
+- Tử vi: cung tháng Giêng = từ cung tiểu hạn (mặc định, như lưu nguyệt của luan-chi-tiet và Thái Thứ Lang 10.4–10.6;
+  --dau-quan: từ cung Lưu Thái Tuế) đếm nghịch đến tháng sinh rồi đếm thuận đến giờ sinh; tháng sau đi thuận; mùng 1 của tháng ở cung tháng, các ngày sau đi thuận;
   giờ Tý ở cung ngày, các giờ sau đi thuận. Tứ hóa ngày theo can ngày, tứ hóa giờ theo can giờ.
 Lệnh: nc.py luunhat --ngay <ngày sinh> --gio <giờ sinh> --gioi nam --tu 2026-11-01 --den 2026-11-30 [--dung Kim+Thủy --ky Hỏa]
       nc.py luunhat ... --ngay-xem 2026-11-12   (lưu thời 12 giờ của một ngày)
@@ -30,10 +30,16 @@ def quan_he_voi_goc(z, tru3):
     return ds
 
 
-def cung_thang_gieng(ls, nam_am):
-    """Cung tháng Giêng theo phép Đẩu Quân cho năm âm lịch nam_am."""
-    tt_chi = (nam_am - 4) % 12
-    return (tt_chi - (ls["thang"] - 1) + ls["gio"]) % 12
+def cung_tieu_han(ls, nam_am):
+    """Cung tiểu hạn của năm âm lịch nam_am (cùng công thức tuvi_vn.van_han)."""
+    return (ls["tieu_han_goc"] + ls["g"] * (((nam_am - 4) % 12 - ls["chi"]) % 12)) % 12
+
+
+def cung_thang_gieng(ls, nam_am, phep="tieuhan"):
+    """Cung tháng Giêng của năm âm lịch nam_am: từ cung khởi đếm nghịch đến tháng sinh rồi thuận đến giờ sinh.
+    phep="tieuhan" (mặc định, Thái Thứ Lang 10.4, tuvi.vn): khởi từ cung tiểu hạn; "dauquan": khởi từ Lưu Thái Tuế."""
+    goc = (nam_am - 4) % 12 if phep == "dauquan" else cung_tieu_han(ls, nam_am)
+    return (goc - (ls["thang"] - 1) + ls["gio"]) % 12
 
 
 def diem_bt(gz, tru3, dung, ky):
@@ -69,14 +75,14 @@ def diem_tv(ls, cung, can):
     return round(s, 1), ly
 
 
-def in_luu_nhat(tt, tu, den, dung, ky, md):
+def in_luu_nhat(tt, tu, den, dung, ky, md, phep="tieuhan"):
     if (den - tu).days > 61 or den < tu:
         raise SystemExit("LỖI: khoảng ngày tối đa 62 ngày.")
     _, _, tru = B.tu_tru(tt)
     tru3 = [(nh, gz[0], gz[1]) for nh, gz in tru]
     ls = anh.lap_tu_tt(tt) if tt.co_gio else None
     nc = tru3[2][1]
-    print("LƯU NHẬT (từng ngày) – Bát tự%s" % (" + Tử vi (phép Đẩu Quân)" if ls else " (không có giờ sinh: bỏ Tử vi)"))
+    print("LƯU NHẬT (từng ngày) – Bát tự%s" % (" + Tử vi (cung tháng %s)" % ("theo Đẩu Quân" if phep == "dauquan" else "tính từ tiểu hạn") if ls else " (không có giờ sinh: bỏ Tử vi)"))
     print("- Hành hỷ: %s; hành kỵ: %s%s" % (", ".join(V.HANH_VN[h] for h in sorted(dung)),
                                           ", ".join(V.HANH_VN[h] for h in sorted(ky)),
                                           " (! mặc định – nên truyền --dung/--ky đã chọn)" if md else ""))
@@ -92,7 +98,7 @@ def in_luu_nhat(tt, tu, den, dung, ky, md):
         tv, cung_txt, hoa_txt, ly_tv = None, "-", "-", []
         if ls:
             dd, mm, yy, nh = B.duong_sang_am(d, B.mui_lich_am(d, tt.mien_nam))
-            cung = (cung_thang_gieng(ls, yy) + (mm - 1) + (dd - 1)) % 12
+            cung = (cung_thang_gieng(ls, yy, phep) + (mm - 1) + (dd - 1)) % 12
             can = V.GAN.index(gz[0])
             tv, ly_tv = diem_tv(ls, cung, can)
             cung_txt = "%s (%s)" % (T.ten_cung(ls, cung), T.CHI[cung])
@@ -116,7 +122,7 @@ def in_luu_nhat(tt, tu, den, dung, ky, md):
     print()
 
 
-def in_luu_thoi(tt, ngay_xem, dung, ky):
+def in_luu_thoi(tt, ngay_xem, dung, ky, phep="tieuhan"):
     _, _, tru = B.tu_tru(tt)
     tru3 = [(nh, gz[0], gz[1]) for nh, gz in tru]
     ls = anh.lap_tu_tt(tt) if tt.co_gio else None
@@ -125,7 +131,7 @@ def in_luu_thoi(tt, ngay_xem, dung, ky):
     print("LƯU THỜI ngày %s (%d/%d âm)" % (ngay_xem.strftime("%d/%m/%Y"), dd, mm))
     print("| Giờ | Can chi giờ | Thập thần | Bát tự | Căn cứ | Cung giờ (Tử vi) | Tứ hóa giờ | Tử vi | Tổng |")
     print("|---|---|---|---|---|---|---|---|---|")
-    cung_ngay = (cung_thang_gieng(ls, yy) + (mm - 1) + (dd - 1)) % 12 if ls else None
+    cung_ngay = (cung_thang_gieng(ls, yy, phep) + (mm - 1) + (dd - 1)) % 12 if ls else None
     for z in range(12):
         h = (2 * z) % 24
         l = Solar.fromYmdHms(ngay_xem.year, ngay_xem.month, ngay_xem.day, h, 30, 0).getLunar()
@@ -155,6 +161,7 @@ def them_lenh(sub):
     p.add_argument("--ngay-xem", help="xem lưu thời 12 giờ của một ngày YYYY-MM-DD")
     p.add_argument("--dung")
     p.add_argument("--ky")
+    p.add_argument("--dau-quan", action="store_true", help="cung tháng theo phép Đẩu Quân (mặc định: tính từ tiểu hạn)")
     p.set_defaults(_chay=chay)
 
 
@@ -183,9 +190,9 @@ def chay(a):
         if x and f(x) < tt.dong_ho.date():
             print("! Ngày xem trước ngày sinh – bỏ qua những ngày đó khi luận.")
     if a.ngay_xem:
-        in_luu_thoi(tt, f(a.ngay_xem), dung, ky)
+        in_luu_thoi(tt, f(a.ngay_xem), dung, ky, "dauquan" if a.dau_quan else "tieuhan")
     if a.tu and a.den:
-        in_luu_nhat(tt, f(a.tu), f(a.den), dung, ky, md)
+        in_luu_nhat(tt, f(a.tu), f(a.den), dung, ky, md, "dauquan" if a.dau_quan else "tieuhan")
     if not a.ngay_xem and not (a.tu and a.den):
         raise SystemExit("LỖI: cần --tu và --den (lưu nhật) hoặc --ngay-xem (lưu thời).")
 
@@ -198,10 +205,17 @@ def tu_kiem():
     tt = B.doc_dau_vao(ns)
     ls = anh.lap_tu_tt(tt)
     # Đẩu Quân: sinh tháng 11 giờ Tỵ (5); năm Bính Ngọ 2026 (Thái Tuế Ngọ = 6): 6 − 10 + 5 = 1 → Sửu
-    if (ls["thang"], ls["gio"]) != (11, 5) or cung_thang_gieng(ls, 2026) != 1:
-        loi.append("Đẩu Quân năm 2026: %s" % cung_thang_gieng(ls, 2026))
+    if (ls["thang"], ls["gio"]) != (11, 5) or cung_thang_gieng(ls, 2026, "dauquan") != 1:
+        loi.append("Đẩu Quân năm 2026: %s" % cung_thang_gieng(ls, 2026, "dauquan"))
+    # Tính từ tiểu hạn: tuổi Mão (nhóm Hợi Mão Mùi) tiểu hạn khởi Sửu, nam đi thuận; năm Ngọ: Sửu + 3 = Thìn;
+    # tháng Giêng: 4 − 10 + 5 = −1 → Hợi
+    if cung_tieu_han(ls, 2026) != 4 or cung_thang_gieng(ls, 2026) != 11:
+        loi.append("tháng Giêng tính từ tiểu hạn năm 2026: %s %s" % (cung_tieu_han(ls, 2026), cung_thang_gieng(ls, 2026)))
+    import tuvi_vn as T_
+    if cung_tieu_han(ls, 2026) != T_.van_han(ls, 2, 6, 28)["tieu_han"]:
+        loi.append("cung tiểu hạn khác tuvi_vn.van_han")
     # lưu nhật đi thuận: mùng 1 tháng Giêng ở Sửu, mùng 3 ở Mão
-    if (cung_thang_gieng(ls, 2026) + 2) % 12 != 3:
+    if (cung_thang_gieng(ls, 2026, "dauquan") + 2) % 12 != 3:
         loi.append("lưu nhật đi thuận")
     # can chi ngày lấy đúng: 2026-11-09 là Đinh Hợi (khớp chonngay v2)
     gz = Solar.fromYmd(2026, 11, 9).getLunar().getDayInGanZhi()

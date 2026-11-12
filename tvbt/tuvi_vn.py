@@ -36,7 +36,11 @@ KHOI_VIET = {0: (1, 7), 4: (1, 7), 1: (0, 8), 5: (0, 8), 6: (6, 2), 7: (6, 2),
 THIEN_QUAN = [7, 4, 5, 2, 3, 9, 11, 9, 10, 6]
 THIEN_PHUC = [9, 8, 0, 11, 3, 2, 6, 5, 6, 5]
 THIEN_TRU = [5, 6, 0, 5, 6, 8, 2, 6, 9, 10]
-LUU_HA = [9, 10, 7, 8, 5, 6, 4, 3, 11, 2]
+# Lưu Hà theo can năm – bảng Tử Vi Đẩu Số Tân Biên (Thái Thứ Lang, §8.31 tr. 16, ví dụ "sinh năm Đinh Tý an Lưu Hà
+# ở cung Thìn"); lasotuvi cũng vậy. Bài thơ "Giáp kê Ất khuyển… Đinh hầu… Canh Thìn" (và thần sát 流霞 của Bát tự)
+# đảo Đinh/Canh: Đinh ở Thân, Canh ở Thìn – in thêm khi khác (LUU_HA_THO).
+LUU_HA = [9, 10, 7, 4, 5, 6, 8, 3, 11, 2]
+LUU_HA_THO = [9, 10, 7, 8, 5, 6, 4, 3, 11, 2]
 # Lưu Văn Xương / Văn Khúc theo can năm xem
 LUU_XUONG = [5, 6, 8, 9, 8, 9, 11, 0, 2, 3]
 LUU_KHUC = [9, 8, 6, 5, 6, 5, 3, 2, 0, 11]
@@ -45,6 +49,13 @@ _CL_NAM_TU_CANH_TY = [7, 7, 9, 12, 8, 7, 13, 5, 14, 5, 9, 17, 5, 7, 12, 8, 8, 6,
                       5, 9, 8, 7, 8, 15, 9, 16, 8, 8, 19, 12, 6, 8, 7, 5, 15, 6, 16, 15, 7, 9, 12, 10, 7, 15, 6, 5, 14,
                       14, 9]
 CL_NAM = [_CL_NAM_TU_CANH_TY[(i - 36) % 60] for i in range(60)]
+# Rà soát 11/2026 (9 nhóm nguồn độc lập): các bảng chỉ khác nhau ở Kỷ Sửu và Quý Hợi.
+#   Quý Hợi: 7 chỉ (6 nhóm: báo, 農民曆 Đài Loan, sách Peter Shen 1998, eva.vn, 163.com, mã VB 2007...) – 6 chỉ (3 nhóm:
+#   k366/buyiju, yourchineseastrology, npm). Kỷ Sửu: 7 chỉ (5 nhóm) – 8 chỉ (4 nhóm: Đài Loan, sách Shen, eva.vn...).
+#   Script lấy số đa số ở từng năm (Kỷ Sửu 7, Quý Hợi 7 – trùng bảng 163.com / zhouyi.cc) và in thêm số của bảng kia.
+CL_NAM[59] = 7
+CL_NAM_KHAC = {25: (8, "bảng Đài Loan (農民曆), sách Peter Shen, eva.vn ghi 8 chỉ"),
+               59: (6, "bảng k366, buyiju, yourchineseastrology ghi 6 chỉ")}
 CL_THANG = [6, 7, 18, 9, 5, 16, 9, 15, 18, 8, 9, 5]
 CL_NGAY = [5, 10, 8, 15, 16, 15, 8, 16, 8, 16, 9, 17, 8, 17, 10, 8, 9, 18, 5, 15, 10, 9, 8, 9, 15, 18, 7, 8, 16, 6]
 CL_GIO = [16, 6, 7, 10, 9, 16, 10, 8, 8, 9, 6, 6]
@@ -84,13 +95,37 @@ DO_SANG = {
 # như cũ để không đổi kết quả đã kiểm. "-" = sao không bao giờ đóng ở cung đó hoặc sách không ghi.
 DO_SANG_PHU = {
     "Thiên Phủ": "M B M B V Đ M Đ M B V Đ",      # miếu Dần Thân Tý Ngọ; vượng Thìn Tuất; đắc Tỵ Hợi Mùi; bình Mão Dậu Sửu
-    "Văn Xương": "H Đ H B Đ Đ H Đ H B Đ Đ",      # đắc Tứ mộ + Tỵ Hợi (Thái Thứ Lang); hãm Tý Dần Ngọ Thân
-    "Văn Khúc": "H Đ H B Đ Đ H Đ H B Đ Đ",
+    "Văn Xương": "H Đ H Đ Đ Đ H Đ H Đ Đ Đ",      # đắc Tứ mộ + Tỵ Hợi (Thái Thứ Lang); Mão Dậu: TTL không xếp, đa số
+    "Văn Khúc": "H Đ H Đ Đ Đ H Đ H Đ Đ Đ",       # sách khác xếp đắc/vượng/miếu (rà soát 11/2026) nên để Đ
     "Thiên Mã": "- - V - - V - - Đ - - H",        # Dần Tỵ tốt nhất, Thân đắc, Hợi hãm (bài sao Thiên Mã, tuvi.vn)
     "Thiên Hình": "H H Đ Đ H H H H Đ Đ H H",      # đắc Dần Thân Mão Dậu
     "Thiên Diêu": "H H Đ Đ H H H H H Đ Đ H",      # đắc Dần Mão Dậu Tuất
     "Thiên Khốc": "Đ Đ H Đ H H Đ Đ H Đ H H",      # đắc Tý Ngọ Mão Dậu Sửu Mùi
     "Thiên Hư": "Đ Đ H Đ H H Đ Đ H Đ H H",
+}
+# Những ô độ sáng các nguồn nói khác nhau (rà soát độc lập 11/2026, xem docs/co-ban.md). Khi sao đóng ở ô này,
+# lá số in thêm một dòng ghi chú. Khóa: (sao, cung).
+DO_SANG_TRANH = {
+    ("Thiên Mã", 8): "Thiên Mã ở Thân: Thái Thứ Lang chỉ ghi đắc ở Dần, Tỵ (Thân không xếp); từ điển Thao Thao và vài "
+                     "trang Việt ghi đắc; ảnh lá số tuvi.vn ghi hãm; không sách nào ghi hãm",
+    ("Thiên Khốc", 8): "Thiên Khốc ở Thân: sách Việt (Thái Thứ Lang) không xếp đắc, các trang chép lại ghi hãm; sách "
+                       "Trung Quốc ghi miếu (丑卯申入庙)",
+    ("Thiên Hư", 8): "Thiên Hư ở Thân: sách Việt không xếp đắc, các trang chép lại ghi hãm; sách Trung Quốc ghi miếu; ảnh "
+                     "lá số tuvi.vn ghi đắc",
+    ("Thiên Khốc", 0): "Khốc Hư ở Tý, Ngọ: sách Việt xếp đắc (có sách ghi miếu); một bảng Trung Quốc ghi hãm",
+    ("Thiên Khốc", 6): "Khốc Hư ở Tý, Ngọ: sách Việt xếp đắc (có sách ghi miếu); một bảng Trung Quốc ghi hãm",
+    ("Thiên Hư", 0): "Khốc Hư ở Tý, Ngọ: sách Việt xếp đắc (có sách ghi miếu); một bảng Trung Quốc ghi hãm",
+    ("Thiên Hư", 6): "Khốc Hư ở Tý, Ngọ: sách Việt xếp đắc (có sách ghi miếu); một bảng Trung Quốc ghi hãm",
+    ("Thiên Phủ", 1): "Thiên Phủ ở Sửu: Thái Thứ Lang xếp bình; Dịch Lý Huyền Cơ và sách Trung Quốc (全书, iztro) xếp miếu",
+    ("Thiên Phủ", 7): "Thiên Phủ ở Mùi: Thái Thứ Lang xếp đắc; Dịch Lý Huyền Cơ và sách Trung Quốc xếp miếu",
+    ("Văn Xương", 10): "Xương Khúc ở Tuất: Thái Thứ Lang (và lá số tuvi.vn) xếp đắc; đa số sách khác (Dịch Lý Huyền Cơ, "
+                       "全书 '陷寅午戌', iztro) xếp hãm",
+    ("Văn Khúc", 10): "Xương Khúc ở Tuất: Thái Thứ Lang (và lá số tuvi.vn) xếp đắc; đa số sách khác (Dịch Lý Huyền Cơ, "
+                      "全书 '陷寅午戌', iztro) xếp hãm",
+    ("Văn Xương", 9): "Xương Khúc ở Dậu: Thái Thứ Lang không xếp; Dịch Lý Huyền Cơ, 全书 xếp miếu – script để đắc",
+    ("Văn Khúc", 9): "Xương Khúc ở Dậu: Thái Thứ Lang không xếp; Dịch Lý Huyền Cơ, 全书 xếp miếu – script để đắc",
+    ("Văn Xương", 3): "Văn Xương ở Mão: Thái Thứ Lang không xếp; các sách khác xếp đắc hoặc bình – script để đắc",
+    ("Văn Khúc", 3): "Văn Khúc ở Mão: Thái Thứ Lang không xếp; Dịch Lý Huyền Cơ, Việt Viêm Tử, iztro xếp vượng – script để đắc",
 }
 CHINH_TINH = ["Tử Vi", "Thiên Cơ", "Thái Dương", "Vũ Khúc", "Thiên Đồng", "Liêm Trinh",
               "Thiên Phủ", "Thái Âm", "Tham Lang", "Cự Môn", "Thiên Tướng", "Thiên Lương",
@@ -241,6 +276,21 @@ def can_luong(can, chi, thang, ngay, gio):
     i = [k for k in range(60) if k % 10 == can and k % 12 == chi][0]
     ct = (CL_NAM[i], CL_THANG[thang - 1], CL_NGAY[ngay - 1], CL_GIO[gio])
     return sum(ct), ct
+
+
+def can_luong_khac(can, chi):
+    """Số chỉ của năm theo bảng dị bản (Kỷ Sửu, Quý Hợi) -> (chỉ, ghi chú) hoặc None."""
+    i = [k for k in range(60) if k % 10 == can and k % 12 == chi][0]
+    return CL_NAM_KHAC.get(i)
+
+
+def ghi_chu_do_sang(ls):
+    """Các dòng ghi chú cho những ô độ sáng còn tranh cãi có mặt trên lá số."""
+    ds = []
+    for (ten, p), txt in DO_SANG_TRANH.items():
+        if ls["vt"].get(ten) == p and txt not in ds:
+            ds.append(txt)
+    return ds
 
 
 def cung_luu(goc):

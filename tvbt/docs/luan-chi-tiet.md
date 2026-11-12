@@ -230,8 +230,9 @@ Văn phong:
 - **Nguyệt hạn Tử vi – hai phép, script in cả hai cột.**
   - **Đẩu Quân** (lưu nguyệt Thái Tuế): từ cung Lưu Thái Tuế đếm nghịch đến tháng sinh, rồi đếm thuận đến giờ sinh, được cung tháng Giêng. Sách cổ coi đây là phần "ngoại" – việc từ bên ngoài đến.
   - **Tính từ tiểu hạn** (lưu nguyệt tiểu hạn): đếm như trên nhưng khởi từ cung tiểu hạn. Đây là phép tuvi.vn và nhiều sách Việt Nam dùng (nhãn "Th.1 … Th.12" trên lá số tuvi.vn); sách cổ coi là phần "nội" – vận của bản thân.
+  - Nguồn (rà soát độc lập 11/2026): phía tiểu hạn có Thái Thứ Lang *Tân Biên* mục 10.4 (cả ba cách ông nêu đều khởi từ tiểu hạn; cách "nghịch tháng, thuận giờ" là cách hay dùng), lichngaytot/tuvisonkhiem, tracuutuvi. Phía Đẩu Quân có 全书 卷二 ("于流年太岁宫起正月"), iztro, các trang Đài Loan, và *Tử Vi Chính Biện* (sách này gọi năm xem là "năm tiểu hạn", dễ đọc nhầm). Ở Việt Nam, "Đẩu Quân" trên lá số thường an theo năm sinh; muốn dùng cho năm xem phải dời theo năm.
   - Tứ hóa tháng (theo can tháng) giống nhau ở hai phép; chỉ cung tháng khác.
-  - Khi luận tháng: người dùng đối chiếu với tuvi.vn hoặc sách Việt Nam thì lấy cột tiểu hạn làm chính; không nói gì thì luận theo cột tiểu hạn và nhắc một dòng rằng phép Đẩu Quân cho cung khác. Lưu nhật/lưu thời (`nc.py luunhat`) vẫn theo Đẩu Quân.
+  - Khi luận tháng: người dùng đối chiếu với tuvi.vn hoặc sách Việt Nam thì lấy cột tiểu hạn làm chính; không nói gì thì luận theo cột tiểu hạn và nhắc một dòng rằng phép Đẩu Quân cho cung khác. Lưu nhật/lưu thời (`nc.py luunhat`) cũng mặc định tính từ tiểu hạn (thêm `--dau-quan` cho phép Đẩu Quân).
 - **Cung đại vận, cung lưu niên** (nhãn "ĐV." và "LN." trên lá số tuvi.vn): lấy cung đại hạn (hoặc tiểu hạn) làm Mệnh rồi đặt 12 tên cung đi thuận. Script in đủ 12 cung trong phần VẬN HẠN.
 - **Sao lưu thêm** (từ 11/2026): Lưu Khôi, Lưu Việt (theo can năm xem, cùng bảng Khôi Việt), Lưu Văn Xương, Lưu Văn Khúc (theo can năm xem), Lưu Đào Hoa, Lưu Hồng Loan, Lưu Thiên Hỷ, Lưu Kiếp Sát (theo chi năm xem). Đã khớp với các sao "L." trên lá số tuvi.vn năm Quý Mão.
 - **Tháng nhuận** dùng cùng can chi, cùng cung với tháng chính. Có phái chia đôi tháng nhuận.

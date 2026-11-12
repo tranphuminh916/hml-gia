@@ -651,8 +651,14 @@ def tu_vi(tt, nam_xem, phi=False, so_nam=1, luu_nguyet=False):
         d, m, " NHUẬN" if nhuan else "", T.CAN[can], T.CHI[chi], y, T.CHI[gio],
         " (sinh 23h-24h: tính giờ Tý của ngày hôm sau)" if ty_muon else ""))
     if nhuan:
-        print("  Tháng nhuận: ngày 1-15 an như tháng %d, từ ngày 16 an như tháng %d (cách phổ biến). "
+        print("  Tháng nhuận: ngày 1-15 an như tháng %d, từ ngày 16 an như tháng %d (cách chia đôi). "
               "Lá số này an theo tháng %d." % (m, m % 12 + 1, ls["thang"]))
+        th2 = m if ls["thang"] != m else m % 12 + 1
+        l2 = T.lap_la_so(th2, d, gio, can, chi, tt.gioi, so_ngay, False)
+        nguon2 = ("lichngaytot, lasotuvi coi cả tháng nhuận như tháng %d" % m if th2 == m else
+                  "một số sách Trung Quốc an cả tháng nhuận như tháng sau")
+        print("  Phái khác (%s): Mệnh ở %s, Thân ở %s, %s. Nên hỏi lại người xem đã quen lá số theo cách nào." % (
+            nguon2, T.CHI[l2["menh"]], T.CHI[l2["than"]], T.TEN_CUC[l2["cuc"]]))
     thuan_ly = (can % 2 == 0) == (ls["menh"] % 2 == 0)
     print("- %s %s, Mệnh ở cung %s → âm dương %s; đại hạn đi %s" % (
         ad, "Nam" if tt.gioi == "nam" else "Nữ", "dương" if ls["menh"] % 2 == 0 else "âm",
@@ -668,6 +674,14 @@ def tu_vi(tt, nam_xem, phi=False, so_nam=1, luu_nguyet=False):
     print("- Cân lượng (xương cốt, Viên Thiên Cương): năm %s %s %s + tháng %d %s + ngày %d %s + giờ %s %s = %d lượng %d chỉ%s"
           % (T.CAN[can], T.CHI[chi], _chi(ct[0]), ls["thang"], _chi(ct[1]), d, _chi(ct[2]), T.CHI[gio], _chi(ct[3]),
              cl // 10, cl % 10, " (tháng nhuận: tính như tháng %d)" % ls["thang"] if nhuan else ""))
+    kh = T.can_luong_khac(can, chi)
+    if kh:
+        cl2 = cl - ct[0] + kh[0]
+        print("  Năm %s %s các bảng ghi khác nhau: script dùng %s (đa số nguồn); %s → tổng %d lượng %d chỉ."
+              % (T.CAN[can], T.CHI[chi], _chi(ct[0]), kh[1], cl2 // 10, cl2 % 10))
+    if T.LUU_HA[can] != T.LUU_HA_THO[can]:
+        print("- Lưu Hà: ở %s theo bảng Thái Thứ Lang; bài thơ \"Giáp kê Ất khuyển…\" (và thần sát Lưu Hà của Bát tự) "
+              "đặt ở %s." % (T.CHI[T.LUU_HA[can]], T.CHI[T.LUU_HA_THO[can]]))
     print("- Tuần tại %s–%s; Triệt tại %s–%s" % tuple(T.CHI[i] for i in ls["tuan"] + ls["triet"]))
     print("- Tứ hóa năm sinh %s: %s" % (T.CAN[can], ", ".join(
         "%s %s (cung %s)" % (ten, hoa, T.ten_cung(ls, ls["vt"][ten])) for ten, hoa in ls["hoa"].items())))
@@ -695,7 +709,13 @@ def tu_vi(tt, nam_xem, phi=False, so_nam=1, luu_nguyet=False):
             ", ".join(chinh) or "Vô chính diệu", ", ".join(phu), ", ".join(nho),
             ls["trang_sinh"][p], ls["bac_si"][p], ls["thai_tue"][p], a, b))
     print("(Độ sáng: M miếu, V vượng, Đ đắc, B bình, H hãm. Chính tinh chính chiếu từ cung đối diện khi Vô chính diệu. "
-          "Độ sáng Thiên Phủ và phụ tinh (Xương, Khúc, Mã, Hình, Diêu, Khốc, Hư) theo bảng Việt Nam, chỉ để hiển thị.)")
+          "Độ sáng Thiên Phủ và phụ tinh (Xương, Khúc, Mã, Hình, Diêu, Khốc, Hư) theo bảng Việt Nam, chỉ để hiển thị; "
+          "với phụ tinh, sách chỉ ghi cung đắc, các cung còn lại ghi H như lá số tuvi.vn.)")
+    gc = T.ghi_chu_do_sang(ls)
+    if gc:
+        print("Ô độ sáng các sách nói khác nhau (nói rõ khi luận):")
+        for x in gc:
+            print("- " + x)
     print()
     if phi:
         pf, lai = T.phi_hoa(ls)
@@ -772,10 +792,10 @@ def tu_vi(tt, nam_xem, phi=False, so_nam=1, luu_nguyet=False):
         can1 = ((nc % 5) * 2 + 2) % 10
         ebk_, eloc_, _ = tu_tru(tt)
         nchu = eloc_.getDayGan()
-        print("LƯU NGUYỆT TỬ VI NĂM %s %s %d (tháng âm lịch; cung tháng theo phép Đẩu Quân: từ cung Lưu Thái Tuế đếm "
-              "nghịch đến tháng sinh, rồi thuận đến giờ sinh là tháng Giêng – tháng Giêng tại %s; phép tính từ cung "
-              "tiểu hạn thì tháng Giêng tại %s)" % (T.CAN[nc], T.CHI[nz], nam_xem, T.ten_cung(ls, dq),
-                                                     T.ten_cung(ls, dq_vn)))
+        print("LƯU NGUYỆT TỬ VI NĂM %s %s %d (tháng âm lịch; hai phép khởi tháng Giêng: từ cung khởi đếm nghịch đến "
+              "tháng sinh, rồi thuận đến giờ sinh. Mặc định luận theo phép tính từ cung tiểu hạn (Thái Thứ Lang 10.4, "
+              "tuvi.vn) – tháng Giêng tại %s, cột cuối; phép Đẩu Quân (từ Lưu Thái Tuế, sách Trung Quốc) – tháng Giêng "
+              "tại %s)" % (T.CAN[nc], T.CHI[nz], nam_xem, T.ten_cung(ls, dq_vn), T.ten_cung(ls, dq)))
         print("| Tháng âm | Dương lịch | Can chi tháng | Cung tháng (Đẩu Quân) | Hóa Lộc | Hóa Quyền | Hóa Khoa | Hóa Kỵ | "
               "Bát tự giữa tháng | Cung tháng (tính từ tiểu hạn, như tuvi.vn) |")
         print("|---|---|---|---|---|---|---|---|---|---|")
