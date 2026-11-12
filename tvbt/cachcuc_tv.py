@@ -383,13 +383,18 @@ def _c_tu_tham(B, p):
     giam = B.tim(B.tp(p), ("Tả Phù", "Hữu Bật"))
     giam += [x for x in B.tim_hoa(B.tp(p), "Hóa Khoa") if x not in giam]
     kq = []
-    if dao:
-        y = list(yeu)
-        if not sat:
-            y.append("chưa có sát tinh đi kèm đào hoa")
-        if giam:
-            y.append("có %s chế bớt" % B.fl(giam))
-        kq += _r(cs + ["sao đào hoa: " + B.fl(dao)] + (["sát tinh: " + B.fl(sat)] if sat else []), y)
+    # rà soát 11/2026: cách thành chỉ bằng vị trí (Toàn thư q.2, Tân Biên tr. 56); sao đào hoa, Xương Khúc làm nặng
+    # thêm, phụ tá chế bớt. Trước đây đòi phải có sao đào hoa nên bỏ sót nhiều lá số.
+    y = list(yeu)
+    xk = B.tim([p, (p + 6) % 12], ("Văn Xương", "Văn Khúc"))
+    if not dao and not xk:
+        y.append("không có sao đào hoa, Xương Khúc đi kèm – nhẹ hơn")
+    elif not sat:
+        y.append("chưa có sát tinh đi kèm đào hoa")
+    if giam:
+        y.append("có %s chế bớt" % B.fl(giam))
+    kq += _r(cs + (["sao đào hoa: " + B.fl(dao)] if dao else []) + (["Xương Khúc: " + B.fl(xk)] if xk else [])
+             + (["sát tinh: " + B.fl(sat)] if sat else []), y)
     if kk or (len([x for x in sat if x[0] in TU_SAT]) >= 2):
         kq += _r(cs + ["gặp " + B.fl(kk or sat)], yeu,
                  ghi=["xu hướng xa danh lợi, thiên về đời sống tinh thần"], ten="Cực cư Mão Dậu", nhom="trung")
@@ -449,9 +454,11 @@ def _c_quan_than(B, p):
         return None
     tp = B.tp(p)
     vung = tp + B.giap(p)
-    g1 = B.tim(tp, ("Tả Phù", "Hữu Bật"))
-    g2 = B.tim(tp, ("Văn Xương", "Văn Khúc"))
-    g3 = B.tim(tp, ("Thiên Khôi", "Thiên Việt"))
+    # rà soát 11/2026: Vương Đình Chi tính cả đồng cung, xung, hội, giáp; chỉ xét tam phương thì cách gần như không
+    # thể có ở 6 can năm (do vị trí an sao) – nay xét cả hai cung giáp
+    g1 = B.tim(vung, ("Tả Phù", "Hữu Bật"))
+    g2 = B.tim(vung, ("Văn Xương", "Văn Khúc"))
+    g3 = B.tim(vung, ("Thiên Khôi", "Thiên Việt"))
     th = B.tim(vung, ("Tả Phù", "Hữu Bật"))
     yeu, pha = [], []
     if g1 and g2 and g3:
@@ -471,9 +478,7 @@ def _c_quan_than(B, p):
         yeu.append("sát tinh hội: " + B.fl(s))
     if B.tim(tp, ("Thiên Hình",)) and B.tim_hoa(tp, "Hóa Kỵ"):
         yeu.append("Thiên Hình và Hóa Kỵ cùng hội")
-    kv = B.kv(p)
-    if kv:
-        pha.append("%s tại Mệnh%s" % ("/".join(kv), " (%s)" % TRIET_HET if "Triệt" in kv else ""))
+    _tt_menh(B, p, yeu)
     return _r(cs, yeu, pha, ten=ten)
 
 
@@ -549,8 +554,14 @@ def _c_phu_tuong(B, p):
         yeu.append("Thiên Tướng hãm")
     for t, q in (("Thiên Phủ", q_phu), ("Thiên Tướng", q_tuong)):
         kv = B.kv(q)
-        if kv:
-            pha.append("%s gặp %s" % (t, "/".join(kv)))
+        if kv:              # rà soát 11/2026: không nguồn nào coi là phá – để yếu
+            yeu.append("%s gặp %s" % (t, "/".join(kv)))
+    s4 = _sat_s(B, B.tp(p), TU_SAT)
+    if len(s4) >= 2:
+        yeu.append("tứ sát hội: " + B.fl(s4))
+    ky = B.tim_hoa(B.tp(p), "Hóa Kỵ")
+    if ky:
+        yeu.append("Hóa Kỵ ở tam phương: " + ", ".join("%s ở %s" % (t, CHI[q]) for t, q in ky))
     kk = B.tim([p, q_phu, q_tuong], KHONG_KIEP)
     if kk:
         pha.append("gặp Không Kiếp (%s) – 'Phủ Tướng thì đừng gặp Không Kiếp'" % B.fl(kk))
@@ -603,6 +614,9 @@ def _c_cndl(B, p):
     kk = B.tim(tp, KHONG_KIEP)
     if kk:
         yeu.append("Không Kiếp hội: " + B.fl(kk))
+    kd = B.tim(tp, ("Kình Dương", "Đà La"))
+    if kd:
+        yeu.append("Kình/Đà hội: " + B.fl(kd))
     _tt_menh(B, p, yeu)
     return _r(cs, yeu, pha, ghi=["hợp việc giấy tờ, hành chính, mưu tính ('tác lại nhân')"])
 
@@ -653,7 +667,7 @@ def _c_cu_nhat(B, p):
     k = B.hoa_o(goc, "Hóa Kỵ")
     if k:
         pha.append("Hóa Kỵ (%s)" % ", ".join(k))
-    s = _sat_s(B, [p, goc])
+    s = _sat_s(B, sorted({p, goc}))
     if len(s) >= 2:
         yeu.append("sát tinh: " + B.fl(s))
     _tt_menh(B, p, yeu)
@@ -703,8 +717,12 @@ def _c_phan_boi(B, p):
     if kv:
         yeu.append("%s tại Mệnh – sao hãm gặp Tuần Triệt trở nên sáng hơn" % "/".join(kv))
     cat = [x for h in CAT_HOA for x in B.tim_hoa([THIN, TUAT], h) if x[0] in ("Thái Dương", "Thái Âm")]
-    if cat:
-        yeu.append("Nhật/Nguyệt được cát hóa: " + ", ".join(t for t, _ in cat))
+    if cat:     # rà soát 11/2026: Toàn thư q.2 không coi cát hóa trên chính Nhật Nguyệt là cứu – chỉ ghi chú
+        ghi.append("Nhật/Nguyệt được cát hóa (%s) – có sách cho là đỡ, Toàn thư không tính là cứu"
+                   % ", ".join(t for t, _ in cat))
+    tp = B.tp(p)
+    if B.cat_ds(tp) and not _sat_s(B, tp):
+        yeu.append("tam phương có cát tinh, không sát tinh")
     if [t for t in ("Thái Dương", "Thái Âm") if B.hoa.get(t) == "Hóa Kỵ"]:
         ghi.append("có Hóa Kỵ ở Nhật/Nguyệt: dễ hao tán")
     return _r(cs, yeu, ghi=ghi)
@@ -785,6 +803,8 @@ def _c_thuong_hai(B, p):
     yeu, pha, ghi = [], [], []
     if B.co(p, "Thiên Diêu"):
         pha.append("Thiên Diêu đồng cung (sách cảnh báo thành 'dâm cách')")
+    if B.hoa_o(p, "Hóa Kỵ"):
+        pha.append("Hóa Kỵ tại Mệnh: " + ", ".join(B.hoa_o(p, "Hóa Kỵ")))
     s = _sat_s(B, [p])
     if s:
         yeu.append("sát tinh tại Mệnh: " + B.fl(s))
@@ -806,9 +826,9 @@ def _c_minh_chau(B, p):
         cs.append("cát tinh: " + ", ".join(cat))
     else:
         yeu.append("không có cát tinh hội")
-    kk = B.tim([p], KHONG_KIEP)
+    kk = B.tim([p], KHONG_KIEP + ("Kình Dương", "Đà La"))
     if kk:
-        pha.append("Không Kiếp tại Mệnh: " + B.fl(kk))
+        pha.append("sát tinh tại Mệnh: " + B.fl(kk))
     ky = [t for t in ("Thái Dương", "Thái Âm") if B.hoa.get(t) == "Hóa Kỵ"]
     if ky:
         yeu.append("%s Hóa Kỵ (tuổi Ất sách vẫn xếp thượng cách)" % ", ".join(ky))
@@ -862,7 +882,7 @@ def _c_dong_lam(B, p):
         cs = ["Mệnh %s vô chính diệu, Thái Dương + Thái Âm đồng cung ở %s chiếu sang" % (CHI[p], CHI[q])]
         kv = B.kv(q)
         if kv:
-            yeu.append("%s ở cung Nhật Nguyệt" % "/".join(kv))
+            cs.append("%s ở cung Nhật Nguyệt – sách Việt cho là tốt ('tối cần Kỵ, Không')" % "/".join(kv))
     else:
         return None
     if not B.cat_ds(B.tp(p)):
@@ -888,6 +908,9 @@ def _c_dlxl(B, p):
     ky = [t for t in ("Thái Dương", "Thiên Lương", "Văn Xương") if B.hoa.get(t) == "Hóa Kỵ"]
     if ky:
         yeu.append("Hóa Kỵ ở " + ", ".join(ky))
+    s = _sat_s(B, tp)
+    if len(s) >= 2:
+        yeu.append("sát tinh hội: " + B.fl(s))
     _tt_menh(B, p, yeu)
     return _r(cs, yeu, ghi=["lợi thi cử, học vị, danh tiếng"])
 
@@ -901,8 +924,14 @@ def _c_thach_trung(B, p):
     h = B.hoa.get("Cự Môn")
     cs = ["Mệnh %s có %s" % (CHI[p], B.f("Cự Môn").rsplit(" ở", 1)[0])]
     yeu, pha = [], []
+    # rà soát 11/2026: Tân Biên tr. 37 và sách Việt coi Tuần/Triệt (hoặc Đại, Tiểu Hao) tại Mệnh là điều kiện làm
+    # "ngọc lộ ra" – thay được Cự hóa Lộc, Quyền; không còn tính là yếu
+    kv = B.kv(p)
+    hao = B.tim([p], ("Đại Hao", "Tiểu Hao"))
     if h in ("Hóa Lộc", "Hóa Quyền"):
         cs.append("Cự Môn %s (tuổi %s)" % (h, CAN[B.can]))
+    elif kv or hao:
+        cs.append("Mệnh gặp %s (sách Việt: điều kiện thành cách)" % ", ".join(kv + [x for x, _ in hao]))
     else:
         cat = [x for k in CAT_HOA for x in B.tim_hoa(tp, k)]
         yeu.append("Cự Môn không hóa Lộc/Quyền%s" % (
@@ -913,7 +942,8 @@ def _c_thach_trung(B, p):
         pha.append("Lộc Tồn đồng cung – 'gặp Lộc Tồn thì vô vị'")
     if B.tim(tp, ("Kình Dương", "Đà La")) and B.tim(tp, ("Hỏa Tinh", "Linh Tinh")) and B.tim(tp, KHONG_KIEP):
         pha.append("Cự phùng tứ sát: " + B.fl(_sat_s(B, tp)))
-    _tt_menh(B, p, yeu)
+    elif B.co(p, "Kình Dương"):
+        yeu.append("Kình Dương tại Mệnh")
     return _r(cs, yeu, pha)
 
 
@@ -938,6 +968,9 @@ def _c_that_sat(B, p):
     kk = B.tim([p, q], KHONG_KIEP)
     if kk:
         yeu.append("Không Kiếp cùng trục (%s) – liều lĩnh, rủi ro" % B.fl(kk))
+    kl = B.tim(tp, ("Kình Dương", "Linh Tinh"))
+    if kl:
+        yeu.append("Kình/Linh hội (%s)" % B.fl(kl))
     if p in (TY, NGO):
         ghi.append("Tý Ngọ (đối Vũ Phủ): Toàn thư, Ảo bí nhận; Tinh điển chỉ nhận Dần Thân")
     return _r(cs, yeu, ghi=ghi)
@@ -1066,8 +1099,13 @@ def _c_hoa_tham(B, p):
             xau = B.tim(tp, ("Kình Dương",)) + B.tim([p], ("Đào Hoa",))
             if B.tim_hoa(tp, "Hóa Kỵ") and B.tim(tp, KHONG_KIEP):
                 xau += B.tim(tp, KHONG_KIEP)
-        if xau:
-            pha.append("gặp " + ", ".join("%s ở %s" % (x, CHI[q2]) for x, q2 in xau))
+        # sách không nói rõ vị trí: ở Mệnh hoặc cùng cung Hỏa/Linh thì phá, ở cung khác của tam phương thì yếu
+        xp = [(x, q2) for x, q2 in xau if q2 in (p, q)]
+        xy = [(x, q2) for x, q2 in xau if q2 not in (p, q)]
+        if xp:
+            pha.append("gặp " + ", ".join("%s ở %s" % (x, CHI[q2]) for x, q2 in xp))
+        if xy:
+            yeu.append("tam phương có " + ", ".join("%s ở %s" % (x, CHI[q2]) for x, q2 in xy))
         o = [x for x in _sat_s(B, [p], ("Đà La", "Địa Không", "Địa Kiếp")) if x not in xau]
         if o:
             yeu.append("tại Mệnh có " + B.fl(o))
