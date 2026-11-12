@@ -20,6 +20,12 @@ Khi đã điền cấu hình Firebase (biến `FIREBASE_CFG` trong `Code.gs`, ho
 - Cần gói Blaze của Firebase. Bật đăng nhập bằng số điện thoại, chỉ cho phép gửi tin tới Việt Nam (SMS region policy) và thêm tên miền của trang Apps Script (dạng `n-…-script.googleusercontent.com`) vào Authorized domains.
 - Không điền cấu hình thì trang chạy như cũ: chủ gửi mã.
 
+## Sửa thông tin sinh và xem lại
+
+- Khi giờ, ngày, nơi sinh hay giới tính của một người vừa đổi (sửa tay hoặc "Ghi giờ" từ Tìm giờ sinh), kết quả đang hiện ở tab Lá số được đánh dấu "tính theo thông tin cũ" kèm nút xem lại.
+- Ghi giờ từ Tìm giờ sinh xong, trang hiện ngay nút "Xem lại … với giờ mới".
+- Xem lại không tính lượt: trong 24 giờ sau một lượt của cùng người, cùng mục, nếu thông tin sinh đã sửa; mỗi lượt cũ được 1 lần. Máy chủ kiểm lại (`xemLaiHopLe_`), dòng trong "Lượt xem" ghi "(xem lại sau khi sửa thông tin sinh, không tính lượt)". Giới hạn số lần luận mỗi ngày vẫn áp dụng.
+
 ## Xem chỉ tay
 
 Tab "Chỉ tay" ở thanh dưới cùng. Khách chọn người cần xem, tay thuận, rồi chọn ảnh lòng bàn tay trái, tay phải và (không bắt buộc) cạnh bàn tay phía ngón út.

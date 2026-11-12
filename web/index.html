@@ -562,8 +562,10 @@ async function initStore() {
 async function savePerson(p) {
   const id = p.id || (slug(p.ten) + "-" + (p.ngay || "").slice(0, 4) + "-" + uid().slice(-4));
   const body = { ...p }; delete body.id; body.capNhat = new Date().toISOString();
-  const i = PEOPLE.findIndex(x => x.id === id); if (i >= 0) PEOPLE[i] = { id, ...body }; else PEOPLE.push({ id, ...body });
+  const i = PEOPLE.findIndex(x => x.id === id), doiSinh = i >= 0 && sigOf(PEOPLE[i]) !== sigOf(body);
+  if (i >= 0) PEOPLE[i] = { id, ...body }; else PEOPLE.push({ id, ...body });
   PEOPLE.sort(byRank); localSave(); renderPeople(); fillPeopleSelects(); applyXung();
+  if (doiSinh) danhDauKetQuaCu(id);
   if (body.quanHe === "Bản thân") queue("khach", { khach: { ...personPublic({ id, ...body }), lienHe: body.lienHe || "" } });
   return id;
 }
@@ -899,10 +901,11 @@ async function dungLuot(ctx) {
   const me = self_();
   let j = null;
   try {
-    j = await callServer({ action: "dungluot", luotId: ctx.luotId, khach: me ? { ...personPublic(me), lienHe: me.lienHe || "" } : {},
+    j = await callServer({ action: "dungluot", luotId: ctx.luotId, xemLai: ctx.xemLai || "", khach: me ? { ...personPublic(me), lienHe: me.lienHe || "" } : {},
       luot: { khach: me ? me.ten : "", xemCho: personPublic(personById(ctx.pid)), muc: ctx.mon, chiTiet: ctx.hoi || ctx.title || "", nguoiThuHai: personPublic(ctx.pid2 ? personById(ctx.pid2) : null) } }, 30000);
   } catch (e) { j = null; }
   if (j && j.luot) { KHACH.luot = j.luot; localSave(); renderLuot(); }
+  if (j && j.ok && j.mienPhi) { ctx.mienPhi = true; ctx.daTinhLuot = false; if (ctx.xemLai) updateLog(ctx.xemLai, { daXemLai: true }); return true; }
   if (j && j.ok) { ctx.daTinhLuot = true; return true; }
   if (j && j.ma_loi === "het_luot_xem") return false;
   if (j && j.ma_loi === "sai_ma") { openCodeSheet(); return { loi: "Cần mã truy cập mới." }; }
@@ -1002,7 +1005,8 @@ function showError(box, text) { box.innerHTML = `<div class="notice err">${esc(t
 async function renderResult(box, ctx) {
   const duoc = await dungLuot(ctx);
   if (duoc !== true) { if (duoc && duoc.loi) showError(box, duoc.loi); else box.innerHTML = hetLuotHtml(false); return false; }
-  const l = KHACH.luot, ghiLuot = ctx.daTinhLuot && l ? `<div class="small-note">Lần xem này tính 1 lượt · ${xg()} còn ${Math.max(0, l.duoc - l.da)}/${l.duoc} lượt.</div>` : "";
+  const l = KHACH.luot, ghiLuot = ctx.mienPhi && l ? `<div class="small-note">Lần xem lại sau khi sửa thông tin sinh, không tính lượt · ${xg()} còn ${Math.max(0, l.duoc - l.da)}/${l.duoc} lượt.</div>`
+    : ctx.daTinhLuot && l ? `<div class="small-note">Lần xem này tính 1 lượt · ${xg()} còn ${Math.max(0, l.duoc - l.da)}/${l.duoc} lượt.</div>` : "";
   const parts = ctx.parts.map((pt, k) => `<details class="sec"${k === 0 && !ctx.charts.length ? " open" : ""}><summary>${esc(pt.label)}</summary><div class="body">${renderOutput(pt.text)}</div></details>`).join("");
   box.innerHTML = `<div class="card">
     <h3>${esc(ctx.title)}</h3>${ctx.sub ? `<div class="kv">${esc(ctx.sub)}</div>` : ""}${ghiLuot}
@@ -1045,11 +1049,40 @@ function mountChart(container, html, label) {
 }
 function soLieuOf(ctx) { return ctx.parts.map(p => p.label.toUpperCase() + "\n" + p.text).join("\n\n"); }
 // Mỗi lần xem: lưu trên máy khách và gửi về máy chủ (chủ trang xem trong Google Sheet).
+// Dấu của thông tin sinh: đổi ngày, giờ, nơi sinh hay giới tính thì kết quả đã tính trước đó không còn đúng.
+const sigOf = p => p ? [p.ngay || "", p.am ? 1 : 0, p.nhuan ? 1 : 0, p.gio || "", p.noi || "", p.gioi || ""].join("|") : "";
+const MODE_MON = { full: /^Lá số Bát tự/, trondoi: /^Luận chi tiết trọn đời$/, thang: /^Vận hạn từng tháng$/, tuan: /^Vận 7 ngày tới$/, vanthe: /^Biểu đồ vận thế$/ };
+const modeOfMon = mon => Object.keys(MODE_MON).find(k => MODE_MON[k].test(mon || "")) || "";
+let LS_LAST = null;   // kết quả đang hiện ở tab Lá số: { pid, mode, sig }
+// Xem lại không tính lượt: trong 24 giờ sau một lượt của cùng người, cùng mục, nếu thông tin sinh đã sửa (máy chủ kiểm lại). Mỗi lượt cũ 1 lần.
+function timXemLai(p, mode) {
+  if (!p || !mode || mode === "hop") return null;
+  const now = Date.now(), sig = sigOf(p);
+  return LOGS.find(l => l.pid === p.id && l.loai !== "giosinh" && !l.daXemLai && !l.laXemLai
+    && (l.mode || modeOfMon(l.mon)) === mode && now - Date.parse(l.ts || 0) < 24 * 3600 * 1000
+    && (l.sig ? l.sig !== sig : (!!p.gio && /KHÔNG CÓ GIỜ SINH|giờ không rõ/.test(l.ketqua || "")))) || null;
+}
+function xemLaiMoi(pid, mode) {
+  goTab("laso"); $("#lsPerson").value = pid; $("#lsMode").value = mode || "full"; onLsMode(); refreshPersonInfo(); if (RUN) runLaso();
+}
+// Thông tin sinh vừa đổi: kết quả đang hiện ở tab Lá số (tính theo thông tin cũ) được đánh dấu, kèm nút xem lại.
+function danhDauKetQuaCu(pid) {
+  const box = $("#resLaso"), p = personById(pid);
+  if (!box || !p || !LS_LAST || LS_LAST.pid !== pid || !box.firstElementChild || $("#lsCu", box)) return;
+  const free = !!timXemLai(p, LS_LAST.mode), mode = LS_LAST.mode;
+  const div = document.createElement("div");
+  div.className = "notice"; div.id = "lsCu"; div.style.marginBottom = "10px";
+  div.innerHTML = `Thông tin sinh của <b>${esc(p.ten)}</b> vừa đổi${p.gio ? ` (giờ sinh ${esc(p.gio)})` : ""}. Kết quả bên dưới tính theo thông tin cũ.
+    <div class="btns"><button class="primary full" id="lsCuBtn">Xem lại với thông tin mới${free ? " (không tính lượt)" : ""}</button></div>`;
+  box.prepend(div);
+  $("#lsCuBtn", div).onclick = () => xemLaiMoi(pid, mode);
+}
 async function persistCtx(ctx, extra = {}) {
   if (ctx.logId) { await updateLog(ctx.logId, extra); return ctx.logId; }
   ctx.logId = ctx.luotId || ("l" + uid() + uid());
   const soLieu = soLieuOf(ctx);
-  await saveLog({ id: ctx.logId, ts: ctx.ts || new Date().toISOString(), mon: ctx.mon, loai: ctx.loai || "luan", pid: ctx.pid || "", hoi: ctx.hoi || "", ketqua: soLieu, ban: BAN_SCRIPT, ...extra });
+  await saveLog({ id: ctx.logId, ts: ctx.ts || new Date().toISOString(), mon: ctx.mon, loai: ctx.loai || "luan", pid: ctx.pid || "", hoi: ctx.hoi || "", ketqua: soLieu, ban: BAN_SCRIPT,
+    sig: ctx.sig || "", mode: ctx.mode || "", laXemLai: !!ctx.mienPhi, ...extra });
   const me = self_();
   queue("luot", { luotId: ctx.logId, luot: { thoiGian: fmtTs(ctx.ts || new Date().toISOString()), khach: me ? me.ten : "", xemCho: personPublic(personById(ctx.pid)),
     muc: ctx.mon, chiTiet: ctx.hoi || ctx.title || "", nguoiThuHai: personPublic(ctx.pid2 ? personById(ctx.pid2) : null), soLieu, loai: ctx.loai || "" } });
@@ -1149,10 +1182,12 @@ async function runLaso() {
   const box = $("#resLaso"), p = personById($("#lsPerson").value);
   if (!p) return showError(box, "Mời " + xg() + " nhập thông tin ở tab Sổ trước.");
   if ($("#lsMode").value === "hop" && (!personById($("#lsPerson2").value) || $("#lsPerson2").value === p.id)) return showError(box, "Chọn người thứ hai khác người thứ nhất.");
-  if (!(await conLuot(box))) return;
   const mode = $("#lsMode").value, Y = +$("#lsYear").value || vnNow().getUTCFullYear();
+  const xemLai = timXemLai(p, mode);
+  if (!xemLai && !(await conLuot(box))) return;
   const A = personArgs(p), coGio = !!p.gio, parts = [], charts = [], cmds = [];
-  const ctx = { mon: "", kind: mode === "full" ? "laso" : mode, pid: p.id, nguoi: `${p.ten} – ${personLine(p).replace(/<[^>]+>/g, "")}`, parts, charts, cmds, ts: new Date().toISOString() };
+  const ctx = { mon: "", kind: mode === "full" ? "laso" : mode, pid: p.id, nguoi: `${p.ten} – ${personLine(p).replace(/<[^>]+>/g, "")}`, parts, charts, cmds, ts: new Date().toISOString(),
+    sig: sigOf(p), mode, xemLai: xemLai ? xemLai.id : "" };
   const run = async (label, prog, args, opt = {}) => { cmds.push([prog, args]); const r = await py(prog, args); if (r.code && !opt.soft) throw new Error(r.text || "lỗi bộ tính"); if (r.text) parts.push({ label, text: r.text }); return r; };
   busy(box, "Đang tính…");
   try {
@@ -1212,7 +1247,7 @@ async function runLaso() {
       const q2 = `${ctxq(q.ten)}:${q.ngay}${q.gio ? " " + q.gio : ""}${q.am ? " am" : ""}`;
       await run("So tuổi (can chi, ngũ hành, cung phi)", "tvbt", ["hoptuoi", ...A, "--nguoi", q2]);
     }
-    await renderResult(box, ctx);
+    if (await renderResult(box, ctx)) LS_LAST = { pid: p.id, mode, sig: ctx.sig };
   } catch (e) { showError(box, "Bộ tính báo lỗi: " + e.message); }
 }
 
@@ -1568,7 +1603,16 @@ function gsResult() {
     const ghi = `Giờ sinh dò qua câu hỏi: ${top.ten} (${top.dong_ho[0]}–${top.dong_ho[1]}), ${Math.round(k.pt)}%`;
     const ghiChu = [String(cu.ghiChu || "").replace(GS_GHI, "").trim(), ghi].filter(Boolean).join(" · ");
     await savePerson({ ...cu, gio: top.gio_dai_dien, ghiChu });
-    closeSheet(); toast(`Đã ghi giờ ${top.gio_dai_dien} cho ${cu.ten}`);
+    const moi = personById(cu.id) || { ...cu, gio: top.gio_dai_dien };
+    const truoc = LOGS.find(l => l.pid === moi.id && l.loai !== "giosinh" && (l.mode || modeOfMon(l.mon)));
+    const md = truoc ? (truoc.mode || modeOfMon(truoc.mon)) : "full", free = !!timXemLai(moi, md);
+    openSheet(`<h3>Đã ghi giờ sinh</h3>
+      <p class="hint" style="margin-top:0">Đã ghi giờ <b>${esc(top.gio_dai_dien)}</b> vào sổ của ${esc(moi.ten)}.${truoc ? ` Các kết quả xem trước đây vẫn tính theo thông tin cũ.` : ""}
+      Bấm nút dưới để xem với giờ mới${free ? " (lần xem lại này không tính lượt)" : ""}.</p>
+      <div class="btns"><button class="primary full" id="gsXem">${truoc ? "Xem lại " + esc(String(truoc.mon).replace(/ và Tử vi$/, "").toLowerCase()) : "Xem lá số"} với giờ mới</button>
+        <button class="ghost full" id="gsDe">Để sau</button></div>`);
+    $("#gsDe").onclick = closeSheet;
+    $("#gsXem").onclick = () => { closeSheet(); xemLaiMoi(moi.id, md); };
   };
   if (daTraLoi) {
     const tt = gsTomTat();

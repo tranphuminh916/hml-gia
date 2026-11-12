@@ -514,18 +514,44 @@ function dungLuot_(req, P) {
     if (String(r[COT_DUOC_XEM - 1] == null ? '' : r[COT_DUOC_XEM - 1]).trim() === '') sk.getRange(dong, COT_DUOC_XEM).setValue(duoc);
     var sl = tab_(TAB_LUOT, COT_LUOT);
     if (timDong_(sl, 2, luotId)) return { da: da, duoc: duoc };       // gửi lại lần 2: không trừ thêm
-    if (da >= duoc) return { ma_loi: 'het_luot_xem', da: da, duoc: duoc };
-    sl.appendRow([bayGio_(), luotId, id, sach_(l.khach, 120), sach_(moTaNguoi_(l.xemCho), 300), sach_(l.muc, 120), sach_(l.chiTiet, 1000),
+    var xl = xemLaiHopLe_(sl, req.xemLai, id, l);                      // xem lại sau khi sửa thông tin sinh: không tính lượt
+    if (!xl && da >= duoc) return { ma_loi: 'het_luot_xem', da: da, duoc: duoc };
+    sl.appendRow([bayGio_(), luotId, id, sach_(l.khach, 120), sach_(moTaNguoi_(l.xemCho), 300),
+      xl ? sach_(String(l.muc || '') + ' (xem lại sau khi sửa thông tin sinh, không tính lượt)', 200) : sach_(l.muc, 120),
+      xl ? sach_('[xemlai:' + xl + '] ' + String(l.chiTiet || ''), 1000) : sach_(l.chiTiet, 1000),
       sach_(moTaNguoi_(l.nguoiThuHai), 300), '', '', '', '']);
-    sk.getRange(dong, COT_DA_XEM).setValue(da + 1);
+    if (!xl) sk.getRange(dong, COT_DA_XEM).setValue(da + 1);
     sk.getRange(dong, 3).setValue(bayGio_());
-    return { da: da + 1, duoc: duoc };
+    return { da: xl ? da : da + 1, duoc: duoc, mienPhi: !!xl };
   });
   if (kq.ma_loi === 'chua_dang_ky') return { ok: false, ma_loi: 'chua_kich_hoat', loi: 'Tài khoản chưa được kích hoạt.' };
   if (kq.ma_loi === 'khoa') return { ok: false, ma_loi: 'khoa', loi: 'Tài khoản đang tạm khóa. Mời liên hệ chủ trang.' };
   var luot = { da: kq.da, duoc: kq.duoc, choCap: CacheService.getScriptCache().get('xl_' + id) === String(kq.duoc) };
   if (kq.ma_loi) return { ok: false, ma_loi: kq.ma_loi, loi: 'Đã dùng hết ' + kq.duoc + ' lượt xem.', luot: luot };
-  return { ok: true, luot: luot };
+  return { ok: true, luot: luot, mienPhi: !!kq.mienPhi };
+}
+// Xem lại không tính lượt: lượt cũ của cùng khách, cùng mục, cùng người được xem (cùng tên) nhưng thông tin sinh đã sửa,
+// trong vòng 24 giờ; mỗi lượt cũ chỉ được xem lại miễn phí 1 lần. Trả mã lượt cũ nếu hợp lệ, không thì ''.
+function xemLaiHopLe_(sl, cuId, khachId, l) {
+  cuId = idHopLe_(cuId);
+  if (!cuId || sl.getLastRow() < 2) return '';
+  var dong = timDong_(sl, 2, cuId);
+  if (!dong) return '';
+  var r = sl.getRange(dong, 1, 1, 7).getValues()[0];
+  var mucCu = String(r[5] || ''), boTuVi = function (m) { return String(m || '').replace(/ và Tử vi$/, ''); };
+  if (String(r[2]) !== khachId || mucCu === MUC_GIO_SINH || mucCu.indexOf('(xem lại') >= 0 || boTuVi(mucCu) !== boTuVi(l.muc)) return '';
+  var moi = moTaNguoi_(l.xemCho), cu = String(r[4] || '');
+  var ten = function (s) { return String(s).split(' · ')[0].trim(); };
+  if (!moi || moi === cu || ten(moi) !== ten(cu)) return '';
+  var ms = r[0] instanceof Date ? r[0].getTime() : thoiGianMs_(String(r[0]));
+  if (!ms || Date.now() - ms > 24 * 3600 * 1000) return '';
+  if (sl.getRange(2, 7, sl.getLastRow() - 1, 1).createTextFinder('[xemlai:' + cuId + ']').findNext()) return '';
+  return cuId;
+}
+// "dd/MM/yyyy HH:mm:ss" giờ Việt Nam -> mili giây
+function thoiGianMs_(s) {
+  var m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})\s+(\d{1,2}):(\d{2})(?::(\d{2}))?/);
+  return m ? Date.UTC(+m[3], +m[2] - 1, +m[1], +m[4] - 7, +m[5], +(m[6] || 0)) : 0;
 }
 // Khách hết lượt bấm "Xin thêm lượt": ghi vào Sheet và email cho chủ (mỗi khách tối đa 1 email trong 6 giờ, trừ khi chủ đã cấp thêm).
 function xinLuot_(req, P) {
