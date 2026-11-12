@@ -178,7 +178,7 @@ nav.tabbar button{white-space:nowrap;font-size:11px;letter-spacing:-.1px}
   <details class="sec">
     <summary>Về trang này</summary>
     <div class="body hint">
-      <p>Mọi con số (can chi, sao, cục, quẻ, ngày tốt) do bộ tính đã kiểm chứng tính ngay trên máy của <span class="xg">Thí Chủ</span> (bản <b id="verLbl">5043136</b>). <span id="aiNote" hidden>Phần luận do Claude (trí tuệ nhân tạo) viết dựa trên số liệu đó.</span></p>
+      <p>Mọi con số (can chi, sao, cục, quẻ, ngày tốt) do bộ tính đã kiểm chứng tính ngay trên máy của <span class="xg">Thí Chủ</span> (bản <b id="verLbl">4abce1a</b>). <span id="aiNote" hidden>Phần luận do Claude (trí tuệ nhân tạo) viết dựa trên số liệu đó.</span></p>
       <p>Đây là tri thức văn hóa truyền thống để tham khảo, không phải dự báo khoa học.</p>
       <button class="ghost small" id="btnSelfTest" disabled>Chạy tự kiểm bộ tính (khoảng 30–60 giây)</button>
       <div id="selfTestOut" class="out" style="margin-top:8px"></div>
@@ -236,6 +236,7 @@ nav.tabbar button{white-space:nowrap;font-size:11px;letter-spacing:-.1px}
       <label for="ngHuong">Hướng nhà / mộ <span class="hint">(độ la bàn đo ở giữa nhà nhìn ra cửa chính, vd 182; hoặc tên sơn như Ngọ, Bính; bỏ trống = không xét)</span></label>
       <input type="text" id="ngHuong" placeholder="vd 182 hoặc Ngọ" autocomplete="off">
       <label class="check" id="ngSuaWrap"><input type="checkbox" id="ngSua"> Chỉ sửa nhà đang ở (không xây mới)</label>
+      <label class="check" id="ngPhuWrap"><input type="checkbox" id="ngPhu"> Chôn thêm vào mộ cũ, mộ tổ (không phải mộ mới)</label>
     </div>
     <label class="check"><input type="checkbox" id="ngChiTiet"> Hiện bảng chấm từng ngày (dài)</label>
     <div class="btns"><button class="primary full" id="btnNgay" disabled>Tìm ngày tốt</button></div>
@@ -349,7 +350,7 @@ nav.tabbar button{white-space:nowrap;font-size:11px;letter-spacing:-.1px}
 <script>
 "use strict";
 /* ============================================================ hằng số */
-const BAN_SCRIPT = "5043136";
+const BAN_SCRIPT = "4abce1a";
 const PYO_BASES = ["https://cdn.jsdelivr.net/pyodide/v0.27.7/full/", "https://cdn.jsdelivr.net/npm/pyodide@0.27.7/"];
 const TINH = ["Hà Nội","TP Hồ Chí Minh","Hải Phòng","Đà Nẵng","Cần Thơ","An Giang","Bà Rịa - Vũng Tàu","Bắc Giang","Bắc Kạn","Bạc Liêu","Bắc Ninh","Bến Tre","Bình Định","Bình Dương","Bình Phước","Bình Thuận","Cà Mau","Cao Bằng","Đắk Lắk","Đắk Nông","Điện Biên","Đồng Nai","Đồng Tháp","Gia Lai","Hà Giang","Hà Nam","Hà Tĩnh","Hải Dương","Hậu Giang","Hòa Bình","Hưng Yên","Khánh Hòa","Kiên Giang","Kon Tum","Lai Châu","Lâm Đồng","Lạng Sơn","Lào Cai","Long An","Nam Định","Nghệ An","Ninh Bình","Ninh Thuận","Phú Thọ","Phú Yên","Quảng Bình","Quảng Nam","Quảng Ngãi","Quảng Ninh","Quảng Trị","Sóc Trăng","Sơn La","Tây Ninh","Thái Bình","Thái Nguyên","Thanh Hóa","Thừa Thiên Huế","Tiền Giang","Trà Vinh","Tuyên Quang","Vĩnh Long","Vĩnh Phúc","Yên Bái"];
 const QUAN_HE = ["Bản thân","Vợ","Chồng","Con","Bố","Mẹ","Anh chị em","Cộng sự","Bạn bè","Khách hàng","Khác"];
@@ -1253,7 +1254,7 @@ async function runLaso() {
 
 /* ============================================================ CHỌN NGÀY */
 $("#ngViec").innerHTML = VIEC_NGAY.map(([v, t]) => `<option value="${v}">${t}</option>`).join("");
-const ngToa = () => { const v = $("#ngViec").value; $("#ngToaBox").style.display = (v === "dongtho" || v === "antang") ? "" : "none"; $("#ngSuaWrap").style.display = v === "dongtho" ? "" : "none"; };
+const ngToa = () => { const v = $("#ngViec").value; $("#ngToaBox").style.display = (v === "dongtho" || v === "antang") ? "" : "none"; $("#ngSuaWrap").style.display = v === "dongtho" ? "" : "none"; $("#ngPhuWrap").style.display = v === "antang" ? "" : "none"; };
 $("#ngViec").addEventListener("change", ngToa); ngToa();
 $("#ngThu").innerHTML = THU.map(([v, t]) => `<button class="chip" data-v="${v}">${t}</button>`).join("");
 $("#ngThu").addEventListener("click", e => { const c = e.target.closest(".chip"); if (c) c.classList.toggle("on"); });
@@ -1273,7 +1274,7 @@ $("#btnNgay").onclick = async () => {
   if (thu.length) args.push("--thu", thu.join(","));
   if (!$("#ngChiTiet").checked) args.push("--gon");
   const huong = (viec === "dongtho" || viec === "antang") ? $("#ngHuong").value.trim() : "";
-  if (huong) { args.push("--huong", huong); if (viec === "dongtho" && $("#ngSua").checked) args.push("--sua-nha"); }
+  if (huong) { args.push("--huong", huong); if (viec === "dongtho" && $("#ngSua").checked) args.push("--sua-nha"); if (viec === "antang" && $("#ngPhu").checked) args.push("--phu-tang"); }
   const label = VIEC_NGAY.find(v => v[0] === viec)[1];
   if (!(await conLuot(box))) return;
   busy(box, "Đang chấm từng ngày…");
@@ -1281,7 +1282,7 @@ $("#btnNgay").onclick = async () => {
     const r = await py("nc", args);
     if (r.code) throw new Error(r.text);
     const ctx = { kind: "ngay", mon: "Chọn ngày: " + label, title: `${label}: ${fmtDate(tu)} – ${fmtDate(den)}`, sub: sel.length ? "Người chủ sự: " + sel.map(p => p.ten).join(", ") : "Chưa chọn người chủ sự (chỉ xét ngày chung)",
-      hoi: `${label} trong khoảng ${fmtDate(tu)} – ${fmtDate(den)}${huong ? ", hướng " + huong + (args.includes("--sua-nha") ? " (sửa nhà)" : "") : ""}`, pid: sel[0] ? sel[0].id : "", pid2: sel[1] ? sel[1].id : "", nguoi: sel.map(p => `${p.ten} (sinh năm âm lịch ${infoOf(p).nam_am})`).join("; "),
+      hoi: `${label} trong khoảng ${fmtDate(tu)} – ${fmtDate(den)}${huong ? ", hướng " + huong + (args.includes("--sua-nha") ? " (sửa nhà)" : "") + (args.includes("--phu-tang") ? " (chôn thêm vào mộ cũ)" : "") : ""}`, pid: sel[0] ? sel[0].id : "", pid2: sel[1] ? sel[1].id : "", nguoi: sel.map(p => `${p.ten} (sinh năm âm lịch ${infoOf(p).nam_am})`).join("; "),
       parts: [{ label: "Kết quả chọn ngày", text: r.text }], charts: [], cmds: [["nc", args]], ts: new Date().toISOString() };
     if (await renderResult(box, ctx)) $("details.sec", box).open = true;
   } catch (e) { showError(box, "Bộ tính báo lỗi: " + e.message); }
