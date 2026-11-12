@@ -211,6 +211,7 @@ nav.tabbar button{white-space:nowrap;font-size:11px;letter-spacing:-.1px}
       <select id="lsPerson2"></select>
       <label for="lsHopLoai">Xem về</label>
       <select id="lsHopLoai"><option value="hoptac">Hợp tác, làm ăn</option><option value="honnhan">Hôn nhân, vợ chồng</option></select>
+      <p class="kv" style="margin-top:6px">Có kèm vận của cả hai người trong năm ở ô "Năm xem" và năm sau đó. Muốn hỏi năm khác thì đổi ô "Năm xem".</p>
     </div>
     <div class="btns"><button class="primary full" id="btnLaso" disabled>Lập</button></div>
   </div>
@@ -1247,6 +1248,13 @@ async function runLaso() {
       await run("Chấm điểm hợp tác / hôn nhân", "nc", ["hoptac", "--nguoi", nArg(p), nArg(q), "--loai", loai]);
       const q2 = `${ctxq(q.ten)}:${q.ngay}${q.gio ? " " + q.gio : ""}${q.am ? " am" : ""}`;
       await run("So tuổi (can chi, ngũ hành, cung phi)", "tvbt", ["hoptuoi", ...A, "--nguoi", q2]);
+      // Vận của từng người trong năm xem và năm sau – để luận được "năm đó làm chung có thuận không"
+      for (const nam of [Y, Y + 1]) for (const x of [p, q]) {
+        const args = ["battu", ...(x.gio ? ["tuvi"] : []), ...personArgs(x), "--nam-xem", nam, "--luu-nien", 1];
+        cmds.push(["tvbt", args]); const r = await py("tvbt", args);
+        if (!r.code && r.text) { const t = trichMuc(r.text, ["LƯU NIÊN", "VẬN HẠN NĂM"]); if (t) parts.push({ label: `Vận năm ${nam} – ${x.ten}`, text: t }); }
+      }
+      ctx.sub = `${ctx.mon} · có vận năm ${Y} và ${Y + 1}`;
     }
     if (await renderResult(box, ctx)) LS_LAST = { pid: p.id, mode, sig: ctx.sig };
   } catch (e) { showError(box, "Bộ tính báo lỗi: " + e.message); }
