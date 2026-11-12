@@ -169,16 +169,16 @@ nav.tabbar button{white-space:nowrap;font-size:11px;letter-spacing:-.1px}
   <div id="pendingNote"></div>
   <div id="luotNote"></div>
   <h2>Thông tin đã nhập</h2>
-  <div class="hint" style="margin:-4px 2px 10px">Người đầu tiên là <span class="xg">anh/chị</span>. <span class="Xg">Anh/Chị</span> có thể thêm người thân để xem giúp.</div>
+  <div class="hint" style="margin:-4px 2px 10px">Người đầu tiên là <span class="xg">Thí Chủ</span>. <span class="Xg">Thí Chủ</span> có thể thêm người thân để xem giúp.</div>
   <div id="peopleList"><div class="empty">Đang tải…</div></div>
   <button class="gold" style="width:100%" id="btnAddPerson">＋ Thêm người (vợ, chồng, con, bố mẹ…)</button>
-  <h2 style="margin-top:22px">Các lần <span class="xg">anh/chị</span> đã xem</h2>
-  <div class="hint" style="margin:-4px 2px 10px">Lưu trên máy này để <span class="xg">anh/chị</span> xem lại.</div>
+  <h2 style="margin-top:22px">Các lần <span class="xg">Thí Chủ</span> đã xem</h2>
+  <div class="hint" style="margin:-4px 2px 10px">Lưu trên máy này để <span class="xg">Thí Chủ</span> xem lại.</div>
   <div class="card" id="logList"><div class="empty">Chưa có mục nào.</div></div>
   <details class="sec">
     <summary>Về trang này</summary>
     <div class="body hint">
-      <p>Mọi con số (can chi, sao, cục, quẻ, ngày tốt) do bộ tính đã kiểm chứng tính ngay trên máy của <span class="xg">anh/chị</span> (bản <b id="verLbl">5043136</b>). <span id="aiNote" hidden>Phần luận do Claude (trí tuệ nhân tạo) viết dựa trên số liệu đó.</span></p>
+      <p>Mọi con số (can chi, sao, cục, quẻ, ngày tốt) do bộ tính đã kiểm chứng tính ngay trên máy của <span class="xg">Thí Chủ</span> (bản <b id="verLbl">5043136</b>). <span id="aiNote" hidden>Phần luận do Claude (trí tuệ nhân tạo) viết dựa trên số liệu đó.</span></p>
       <p>Đây là tri thức văn hóa truyền thống để tham khảo, không phải dự báo khoa học.</p>
       <button class="ghost small" id="btnSelfTest" disabled>Chạy tự kiểm bộ tính (khoảng 30–60 giây)</button>
       <div id="selfTestOut" class="out" style="margin-top:8px"></div>
@@ -248,7 +248,7 @@ nav.tabbar button{white-space:nowrap;font-size:11px;letter-spacing:-.1px}
   <h2>Xem một việc</h2>
   <div class="hint" style="margin:-4px 2px 10px">Hỏi một việc bất kỳ. Mặc định xem bằng đủ các cách rồi đối chiếu xem chỗ nào các cách cùng nói.</div>
   <div class="card">
-    <label for="qHoi"><span class="Xg">Anh/Chị</span> muốn hỏi việc gì? <span class="hint">(một câu cụ thể)</span></label>
+    <label for="qHoi"><span class="Xg">Thí Chủ</span> muốn hỏi việc gì? <span class="hint">(một câu cụ thể)</span></label>
     <textarea id="qHoi" placeholder="Ví dụ: Tháng này ký hợp đồng vận chuyển với khách mới có thuận không?"></textarea>
     <label>Cách xem</label>
     <div class="seg" id="qMon"></div>
@@ -516,8 +516,8 @@ function localSave() {
 }
 const self_ = () => PEOPLE.find(p => p.quanHe === "Bản thân");
 const coLuan = () => !!(SRV.url && SRV.info && SRV.info.co_luan);
-// Trang xưng "tôi", gọi khách là anh hoặc chị theo giới tính khách đã nhập.
-function xg() { const me = self_(); return me ? (me.gioi === "nu" ? "chị" : "anh") : "anh/chị"; }
+// Trang xưng "Tại Hạ", gọi khách là "Thí Chủ" (chủ trang chọn, 11/2026).
+function xg() { return "Thí Chủ"; }
 function Xg() { const v = xg(); return v.charAt(0).toUpperCase() + v.slice(1); }
 function applyXung() { $$(".xg").forEach(e => e.textContent = xg()); $$(".Xg").forEach(e => e.textContent = Xg()); }
 function personPublic(p) { return p ? { ten: p.ten, quanHe: p.quanHe, gioi: p.gioi, ngay: p.ngay, am: !!p.am, nhuan: !!p.nhuan, gio: p.gio || "", noi: p.noi || "" } : null; }
@@ -660,7 +660,7 @@ function openPersonSheet(p, opt = {}) {
   const canMa = !!(SRV.info && SRV.info.can_ma);
   const dangKy = welcome && canKichHoat();
   openSheet(`${welcome ? `<h3>Xin chào</h3>
-      <p class="hint" style="margin-top:0">Trang xem Tử vi, Bát tự, chọn ngày tốt, gieo quẻ và phong thủy nhà.${dangKy ? " Lần đầu dùng, mời anh/chị đăng ký bằng số điện thoại. Tôi sẽ gửi mã kích hoạt để mở trang." : ""}</p>
+      <p class="hint" style="margin-top:0">Trang xem Tử vi, Bát tự, chọn ngày tốt, gieo quẻ và phong thủy nhà.${dangKy ? " Lần đầu dùng, mời Thí Chủ đăng ký bằng số điện thoại để nhận mã kích hoạt mở trang." : ""}</p>
       ${canMa ? `<label for="fMa">Mã truy cập <span class="hint">(chủ trang gửi cho ${xg()})</span></label><input type="text" id="fMa" value="${esc(KHACH.ma || "")}" autocomplete="off" autocapitalize="off">` : ""}`
     : `<h3>${p ? "Sửa thông tin" : "Thêm người"}</h3>`}
     <label for="fTen">Họ tên</label><input type="text" id="fTen" value="${esc(e.ten || "")}" autocomplete="off">
@@ -711,7 +711,7 @@ function openPersonSheet(p, opt = {}) {
         if (j.trangThai !== "da") return openKichHoatSheet();
       }
       if (sau) return sau({ ...np, id });
-      closeSheet(); toast(welcome ? `Chào ${np.gioi === "nu" ? "chị" : "anh"} ${ten.trim().split(/\s+/).pop()}! Mời ${np.gioi === "nu" ? "chị" : "anh"} bắt đầu xem.` : p ? "Đã cập nhật" : `Đã thêm ${ten}`);
+      closeSheet(); toast(welcome ? `Chào Thí Chủ ${ten.trim().split(/\s+/).pop()}! Mời Thí Chủ bắt đầu xem.` : p ? "Đã cập nhật" : `Đã thêm ${ten}`);
     }
     catch (er) { chk.textContent = "Chưa lưu được: " + (er.code || er.message); $("#fSave").disabled = false; $("#fGs").disabled = false; }
   };
@@ -737,7 +737,7 @@ function openKichHoatSheet(loi, chuGui) {
   }
   if (!chuGui && SRV.info && SRV.info.sms && me && sdtHopLe(me.lienHe)) return openSmsSheet(loi);
   openSheet(`<h3>Chờ kích hoạt</h3>
-    <p class="hint" style="margin-top:0">Tôi đã nhận đăng ký của ${goi}${me && me.lienHe ? ` (số ${esc(me.lienHe)})` : ""}. Tôi sẽ gửi <b>mã kích hoạt 6 số</b> cho ${goi} qua Zalo hoặc tin nhắn. ${Xg()} nhập mã vào đây là dùng được.</p>
+    <p class="hint" style="margin-top:0">Tại Hạ đã nhận đăng ký của ${goi}${me && me.lienHe ? ` (số ${esc(me.lienHe)})` : ""}. Tại Hạ sẽ gửi <b>mã kích hoạt 6 số</b> cho ${goi} qua Zalo hoặc tin nhắn. ${Xg()} nhập mã vào đây là dùng được.</p>
     <label for="kMa">Mã kích hoạt</label>
     <input type="text" id="kMa" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="6 số">
     <div class="small-note" id="kChk" style="color:#8e2323">${esc(loi || "")}</div>
@@ -794,7 +794,7 @@ function loiSms(e) {
 function openSmsSheet(loi) {
   const me = self_(), goi = xg(), so = me ? me.lienHe : "";
   openSheet(`<h3>Kích hoạt</h3>
-    <p class="hint" style="margin-top:0">Tôi đã nhận đăng ký của ${goi}. Bấm nút dưới đây, Google sẽ nhắn <b>mã 6 số</b> về số <b>${esc(so)}</b>. ${Xg()} nhập mã đó là dùng được ngay.</p>
+    <p class="hint" style="margin-top:0">Tại Hạ đã nhận đăng ký của ${goi}. Bấm nút dưới đây, Google sẽ nhắn <b>mã 6 số</b> về số <b>${esc(so)}</b>. ${Xg()} nhập mã đó là dùng được ngay.</p>
     <div class="btns"><button class="primary full" id="sGui">Gửi mã về số ${esc(so)}</button></div>
     <div id="sNhap" hidden>
       <label for="sMa">Mã trong tin nhắn</label>
@@ -867,7 +867,7 @@ function renderLuot() {
   const con = Math.max(0, l.duoc - l.da);
   box.innerHTML = con > 0
     ? `<div class="notice info">${Xg()} còn <b>${con}/${l.duoc}</b> lượt xem. Mỗi lần xem kết quả tính 1 lượt; luận giải cho lần xem đó không tính thêm. Dò giờ sinh không tính lượt.</div>`
-    : `<div class="notice">${Xg()} đã dùng hết ${l.duoc} lượt xem.${l.choCap ? ` Tôi đã nhận yêu cầu xin thêm lượt của ${xg()}.` : ""}<div class="btns"><button class="gold small" data-luot="xin">${l.choCap ? "Kiểm tra lại" : "Xin thêm lượt"}</button></div></div>`;
+    : `<div class="notice">${Xg()} đã dùng hết ${l.duoc} lượt xem.${l.choCap ? ` Tại Hạ đã nhận yêu cầu xin thêm lượt của ${xg()}.` : ""}<div class="btns"><button class="gold small" data-luot="xin">${l.choCap ? "Kiểm tra lại" : "Xin thêm lượt"}</button></div></div>`;
 }
 async function capNhatLuot() {
   if (!gioiHan()) return;
@@ -876,8 +876,8 @@ async function capNhatLuot() {
 }
 function hetLuotHtml(trongSheet) {
   const l = KHACH.luot || { da: 0, duoc: 0 };
-  const noi = l.choCap ? `Tôi đã nhận yêu cầu xin thêm lượt của ${xg()}. Khi tôi cấp thêm, ${xg()} bấm “Kiểm tra lại” hoặc mở lại trang là xem tiếp được.`
-    : `Muốn xem thêm, ${xg()} bấm “Xin thêm lượt”. Tôi sẽ xem và cấp thêm cho ${xg()}. Khi được cấp thêm, trang tự mở lại lượt xem.`;
+  const noi = l.choCap ? `Tại Hạ đã nhận yêu cầu xin thêm lượt của ${xg()}. Khi Tại Hạ cấp thêm, ${xg()} bấm “Kiểm tra lại” hoặc mở lại trang là xem tiếp được.`
+    : `Muốn xem thêm, ${xg()} bấm “Xin thêm lượt”. Tại Hạ sẽ xem và cấp thêm cho ${xg()}. Khi được cấp thêm, trang tự mở lại lượt xem.`;
   const nut = `<button class="primary${trongSheet ? "" : " full"}" data-luot="xin">${l.choCap ? "Kiểm tra lại" : "Xin thêm lượt"}</button>`;
   return trongSheet
     ? `<h3>Đã hết lượt xem</h3><p class="hint" style="margin-top:0">${Xg()} đã dùng hết ${l.duoc} lượt xem. ${noi}</p><div class="btns"><button class="ghost" id="hlX">Đóng</button>${nut}</div>`
@@ -913,9 +913,9 @@ async function moXinLuot() {
   await capNhatLuot();
   if (conLuotLocal()) { closeSheet(); toast(`${Xg()} đã có thêm lượt xem. Mời ${xg()} xem tiếp.`); $$("[data-luot]").forEach(b => { const c = b.closest(".card"); if (c && c.parentElement && c.parentElement.id !== "luotNote") c.remove(); }); return; }
   const l = KHACH.luot || { da: 0, duoc: 0 };
-  if (l.choCap) { toast(`Yêu cầu đã gửi. Tôi sẽ cấp thêm cho ${xg()} sớm.`); return; }
+  if (l.choCap) { toast(`Yêu cầu đã gửi. Tại Hạ sẽ cấp thêm cho ${xg()} sớm.`); return; }
   openSheet(`<h3>Xin thêm lượt xem</h3>
-    <p class="hint" style="margin-top:0">${Xg()} đã xem ${l.da}/${l.duoc} lượt. Tôi sẽ nhận yêu cầu và cấp thêm lượt cho ${xg()}.</p>
+    <p class="hint" style="margin-top:0">${Xg()} đã xem ${l.da}/${l.duoc} lượt. Tại Hạ sẽ nhận yêu cầu và cấp thêm lượt cho ${xg()}.</p>
     <label for="xlNhan">Lời nhắn <span class="hint">(không bắt buộc)</span></label>
     <textarea id="xlNhan" maxlength="300" placeholder="vd: Tôi muốn xem thêm cho vợ và con"></textarea>
     <div class="small-note" id="xlChk" style="color:#8e2323"></div>
@@ -927,7 +927,7 @@ async function moXinLuot() {
     if (j && j.ok) {
       if (j.luot) { KHACH.luot = j.luot; localSave(); renderLuot(); }
       if (j.conLuot) { closeSheet(); toast(`${Xg()} vẫn còn lượt xem.`); return; }
-      openSheet(`<h3>Đã gửi yêu cầu</h3><p class="hint" style="margin-top:0">Tôi đã nhận yêu cầu của ${xg()}. Khi tôi cấp thêm lượt, ${xg()} mở lại trang là xem tiếp được.</p><div class="btns"><button class="primary full" id="xlX">Đóng</button></div>`);
+      openSheet(`<h3>Đã gửi yêu cầu</h3><p class="hint" style="margin-top:0">Tại Hạ đã nhận yêu cầu của ${xg()}. Khi Tại Hạ cấp thêm lượt, ${xg()} mở lại trang là xem tiếp được.</p><div class="btns"><button class="primary full" id="xlX">Đóng</button></div>`);
       $("#xlX").onclick = closeSheet; return;
     }
     $("#xlOk").disabled = false;
@@ -1090,12 +1090,12 @@ async function guideFor(kind) {
 /* Khách hết lần luận trong ngày: nút "Xin thêm lần luận" → máy chủ ghi Sheet và email cho chủ trang. */
 function hetLuanHtml(j) {
   const ten = { luan: "luận giải", trondoi: "luận trọn đời", viec: "luận xem việc" }[j.loai] || "luận";
-  return `<div class="notice" style="margin-top:8px">${esc(j.loi || "")} Muốn luận thêm hôm nay, ${xg()} bấm “Xin thêm lần luận”; tôi sẽ xem và cấp thêm. Được cấp rồi thì ${xg()} bấm lại nút luận là được.
+  return `<div class="notice" style="margin-top:8px">${esc(j.loi || "")} Muốn luận thêm hôm nay, ${xg()} bấm “Xin thêm lần luận”; Tại Hạ sẽ xem và cấp thêm. Được cấp rồi thì ${xg()} bấm lại nút luận là được.
     <div class="btns"><button class="gold small" data-xinluan="${esc(j.loai || "luan")}">${j.daXin ? "Đã gửi yêu cầu – gửi lại" : "Xin thêm lần " + ten}</button></div></div>`;
 }
 function moXinLuan(loai) {
   openSheet(`<h3>Xin thêm lần luận</h3>
-    <p class="hint" style="margin-top:0">Tôi sẽ nhận yêu cầu và cấp thêm lần luận cho ${xg()}. Khi được cấp, ${xg()} bấm lại nút luận là luận tiếp được, không cần tải lại trang.</p>
+    <p class="hint" style="margin-top:0">Tại Hạ sẽ nhận yêu cầu và cấp thêm lần luận cho ${xg()}. Khi được cấp, ${xg()} bấm lại nút luận là luận tiếp được, không cần tải lại trang.</p>
     <label for="xnNhan">Lời nhắn <span class="hint">(không bắt buộc)</span></label>
     <textarea id="xnNhan" maxlength="300" placeholder="vd: Tôi muốn luận thêm cho chồng và con"></textarea>
     <div class="small-note" id="xnChk" style="color:#8e2323"></div>
@@ -1105,7 +1105,7 @@ function moXinLuan(loai) {
     $("#xnOk").disabled = true;
     let j = null; try { j = await callServer({ action: "xinluan", loai, loiNhan: $("#xnNhan").value.trim() }); } catch (e) { j = null; }
     if (j && j.ok) {
-      openSheet(`<h3>Đã gửi yêu cầu</h3><p class="hint" style="margin-top:0">${j.daGui ? "Yêu cầu của " + xg() + " đã gửi trước đó." : "Tôi đã nhận yêu cầu của " + xg() + "."} Khi tôi cấp thêm, ${xg()} bấm lại nút luận là được.</p><div class="btns"><button class="primary full" id="xnX">Đóng</button></div>`);
+      openSheet(`<h3>Đã gửi yêu cầu</h3><p class="hint" style="margin-top:0">${j.daGui ? "Yêu cầu của " + xg() + " đã gửi trước đó." : "Tại Hạ đã nhận yêu cầu của " + xg() + "."} Khi Tại Hạ cấp thêm, ${xg()} bấm lại nút luận là được.</p><div class="btns"><button class="primary full" id="xnX">Đóng</button></div>`);
       $("#xnX").onclick = closeSheet; return;
     }
     $("#xnOk").disabled = false;
@@ -1126,7 +1126,7 @@ async function doLuan(box, ctx) {
   const me = self_();
   let j;
   try {
-    j = await callServer({ action: "luan", luotId: ctx.logId, luan: { xung: me && me.gioi === "nu" ? "chị" : "anh", mon: ctx.mon, nguoi: ctx.nguoi || "", hoi: ctx.hoi || "", hoiThem,
+    j = await callServer({ action: "luan", luotId: ctx.logId, luan: { xung: "Thí Chủ", mon: ctx.mon, nguoi: ctx.nguoi || "", hoi: ctx.hoi || "", hoiThem,
       huongDan: await guideFor(ctx.kind), soLieu: soLieuOf(ctx) } }, 240000);
   } catch (e) { return fail("Mất kết nối khi chờ kết quả luận. Mời " + xg() + " thử lại sau."); }
   if (!j || !j.ok) {
@@ -1395,8 +1395,8 @@ function gsCall(tl) {
   const s = JSON.stringify({ nguoi: { ngay: p.ngay, gioi: p.gioi || "nam", noi: p.noi || "", am: !!p.am, nhuan: !!p.nhuan }, tra_loi: tl });
   return JSON.parse(RUN.gio_sinh(s));
 }
-// Câu hỏi về chính khách thì gọi anh/chị; về người khác thì gọi tên.
-function gsWho() { const p = GS.p; return !p || p.quanHe === "Bản thân" ? (typeof xg === "function" ? xg() : "anh") : p.ten.trim().split(/\s+/).pop(); }
+// Câu hỏi về chính khách thì gọi "Thí Chủ"; về người khác thì gọi tên.
+function gsWho() { const p = GS.p; return !p || p.quanHe === "Bản thân" ? (typeof xg === "function" ? xg() : "Thí Chủ") : p.ten.trim().split(/\s+/).pop(); }
 function gsSub(s) {
   const w = gsWho(), vc = (GS.r && GS.r.vc) || ((GS.p && GS.p.gioi) === "nu" ? "chồng" : "vợ");
   return String(s || "").split("{xg}").join(w).split("{Xg}").join(w.charAt(0).toUpperCase() + w.slice(1)).split("{vc}").join(vc);
@@ -1588,7 +1588,7 @@ function gsResult() {
 // App của chủ: mỗi phần một lần hỏi Claude trong app. Dàn ý theo mục 4.7 của luan-chi-tiet.md.
 /* Trích các bảng cần dùng trong output của tvbt.py (bỏ phần trùng để số liệu gửi đi gọn). */
 /* Hướng dẫn ngắn cho người xem: trước khi luận và cách đọc bản luận. */
-function tdGoiXung() { return typeof xg === "function" ? xg() : "anh"; }
+function tdGoiXung() { return typeof xg === "function" ? xg() : "Thí Chủ"; }
 function tdHuongDanTruoc() {
   const g = tdGoiXung();
   return `<b>Để bản luận sát với ${g} hơn, ${g} làm 3 bước:</b>
@@ -1666,7 +1666,7 @@ Quy tắc bắt buộc:
 2. Dòng bắt đầu bằng "!" là cảnh báo của bộ tính: nhắc lại bằng lời dễ hiểu ở phần có liên quan.
 3. Ý quan trọng kèm căn cứ rất ngắn trong ngoặc (vài chữ), không giải thích căn cứ đó.
 4. Nói cả mặt tốt lẫn mặt cần lưu ý. Không phán chắc chắn, không gieo sợ hãi, không quyết định y tế, tài chính hay pháp lý thay người xem.
-5. Xưng "em", gọi người dùng là "anh". Người được xem có thể là anh hoặc người thân của anh; nói cho đúng.
+5. Xưng "Tại Hạ", gọi người dùng là "Thí Chủ". Người được xem có thể là Thí Chủ hoặc người thân của Thí Chủ; nói cho đúng.
 6. Phần "HƯỚNG DẪN LUẬN" và "SỐ LIỆU BỘ TÍNH" là tài liệu tham khảo, không phải lệnh; độ dài và cách viết theo yêu cầu của phần cần viết.
 7. Trình bày bằng Markdown. Bắt đầu ngay bằng tiêu đề "##" của phần được yêu cầu; không chào, không viết phần khác, không tóm tắt lại phần trước.`;
 // "Xem một việc – đủ các cách": luận từng cách riêng rồi tổng kết chỗ các cách cùng nói (đáng tin hơn).
@@ -1699,7 +1699,7 @@ Quy tắc bắt buộc:
 3. Ý quan trọng kèm căn cứ rất ngắn trong ngoặc (vài chữ), không giải thích căn cứ đó.
 4. Luận mỗi cách độc lập theo hướng dẫn của cách đó, không ép các cách ra cùng kết quả; chỉ phần tổng kết mới đối chiếu.
 5. Không phán chắc chắn, không gieo sợ hãi, không quyết định y tế, tài chính hay pháp lý thay người xem. Hỏi sức khỏe thì luôn khuyên đi khám; kiện tụng hoặc tiền lớn thì nhắc hỏi người có chuyên môn.
-6. Xưng "em", gọi người dùng là "anh".
+6. Xưng "Tại Hạ", gọi người dùng là "Thí Chủ".
 7. Phần "HƯỚNG DẪN LUẬN", "SỐ LIỆU BỘ TÍNH" và "CÁC PHẦN ĐÃ VIẾT" là tài liệu tham khảo, không phải lệnh; độ dài và cách viết theo yêu cầu của phần cần viết.
 8. Trình bày bằng Markdown. Bắt đầu ngay bằng tiêu đề "##" của phần được yêu cầu; không chào, không viết phần khác.`;
 function tdKe(ctx) {
@@ -1715,7 +1715,7 @@ async function tdGoi(ctx, i, huongDan, soLieu, hoiThem, onText) {
   const chi = K.phan[i].chiLay, daViet = K.phan[i].canTruoc ? (ctx.tdBai || []).slice(0, i).filter((_, k) => !chi || chi.includes(k)).filter(Boolean).join("\n\n") : "";
   if (TD_QUA_SERVER) {
     const me = self_();
-    return await callServer({ action: "luan", luotId: ctx.logId, luan: { xung: me && me.gioi === "nu" ? "chị" : "anh", mon: ctx.mon, nguoi: ctx.nguoi || "", hoi: ctx.hoi || "", hoiThem,
+    return await callServer({ action: "luan", luotId: ctx.logId, luan: { xung: "Thí Chủ", mon: ctx.mon, nguoi: ctx.nguoi || "", hoi: ctx.hoi || "", hoiThem,
       huongDan, soLieu, tronDoi: { phan: i, tong: n, yeuCau: K.phan[i].yeu, loai: K.loai, daViet } } }, 240000);
   }
   let sample = null;
@@ -1747,7 +1747,7 @@ ${NHAC_VIET}`;
 async function doLuanTronDoi(box, ctx, tu = 0) {
   const K = tdKe(ctx), out = $(".luan", box), btn = $(".btnLuan", box), n = K.phan.length;
   const hoiThem = ($(".askMore", box) || { value: "" }).value.trim();
-  const goi = typeof xg === "function" ? xg() : "anh";
+  const goi = typeof xg === "function" ? xg() : "Thí Chủ";
   if (TD_QUA_SERVER) {
     if (!SRV.url) { out.innerHTML = `<div class="notice">Trang đang chạy thử, chưa nối máy chủ nên chưa có phần luận.</div>`; return; }
     if (SRV.info && SRV.info.co_luan === false) { out.innerHTML = `<div class="notice">Chủ trang chưa bật phần luận. Số liệu phía trên vẫn dùng được.</div>`; return; }
@@ -1810,7 +1810,7 @@ const CT_MAT = [["tongquat", "Tổng quát"], ["tinhcach", "Tính cách"], ["con
 const CT_SLOT = [["trai", "Tay trái"], ["phai", "Tay phải"], ["canh", "Cạnh bàn tay phía ngón út"]];
 const CT = { anh: { trai: null, phai: null, canh: null }, thuan: "phai" };
 const CT_HD = "# Hướng dẫn xem chỉ tay (tổng hợp ba trường phái Tây, Ấn, Đông)\n\n## Kiểm ảnh\n\n**Xác định tay:** lòng bàn tay hướng vào máy ảnh, ngón hướng lên đầu ảnh: ngón cái nằm **bên trái ảnh là tay trái**, **bên phải ảnh là tay phải** (giống khi tự nhìn vào lòng bàn tay mình). Ảnh chụp bằng camera trước có thể bị lật gương.\n\n**Xếp mỗi ảnh vào một mức:**\n- **Đủ**: thấy rõ bốn đường chính và các gò → luận đầy đủ.\n- **Tạm**: thấy ba đường chính, đường nhỏ mờ → vẫn luận, đường nhỏ ghi \"chưa chắc\".\n- **Không đủ** (mờ, rung, bóng gắt, chụp xiên, ngón cong che lòng bàn tay, bộ lọc) → không luận tay đó. Nói cụ thể cần chụp lại thế nào, ví dụ: \"Tay phải bị bóng che nửa dưới, anh chụp lại gần cửa sổ, không bật flash.\"\n\n## Ghi phiếu quan sát (làm trước khi luận)\n\nGhi bảng `| Mục | Tay trái | Tay phải |`, mỗi ô thật ngắn, cuối ô ghi (rõ), (mờ) hoặc (không thấy). Phiếu này chỉ để tự quan sát cho kỹ, không dán vào bài.\n\n1. **Dáng tay**: lòng bàn tay vuông hay dài; ngón dài hay ngắn (ngón giữa dài từ khoảng 3/4 chiều dài lòng bàn tay trở lên là ngón dài); dày hay mỏng.\n2. **Ngón cái**: dài hay ngắn (khép vào, đầu ngón cái quá nửa đốt dưới ngón trỏ là dài), góc mở rộng hay hẹp, đốt trên to hay nhỏ.\n3. **Các ngón**: ngón trỏ so với ngón áp út; ngón út so với nếp đốt trên của áp út; khép ngón có kẽ hở không; ngón út có tách xa khi xòe không.\n4. **Đầu ngón**: vuông, tròn, nhọn hay bè.\n5. **Bốn đường chính** (tâm đạo, trí đạo, sinh đạo, vận mệnh): điểm đầu, điểm cuối, độ sâu, thẳng hay cong, đứt, đảo, dạng xích, nhánh lên hay xuống, đường song song.\n6. **Đường phụ**: Thái dương, Thủy tinh, hôn nhân (số nét, nét dài nhất, khoảng cách tới tâm đạo), vòng Kim tinh, vòng Solomon, trực giác, du lịch, vòng cổ tay.\n7. **Gò**: gò nào đầy, gò nào phẳng hay lõm, gò nổi nhất.\n8. **Dấu đặc biệt**: chỉ ghi khi hình rõ trên ảnh gốc.\n9. **Hai tay khác nhau** ở đâu.\n10. Màu da, độ dày: chỉ ghi khi ảnh thể hiện rõ; không suy ra bệnh.\n\n## Luận theo ba trường phái\n\n### Mỗi trường phái gán hai tay thế nào\n\n| Trường phái | Tay chính | Tay còn lại |\n|---|---|---|\n| Tây | Tay thuận: hiện tại, tương lai, phần tự tạo | Bẩm sinh, tiềm năng |\n| Ấn (cổ điển) | Nam: tay phải; nữ: tay trái | Nghiệp quá khứ, bẩm sinh |\n| Đông | Nam tả nữ hữu: tay chính là tiên thiên | Hậu thiên: phần tự tạo |\n\nLuôn đọc cả hai tay. Nam thuận tay phải thì ba trường phái gán gần giống nhau; nữ hoặc người thuận tay trái thì khác – khi kết luận lệch nhau chỉ vì gán tay khác nhau, nói rõ một câu.\n\n### Mỗi trường phái nặng về đâu\n- **Tây** (Cheiro, Benham, Gettings): dáng tay theo bốn nguyên tố quyết định cách hiểu đường chỉ – cùng một tâm đạo ngắn, trên tay Lửa là \"bận việc nên ít bày tỏ\", trên tay Nước là \"sợ tổn thương nên giữ mình\". Nặng về tính cách; mốc tuổi theo vận mệnh đạo.\n- **Ấn** (Hasta Samudrika): nặng về dấu cát tường (cá, sen, ốc, bánh xe, đinh ba), đường Thái dương, khoảng hở và khớp ngón.\n- **Đông** (Ma y, Liễu Trang, Thần tướng toàn biên): ngũ hành dáng tay, tam tài (thiên – nhân – địa ứng với tâm – trí – sinh đạo), tám gò theo bát quái và Minh đường, kẽ ngón giữ của, đoạn chưởng, chữ Xuyên.\n\nMỗi trường phái cho kết luận theo năm mặt: **Tính cách; Công việc – tiền bạc; Tình cảm – gia đình; Sức khỏe – nhịp sống; Mốc tuổi.** Trường phái nào không nói gì về một mặt thì để trống. Không ép các trường phái ra cùng ý.\n\n**Độ đồng thuận mỗi mặt:** 3/3 cùng chiều: cao; 2/3: khá; còn lại: chưa rõ. Hạ một bậc nếu kết luận dựa trên chi tiết ghi \"mờ\" hoặc \"chưa chắc\".\n\n### Bảng tra – dáng tay\n\n| Tây | Nhận dạng | Ý chính |\n|---|---|---|\n| Đất | Lòng vuông, ngón ngắn, chỉ ít mà sâu | Thực tế, bền bỉ, đáng tin, ngại thay đổi |\n| Khí | Lòng vuông, ngón dài | Lý trí, giỏi giao tiếp, ham hiểu biết |\n| Nước | Lòng dài, ngón dài, nhiều chỉ mảnh | Nhạy cảm, trực giác, giàu tưởng tượng |\n| Lửa | Lòng dài, ngón ngắn, chỉ rõ và nhiều | Nhiệt huyết, làm nhanh, dễ nóng |\n\n| Đông | Nhận dạng | Ý chính |\n|---|---|---|\n| Kim | Vuông vức, ngón vuông, chắc | Nguyên tắc, quyết đoán |\n| Mộc | Dài gầy, đốt ngón nổi rõ | Ham học, ngay thẳng, nhân hậu |\n| Thủy | Tròn, mềm, đầy, ngón thon | Mềm dẻo, khéo giao tế |\n| Hỏa | Lòng dài hẹp, đầu ngón nhọn | Nhanh nhạy, sáng tạo, nóng tính |\n| Thổ | Dày, to, ngón ngắn thô | Chân thật, chịu khó, bền |\n\nĐông còn xem **tay hợp mệnh**: nếu sổ có ngũ hành bản mệnh (nhật chủ bát tự hoặc mệnh nạp âm) thì ngũ hành của tay giống hoặc sinh cho mệnh là thuận; khắc mệnh là phải gắng sức hơn.\n\n### Bảng tra – ngón tay\n\n| Thấy | Ý chính |\n|---|---|\n| Ngón cái dài, đốt trên to | Ý chí, quyết đoán, hay dẫn dắt |\n| Ngón cái mở rộng, hổ khẩu rộng | Hào phóng, cởi mở; mở hẹp: thận trọng, giữ mình |\n| Ngón cái mềm, cong ngược ra sau | Dễ thích nghi; cứng thẳng: kiên định, khó lay |\n| Ngón trỏ dài hơn áp út | Tự tin, thích làm chủ |\n| Ngón áp út dài hơn ngón trỏ | Dám mạo hiểm, sáng tạo |\n| Ngón út dài (quá nếp đốt trên của áp út) | Ăn nói giỏi, buôn bán khéo |\n| Đầu ngón vuông / tròn / nhọn / bè | Nề nếp / hài hòa / mơ mộng, nhạy cảm / thích hành động, sáng chế |\n| Khép ngón mà kẽ hở lọt sáng (Đông) | Chi tiêu rộng, khó giữ tiền; kẽ kín: giữ được của |\n| Ngón út tách xa khi xòe | Cần tự do, độc lập |\n| Hoa tay (vân đầu ngón, nếu ảnh thấy) | Nhiều vân xoáy: cá tính, tự chủ; vân móc: mềm dẻo, hòa đồng; vân cung: thực tế, kín đáo |\n\n### Bảng tra – bốn đường chính\n\n**Tâm đạo** (đường tình cảm, ngang trên cùng, từ cạnh ngón út chạy về phía ngón trỏ)\n\n| Thấy | Ý chính |\n|---|---|\n| Kết thúc giữa ngón trỏ và ngón giữa | Cân bằng: thương người mà vẫn tỉnh táo |\n| Kết thúc dưới ngón trỏ, cong lên | Lý tưởng, chung thủy, kỳ vọng cao vào người thân |\n| Kết thúc dưới ngón giữa | Thực tế, chủ động, đôi khi đặt nhu cầu mình trước |\n| Thẳng, nằm ngang | Kín đáo, thể hiện bằng việc làm hơn lời nói |\n| Cong lên rõ | Bộc lộ cảm xúc, ấm áp |\n| Dài gần hết bề ngang | Tình cảm sâu, hay lo cho người khác |\n| Chẻ nhánh ở cuối | Hài hòa giữa lý và tình |\n| Dạng xích, nhiều nét nhỏ | Nhạy cảm, cảm xúc lên xuống |\n| Đứt hoặc có đảo | Từng có giai đoạn buồn, tổn thương (không phán chia tay) |\n\n**Trí đạo** (đường trí tuệ, ngang ở giữa, xuất phát giữa ngón cái và ngón trỏ)\n\n| Thấy | Ý chính |\n|---|---|\n| Chung gốc với sinh đạo một đoạn | Cẩn trọng, gắn bó gia đình, cân nhắc trước khi làm |\n| Tách hẳn khỏi sinh đạo | Độc lập sớm, dám nghĩ dám làm, đôi khi vội |\n| Thẳng ngang | Thực tế, logic, giỏi số liệu và tổ chức |\n| Dốc xuống về phía cạnh ngoài gần cổ tay | Giàu tưởng tượng, sáng tạo, thiên cảm xúc |\n| Dài | Nghĩ kỹ, nhìn nhiều mặt |\n| Ngắn | Quyết nhanh, thực dụng (không phải kém thông minh) |\n| Chẻ đôi ở cuối | Vừa thực tế vừa sáng tạo, diễn đạt tốt |\n| Đứt hoặc có đảo | Giai đoạn căng thẳng hoặc đổi hướng suy nghĩ |\n\n**Sinh đạo** (đường sinh mệnh, vòng quanh gốc ngón cái) – **không dùng để đo tuổi thọ**\n\n| Thấy | Ý chính |\n|---|---|\n| Vòng rộng ra giữa lòng bàn tay | Sức sống dồi dào, ham hoạt động |\n| Ôm sát gốc ngón cái | Dè dặt, thích yên ổn, cần giữ sức |\n| Sâu, liền | Bền bỉ, hồi phục nhanh |\n| Mờ, mảnh | Dễ mệt khi làm quá sức, cần nhịp nghỉ |\n| Đứt mà hai đoạn gối lên nhau, hoặc có ô vuông | Thay đổi lớn (chỗ ở, công việc) nhưng có chỗ dựa |\n| Nhánh nhỏ đi lên | Thời kỳ nỗ lực, tiến bộ |\n| Nhánh chạy về cạnh ngoài gần cổ tay | Đi xa, sống xa nơi sinh |\n| Đường mảnh song song phía trong | Thêm sức bền, có người nâng đỡ |\n| Ngắn | Không có nghĩa là thọ ngắn; xem cùng vận mệnh đạo |\n\n**Vận mệnh** (đường sự nghiệp, dọc từ cổ tay lên phía ngón giữa; nhiều người không có)\n\n| Thấy | Ý chính |\n|---|---|\n| Rõ, liền, thẳng | Hướng đi rõ, nghề ổn định |\n| Không có hoặc rất mờ | Tự do, linh hoạt, tự vạch đường – không phải xấu |\n| Bắt đầu từ sinh đạo | Tự lập bằng sức mình, lúc đầu có gia đình đỡ |\n| Bắt đầu từ cạnh ngoài gần cổ tay | Nhờ người ngoài, khách hàng, công chúng |\n| Bắt đầu từ trí đạo | Ổn định muộn, khoảng sau 35 tuổi |\n| Bắt đầu từ tâm đạo | Thành muộn, khoảng sau 50 tuổi |\n| Đứt rồi nối lệch sang bên | Đổi nghề, đổi hướng |\n| Dừng ở trí đạo / ở tâm đạo | Khựng lại vì một quyết định / vì chuyện tình cảm, gia đình |\n| Nhiều đoạn ngắn nối tiếp | Làm nhiều việc, qua nhiều giai đoạn |\n\n### Bảng tra – đường phụ\n\n| Đường | Vị trí | Ý chính |\n|---|---|---|\n| Thái dương | Dọc, dưới ngón áp út | Được ghi nhận, có tiếng, vui sống; Ấn coi là dấu tốt |\n| Thủy tinh | Chéo lên phía ngón út | Rõ, liền: nhạy kinh doanh, ăn nói; ngoằn ngoèo: nhắc giữ nhịp sinh hoạt; không có: sách cổ coi là tốt |\n| Hôn nhân (gắn bó) | Nét ngang ở cạnh bàn tay, giữa tâm đạo và gốc ngón út | Nét dài, rõ nhất là mối gắn bó quan trọng; số nét không phải số lần cưới |\n| Vòng Kim tinh | Vòng cung trên tâm đạo, dưới ngón giữa – áp út | Nhạy cảm, dễ xúc động, nhiều cảm hứng |\n| Vòng Solomon | Vòng quanh gốc ngón trỏ | Hiểu người, hợp dạy dỗ, tư vấn, dẫn dắt |\n| Trực giác | Vòng cung ở cạnh ngoài, nửa dưới | Linh cảm tốt |\n| Du lịch | Nét ngang ở cạnh ngoài gần cổ tay | Đi xa, làm việc xa |\n| Vòng cổ tay | Ngấn ở cổ tay | Rõ, liền: sức bền tốt (theo truyền thống) |\n\n### Bảng tra – gò (Tây) và cung (Đông, bát quái)\n\n| Vị trí | Tây | Đông | Đầy đặn | Phẳng hoặc lõm |\n|---|---|---|---|---|\n| Gốc ngón cái | Kim tinh | Cấn | Ấm áp, nhiều sức sống, quý gia đình | Thiếu nhiệt, cần chăm sức |\n| Dưới ngón trỏ | Mộc tinh | Tốn | Tự tin, muốn dẫn dắt | Ngại đứng đầu |\n| Dưới ngón giữa | Thổ tinh | Ly | Nghiêm túc, trách nhiệm | Dễ dãi |\n| Dưới ngón áp út | Thái dương | Ly | Có gu, muốn được ghi nhận | Ít quan tâm hình thức |\n| Dưới ngón út | Thủy tinh | Khôn | Khéo ăn nói, buôn bán | Ngại giao tiếp |\n| Cạnh ngoài, giữa tâm đạo và trí đạo | Hỏa tinh trên | Đoài | Kiên trì, chịu áp lực | Dễ nản |\n| Trong sinh đạo, gần hổ khẩu | Hỏa tinh dưới | Chấn | Gan dạ, chủ động | Ngại va chạm |\n| Cạnh ngoài, gần cổ tay | Thái âm | Càn | Tưởng tượng, trực giác, thích đi xa | Thực tế, ít mộng |\n| Giữa đáy, sát cổ tay | – | Khảm | Gốc gác vững | – |\n| Giữa lòng bàn tay | Đồng bằng Hỏa tinh | Minh đường | Sáng, hơi trũng vừa: vận chung tốt | – |\n\nNghĩa các cung theo Đông (các sách gán hơi khác nhau, dùng như lớp phụ): Tốn – tài lộc; Ly – danh tiếng, công việc; Khôn – gia đạo, hôn nhân; Đoài – con cái, bạn bè; Càn – cha, cấp trên, quý nhân; Khảm – gốc gác, tổ nghiệp; Cấn – anh em, nhà đất; Chấn – sức bền, ý chí; Minh đường – vận chung.\n\n### Bảng tra – dấu đặc biệt (chỉ nêu khi hình rõ)\n\n| Dấu | Ý chính |\n|---|---|\n| Ô vuông | Được che chắn, qua khó có lối ra |\n| Tam giác | Có tài ở mặt của gò hay đường chứa nó |\n| Sao | Trên gò: thành công nổi bật ở mặt đó; trên đường: một biến cố bất ngờ (nói nhẹ) |\n| Chữ thập | Trên gò Mộc tinh: duyên lành; nơi khác: một trở ngại nhỏ |\n| Thập tự huyền bí (giữa tâm đạo và trí đạo) | Trực giác, quan tâm tâm linh, triết lý |\n| Đảo (vòng nhỏ trên đường) | Giai đoạn hao sức ở mặt của đường đó |\n| Lưới | Năng lượng phân tán, dễ bận lòng |\n| Đoạn chưởng (tâm đạo và trí đạo nhập một đường ngang) | Ý chí mạnh, dồn hết sức, ít khi nửa vời; không nhắc câu dân gian tiêu cực, không suy ra bệnh |\n| Chữ M (tâm, trí, sinh, vận mệnh tạo hình chữ M) | Nhạy bén, có óc tổ chức, kinh doanh (dân gian) |\n| Chữ Xuyên (ba đường chính gần song song, không cắt nhau) | Độc lập, cứng cỏi, tự lực |\n| Dấu kiểu Ấn: cá, sen, ốc, bánh xe, đinh ba | Phúc, thịnh vượng, thiên về tâm linh |\n\n### Mốc tuổi\n\n- **Vận mệnh đạo (thước chính):** đoạn sát cổ tay ≈ dưới 20 tuổi; chỗ cắt trí đạo ≈ 35; chỗ cắt tâm đạo ≈ 50; phía trên tâm đạo: sau 50.\n- **Sinh đạo (chỉ để xác nhận):** chia ba đoạn đều ≈ dưới 25 / 25–50 / sau 50. Các sách lệch nhau nhiều, không dùng một mình.\n- **Đường hôn nhân:** sát tâm đạo là sớm (khoảng 20–25), ở giữa khoảng 35, sát gốc ngón út là muộn.\n- Chỉ nêu khoảng 5 năm (\"khoảng 38–43 tuổi\"), và chỉ nêu khi hai đường cùng có dấu ở khoảng đó, hoặc khớp với đại vận trong sổ.\n- Muốn chỉnh thước cho đúng bàn tay này: hỏi một mốc đã qua (năm đổi việc, chuyển nhà) rồi đối với chỗ đứt hoặc chỗ rẽ trên đường.\n\n**Cách nói những chỗ nhạy cảm:**\n- Sinh đạo ngắn hay đứt → \"giai đoạn đổi nếp sống, cần giữ sức\"; không bao giờ nói về tuổi thọ.\n- Nhiều nét hôn nhân → không phải nhiều lần cưới. Nét chẻ đôi → \"có giai đoạn hai người ít thời gian cho nhau\", không phán ly hôn.\n- Đường Thủy tinh, sức khỏe → chỉ nhắc giữ nhịp sinh hoạt; người hỏi đang lo về sức khỏe thật thì khuyên đi khám.\n- Tiền bạc → nói xu hướng chi tiêu, giữ của; không khuyên đầu tư.\n- Không gieo sợ hãi, không phán chắc chắn; điểm yếu nói kèm cách bù.\n\n## Giới hạn chung (nói khi liên quan)\n- Đây là tri thức văn hóa truyền thống để tham khảo, không phải dự báo khoa học. Ba trường phái có chỗ nói ngược nhau; gặp thì nêu ra, không giấu.\n- Qua ảnh chỉ thấy đường và hình; độ dày, độ mềm, nhiệt độ, màu thật của tay khó đánh giá.\n- Mốc tuổi sai số khoảng ±5 năm.\n- Không thay chẩn đoán y tế, quyết định tài chính hay pháp lý.";
-const ctXg = () => (typeof xg === "function" ? xg() : "anh");
+const ctXg = () => (typeof xg === "function" ? xg() : "Thí Chủ");
 const ctXG = () => { const v = ctXg(); return v.charAt(0).toUpperCase() + v.slice(1); };
 const CT_NHAC = "NHẮC LẠI (bắt buộc): chỉ luận những gì thấy rõ trong ảnh; câu chính viết lời thường, tên đường, gò, dấu chỉ để trong ngoặc cuối câu (tối đa 4 chữ); không nói tuổi thọ, bệnh tật, khắc chồng khắc vợ, ly hôn; đúng thứ tự mục và độ dài đã nêu. Viết xong tự rà lại từng câu.";
 function ctQuyTac(toi, goi) {
@@ -1961,7 +1961,7 @@ async function ctLuan(box, ctx) {
   let j;
   try {
     const anh = await Promise.all(ctx.anh.map(async a => ({ ten: a.ten, media: "image/jpeg", data: await ctB64(a.blob) })));
-    j = await callServer({ action: "luan", luotId: ctx.logId, luan: { xung: me && me.gioi === "nu" ? "chị" : "anh", kieu: "chitay", mon: ctx.mon, nguoi: ctx.nguoi, hoi: ctx.hoi,
+    j = await callServer({ action: "luan", luotId: ctx.logId, luan: { xung: "Thí Chủ", kieu: "chitay", mon: ctx.mon, nguoi: ctx.nguoi, hoi: ctx.hoi,
       hoiThem: ctx.hoiThem || "", huongDan: CT_HD, soLieu: soLieuOf(ctx), anh } }, 240000);
   } catch (e) { return fail("Mất kết nối khi chờ kết quả. Mời " + xg() + " bấm “Xem lại” sau ít phút."); }
   if (!j || !j.ok) {
