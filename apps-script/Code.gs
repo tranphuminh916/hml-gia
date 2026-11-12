@@ -17,6 +17,8 @@
  *   Cấp thêm lần luận cho một khách: ghi số vào các ô "Thêm luận/ngày", "Thêm trọn đời/ngày", "Thêm xem việc/ngày"
  *   của khách đó trong Sheet. Số này được cộng thêm vào giới hạn mỗi ngày của khách, giữ đến khi chủ xóa.
  *   CAN_KICH_HOAT        mặc định bật: khách đăng ký bằng số điện thoại, chủ gửi mã kích hoạt; đặt 0 để tắt
+ *   FIREBASE_CONFIG      (không bắt buộc) dán nguyên đoạn firebaseConfig của Firebase để Google tự nhắn mã kích hoạt
+ *                        vào số điện thoại khách; bỏ trống thì dùng FIREBASE_CFG ghi sẵn bên dưới (nếu có)
  *   BAO_EMAIL            email nhận báo khách mới, khách xin thêm lượt (mặc định email chủ); đặt 0 để không gửi
  *   LUOT_XEM_MOI_KHACH   số lượt xem mỗi khách được dùng, mặc định 3; đặt 0 để không giới hạn.
  *                        Cấp thêm cho một khách: sửa ô "Lượt được xem" của khách đó trong Sheet.
@@ -45,6 +47,9 @@ var MUC_GIO_SINH = 'Tìm giờ sinh';           // dò giờ sinh: không tính 
 var GS_SO_LIEU_TOI_DA = 10000, GS_HUONG_DAN_TOI_DA = 20000, GS_MOI_KHACH_NGAY = 10;
 var TT_CHO = 'Chờ kích hoạt', TT_DA = 'Đã kích hoạt', TT_KHOA = 'Khóa';
 var COT_LUOT = ['Thời gian', 'Mã lượt', 'Mã khách', 'Khách', 'Xem cho', 'Mục xem', 'Chi tiết / câu hỏi', 'Người thứ hai', 'Số liệu bộ tính', 'Bài luận', 'Hỏi thêm', 'Luận lúc'];
+// Firebase (Google nhắn mã kích hoạt). Cấu hình web của Firebase không phải mật khẩu: trang khách vốn phải biết nó.
+// Để trống apiKey = tắt, khách nhận mã do chủ gửi như cũ.
+var FIREBASE_CFG = { apiKey: '', authDomain: '', projectId: '', appId: '' };
 var MUI_GIO = 'Asia/Ho_Chi_Minh';
 var MODEL_MAC_DINH = 'claude-sonnet-5-5';
 var MODEL_NHANH = 'claude-haiku-5-5';
@@ -79,6 +84,7 @@ function trangThai_() {
     can_ma: !!String(P.getProperty('MA_TRUY_CAP') || '').trim(),
     co_luan: !!String(P.getProperty('ANTHROPIC_API_KEY') || '').trim(),
     kich_hoat: canKichHoat_(P),
+    sms: canKichHoat_(P) ? firebaseCfg_(P) : null,
     gioi_han_luot: gioiHanLuot_(P)
   };
 }
@@ -122,6 +128,7 @@ function xuLy_(req) {
     if (req.action === 'xinluan') return xinLuan_(req, P);
     if (req.action === 'dangky') return dangKy_(req, P);
     if (req.action === 'kichhoat') return kichHoat_(req);
+    if (req.action === 'kichhoatsms') return kichHoatSms_(req, P);
     if (req.action === 'toi') return toi_(req, P);
     if (req.action === 'luan') return luan_(req, P);
     return { ok: false, ma_loi: 'khong_ro', loi: 'Không rõ yêu cầu.' };
@@ -338,7 +345,8 @@ function baoChu_(P, k) {
       '',
       'MÃ KÍCH HOẠT: ' + k.ma,
       '',
-      'Anh gửi mã này cho khách (Zalo hoặc tin nhắn). Khách nhập mã là dùng được.',
+      firebaseCfg_(P) ? 'Khách tự bấm nhận mã qua tin nhắn (Google gửi). Nếu khách báo không nhận được tin, anh gửi mã trên cho khách.'
+        : 'Anh gửi mã này cho khách (Zalo hoặc tin nhắn). Khách nhập mã là dùng được.',
       'Muốn khóa: sửa cột "Trạng thái" của khách trong Sheet thành "Khóa".',
       'Sheet: ' + url
     ].join('\n'));
@@ -401,6 +409,57 @@ function kichHoat_(req) {
   if (kq === 'chua') return { ok: false, ma_loi: 'chua_dang_ky', loi: 'Chưa có đăng ký. Mời đăng ký lại.' };
   cache.put(kSai, String(sai + 1), 21600);
   return { ok: false, ma_loi: 'sai_ma_kh', loi: 'Mã kích hoạt chưa đúng.' };
+}
+// Firebase: lấy cấu hình (thuộc tính FIREBASE_CONFIG dán nguyên đoạn firebaseConfig, hoặc FIREBASE_CFG ghi sẵn)
+function firebaseCfg_(P) {
+  var s = String(P.getProperty('FIREBASE_CONFIG') || '').trim();
+  var c = FIREBASE_CFG;
+  if (s) {
+    var lay = function (k) {
+      var m = s.match(new RegExp(k + '\\W*[:=]\\s*["\']([^"\']+)["\']'));
+      return m ? m[1] : '';
+    };
+    c = { apiKey: lay('apiKey'), authDomain: lay('authDomain'), projectId: lay('projectId'), appId: lay('appId') };
+  }
+  if (!c || !c.apiKey || !c.projectId) return null;
+  return { apiKey: c.apiKey, authDomain: c.authDomain || (c.projectId + '.firebaseapp.com'), projectId: c.projectId, appId: c.appId || '' };
+}
+// Khách đã nhập đúng mã Google nhắn về số điện thoại: trang gửi idToken của Firebase lên,
+// máy chủ hỏi Google số điện thoại đã xác nhận, đúng số khách đăng ký thì kích hoạt.
+function kichHoatSms_(req, P) {
+  var id = idHopLe_(req.khachId);
+  var cfg = firebaseCfg_(P);
+  var tok = String(req.idToken || '');
+  if (!id) return { ok: false, ma_loi: 'du_lieu', loi: 'Thiếu mã khách.' };
+  if (!cfg) return { ok: false, ma_loi: 'khong_sms', loi: 'Trang chưa bật nhận mã qua tin nhắn.' };
+  if (!tok || tok.length > 8000) return { ok: false, ma_loi: 'du_lieu', loi: 'Thiếu mã xác nhận.' };
+  var r = UrlFetchApp.fetch('https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=' + encodeURIComponent(cfg.apiKey), {
+    method: 'post', contentType: 'application/json', payload: JSON.stringify({ idToken: tok }), muteHttpExceptions: true
+  });
+  var u = null;
+  if (r.getResponseCode() === 200) {
+    try { u = (JSON.parse(r.getContentText()).users || [])[0] || null; } catch (e) { u = null; }
+  }
+  var sdt = u ? sdt_(u.phoneNumber) : '';
+  if (!sdt) return { ok: false, ma_loi: 'sms_sai', loi: 'Chưa xác nhận được số điện thoại. Mời thử lại.' };
+  var kq = voiKhoa_(function () {
+    var sh = tab_(TAB_KHACH, COT_KHACH);
+    var dong = timDong_(sh, 1, id);
+    if (!dong) return 'chua';
+    var cur = sh.getRange(dong, 10, 1, 4).getValues()[0];   // Liên hệ … Trạng thái
+    var tt = String(cur[3] || '').trim();
+    if (tt === TT_KHOA) return 'khoa';
+    if (sdt_(cur[0]) !== sdt) return 'khac_so';
+    if (tt !== TT_DA) {
+      sh.getRange(dong, 13).setValue(TT_DA);
+      sh.getRange(dong, 15).setValue(bayGio_() + ' (tự nhận mã)');
+    }
+    return 'da';
+  });
+  if (kq === 'da') return { ok: true, trangThai: 'da' };
+  if (kq === 'khoa') return { ok: false, ma_loi: 'khoa', loi: 'Tài khoản đang tạm khóa. Mời liên hệ chủ trang.' };
+  if (kq === 'chua') return { ok: false, ma_loi: 'chua_dang_ky', loi: 'Chưa có đăng ký. Mời đăng ký lại.' };
+  return { ok: false, ma_loi: 'khac_so', loi: 'Số vừa xác nhận khác số đã đăng ký. Mời kiểm tra lại số điện thoại.' };
 }
 function toi_(req, P) {
   // Trạng thái tài khoản và số lượt xem của chính khách này

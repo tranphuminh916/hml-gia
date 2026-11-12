@@ -11,6 +11,15 @@ Nhánh này chứa trang web "Sổ Tử Vi" để gửi link cho khách. Nhánh 
   - `Index.html`: trang khung. Thay `__BASE__` bằng `https://cdn.jsdelivr.net/gh/tranphuminh916/hml-gia@<commit>/web/`.
 - `tools/`: script dựng lại `py-bundle.json`; `giosinh.py` là bản sao công cụ dò giờ sinh (bản gốc ở nhánh `tuvi-skill`).
 
+## Google nhắn mã kích hoạt (Firebase)
+
+Khi đã điền cấu hình Firebase (biến `FIREBASE_CFG` trong `Code.gs`, hoặc thuộc tính tập lệnh `FIREBASE_CONFIG` dán nguyên đoạn `firebaseConfig`), khách đăng ký xong sẽ thấy nút "Gửi mã về số …". Google nhắn mã 6 số về số đó; khách nhập đúng là trang tự kích hoạt.
+
+- Máy chủ hỏi Google số điện thoại vừa xác nhận (`accounts:lookup`) và chỉ kích hoạt khi trùng số khách đã đăng ký. Ô "Kích hoạt lúc" ghi thêm "(tự nhận mã)".
+- Chủ vẫn nhận email báo khách mới kèm mã dự phòng; khách không nhận được tin thì bấm "Nhập mã chủ trang gửi".
+- Cần gói Blaze của Firebase. Bật đăng nhập bằng số điện thoại, chỉ cho phép gửi tin tới Việt Nam (SMS region policy) và thêm tên miền của trang Apps Script (dạng `n-…-script.googleusercontent.com`) vào Authorized domains.
+- Không điền cấu hình thì trang chạy như cũ: chủ gửi mã.
+
 ## Xem chỉ tay
 
 Tab "Chỉ tay" ở thanh dưới cùng. Khách chọn người cần xem, tay thuận, rồi chọn ảnh lòng bàn tay trái, tay phải và (không bắt buộc) cạnh bàn tay phía ngón út.

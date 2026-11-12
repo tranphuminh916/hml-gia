@@ -729,12 +729,13 @@ function sdtHopLe(s) {
   if (d.startsWith("+84")) d = "0" + d.slice(3); else if (d.startsWith("84") && d.length === 11) d = "0" + d.slice(2);
   return /^0\d{8,10}$/.test(d.replace(/\D/g, ""));
 }
-function openKichHoatSheet(loi) {
+function openKichHoatSheet(loi, chuGui) {
   const me = self_(), goi = xg();
   if (KHACH.kichHoat === "khoa") {
     openSheet(`<h3>Tài khoản đang tạm khóa</h3><p class="hint">Mời ${goi} liên hệ chủ trang để được mở lại.</p>`, true);
     return;
   }
+  if (!chuGui && SRV.info && SRV.info.sms && me && sdtHopLe(me.lienHe)) return openSmsSheet(loi);
   openSheet(`<h3>Chờ kích hoạt</h3>
     <p class="hint" style="margin-top:0">Tôi đã nhận đăng ký của ${goi}${me && me.lienHe ? ` (số ${esc(me.lienHe)})` : ""}. Tôi sẽ gửi <b>mã kích hoạt 6 số</b> cho ${goi} qua Zalo hoặc tin nhắn. ${Xg()} nhập mã vào đây là dùng được.</p>
     <label for="kMa">Mã kích hoạt</label>
@@ -742,8 +743,10 @@ function openKichHoatSheet(loi) {
     <div class="small-note" id="kChk" style="color:#8e2323">${esc(loi || "")}</div>
     <div class="btns"><button class="primary full" id="kOk">Kích hoạt</button>
       <button class="ghost full" id="kSua">Sửa thông tin đăng ký</button></div>
-    <div class="small-note">Đã kích hoạt trên máy khác thì nhập lại đúng mã đó.</div>`, true);
+    <div class="small-note">Đã kích hoạt trên máy khác thì nhập lại đúng mã đó.</div>
+    ${SRV.info && SRV.info.sms ? `<div class="btns"><button class="ghost full" id="kSms">Nhận mã qua tin nhắn</button></div>` : ""}`, true);
   $("#kSua").onclick = () => openPersonSheet(self_() || null, { welcome: true });
+  if ($("#kSms")) $("#kSms").onclick = () => openSmsSheet();
   $("#kOk").onclick = async () => {
     const ma = $("#kMa").value.replace(/\D/g, "");
     if (ma.length < 6) return void ($("#kChk").textContent = "Mã gồm 6 số.");
@@ -757,6 +760,90 @@ function openKichHoatSheet(loi) {
     if (j && j.ma_loi === "khoa") { KHACH.kichHoat = "khoa"; localSave(); return openKichHoatSheet(); }
     if (j && j.ma_loi === "chua_dang_ky") return openPersonSheet(self_() || null, { welcome: true });
     $("#kChk").textContent = j ? j.loi : "Chưa kết nối được máy chủ. Mời thử lại sau ít phút.";
+  };
+}
+// Google (Firebase) nhắn mã 6 số về số điện thoại khách đã đăng ký; nhập đúng là kích hoạt ngay.
+const FB_VER = "12.19.0";
+let FB = null;
+async function fbAuth() {
+  if (FB) return FB;
+  const g = `https://www.gstatic.com/firebasejs/${FB_VER}/`;
+  const [am, m] = await Promise.all([import(g + "firebase-app.js"), import(g + "firebase-auth.js")]);
+  const app = am.initializeApp(SRV.info.sms, "sotuvi");
+  const auth = m.initializeAuth(app, { persistence: m.inMemoryPersistence });
+  auth.languageCode = "vi";
+  FB = { auth, m, verifier: null };
+  return FB;
+}
+function soQuocTe(s) {
+  let d = String(s || "").replace(/\D/g, "");
+  if (d.startsWith("84") && d.length >= 11) d = d.slice(2);
+  return "+84" + d.replace(/^0/, "");
+}
+function loiSms(e) {
+  const c = String((e && (e.code || e.message)) || e || "");
+  if (/invalid-phone-number|missing-phone-number/.test(c)) return "Số điện thoại chưa đúng. Mời sửa lại thông tin đăng ký.";
+  if (/too-many-requests|quota-exceeded/.test(c)) return "Đã gửi mã quá nhiều lần. Mời thử lại sau ít phút, hoặc nhập mã chủ trang gửi.";
+  if (/invalid-verification-code/.test(c)) return "Mã chưa đúng. Mời nhập lại 6 số trong tin nhắn.";
+  if (/code-expired|session-expired/.test(c)) return "Mã đã hết hạn. Mời bấm gửi lại mã.";
+  if (/network-request-failed|Failed to fetch|import/i.test(c)) return "Mạng đang chập chờn. Mời thử lại.";
+  if (/unauthorized-domain|Hostname|app-not-authorized|invalid-app-credential|captcha/i.test(c))
+    return `Trang chưa được phép gửi tin nhắn (cần thêm tên miền ${location.hostname} vào Firebase).`;
+  return "Chưa gửi được mã (" + c.replace(/^Firebase:\s*/, "").slice(0, 80) + ").";
+}
+function openSmsSheet(loi) {
+  const me = self_(), goi = xg(), so = me ? me.lienHe : "";
+  openSheet(`<h3>Kích hoạt</h3>
+    <p class="hint" style="margin-top:0">Tôi đã nhận đăng ký của ${goi}. Bấm nút dưới đây, Google sẽ nhắn <b>mã 6 số</b> về số <b>${esc(so)}</b>. ${Xg()} nhập mã đó là dùng được ngay.</p>
+    <div class="btns"><button class="primary full" id="sGui">Gửi mã về số ${esc(so)}</button></div>
+    <div id="sNhap" hidden>
+      <label for="sMa">Mã trong tin nhắn</label>
+      <input type="text" id="sMa" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="6 số">
+      <div class="btns"><button class="primary full" id="sOk">Kích hoạt</button></div>
+    </div>
+    <div class="small-note" id="sChk" style="color:#8e2323">${esc(loi || "")}</div>
+    <div class="btns"><button class="ghost full" id="sSua">Sửa số điện thoại</button>
+      <button class="ghost full" id="sChu">Không nhận được tin? Nhập mã chủ trang gửi</button></div>
+    <div id="sRc"></div>`, true);
+  let conf = null;
+  const chk = t => { $("#sChk").textContent = t || ""; };
+  $("#sSua").onclick = () => openPersonSheet(self_() || null, { welcome: true });
+  $("#sChu").onclick = () => openKichHoatSheet("", true);
+  $("#sGui").onclick = async () => {
+    const b = $("#sGui"); b.disabled = true; chk(""); b.textContent = "Đang gửi mã…";
+    try {
+      const f = await fbAuth();
+      if (f.verifier) { try { f.verifier.clear(); } catch (e) {} }
+      const el = document.createElement("div"); $("#sRc").replaceChildren(el);
+      f.verifier = new f.m.RecaptchaVerifier(f.auth, el, { size: "invisible" });
+      conf = await f.m.signInWithPhoneNumber(f.auth, soQuocTe(so), f.verifier);
+      $("#sNhap").hidden = false; $("#sMa").focus();
+      b.textContent = "Gửi lại mã";
+      chk(""); $("#sChk").style.color = "#2f6b3a"; $("#sChk").textContent = "Đã gửi. Tin nhắn có thể đến sau vài chục giây.";
+    } catch (e) {
+      $("#sChk").style.color = "#8e2323"; chk(loiSms(e)); b.textContent = `Gửi mã về số ${so}`;
+    } finally { b.disabled = false; }
+  };
+  $("#sOk").onclick = async () => {
+    const ma = $("#sMa").value.replace(/\D/g, "");
+    $("#sChk").style.color = "#8e2323";
+    if (ma.length !== 6) return void chk("Mã gồm 6 số.");
+    if (!conf) return void chk("Mời bấm gửi mã trước.");
+    const b = $("#sOk"); b.disabled = true; chk("");
+    try {
+      const cred = await conf.confirm(ma);
+      const tok = await cred.user.getIdToken();
+      let j = null; try { j = await callServer({ action: "kichhoatsms", idToken: tok }); } catch (e) { j = null; }
+      try { FB.auth.signOut(); } catch (e) {}
+      if (j && j.ok) {
+        KHACH.kichHoat = "da"; localSave(); closeSheet();
+        toast(`Đã kích hoạt. Mời ${xg()} bắt đầu xem.`); flushOutbox(); capNhatLuot(); return;
+      }
+      if (j && j.ma_loi === "khoa") { KHACH.kichHoat = "khoa"; localSave(); return openKichHoatSheet(); }
+      if (j && j.ma_loi === "chua_dang_ky") return openPersonSheet(self_() || null, { welcome: true });
+      chk(j ? j.loi : "Chưa kết nối được máy chủ. Mời thử lại sau ít phút.");
+    } catch (e) { chk(loiSms(e)); }
+    finally { b.disabled = false; }
   };
 }
 // Mỗi lần mở trang: hỏi máy chủ trạng thái tài khoản (để biết đã kích hoạt, hay bị khóa)
