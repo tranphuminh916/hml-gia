@@ -524,13 +524,18 @@ function Xg() { const v = xg(); return v.charAt(0).toUpperCase() + v.slice(1); }
 function applyXung() { $$(".xg").forEach(e => e.textContent = xg()); $$(".Xg").forEach(e => e.textContent = Xg()); }
 function personPublic(p) { return p ? { ten: p.ten, quanHe: p.quanHe, gioi: p.gioi, ngay: p.ngay, am: !!p.am, nhuan: !!p.nhuan, gio: p.gio || "", noi: p.noi || "" } : null; }
 
+// Một số điện thoại = một tài khoản: máy này đã được gộp vào tài khoản cũ cùng số thì máy chủ trả mã khách chính.
+function nhanMaMoi(j) {
+  if (j && j.khachIdMoi && /^[A-Za-z0-9_-]{6,64}$/.test(j.khachIdMoi) && j.khachIdMoi !== KHACH.id) { KHACH.id = j.khachIdMoi; localSave(); }
+  return j;
+}
 async function callServer(body, timeoutMs = 30000) {
   if (!SRV.url) { const e = new Error("Trang chưa nối máy chủ"); e.code = "no_server"; throw e; }
-  if (GAS) return await gasCall({ ...body, ma: KHACH.ma, khachId: KHACH.id });
+  if (GAS) return nhanMaMoi(await gasCall({ ...body, ma: KHACH.ma, khachId: KHACH.id }));
   const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), timeoutMs);
   try {
     const r = await fetch(SRV.url, { method: "POST", body: JSON.stringify({ ...body, ma: KHACH.ma, khachId: KHACH.id }), signal: ctl.signal, redirect: "follow" });
-    return await r.json();
+    return nhanMaMoi(await r.json());
   } finally { clearTimeout(t); }
 }
 function queue(action, payload) { OUTBOX.push({ action, ...payload }); localSave(); return flushOutbox(); }
@@ -870,7 +875,7 @@ function renderLuot() {
   if (!gioiHan() || !l) { box.innerHTML = ""; return; }
   const con = Math.max(0, l.duoc - l.da);
   box.innerHTML = con > 0
-    ? `<div class="notice info">${Xg()} còn <b>${con}/${l.duoc}</b> lượt xem. Mỗi lần xem kết quả tính 1 lượt; luận giải cho lần xem đó không tính thêm. Dò giờ sinh không tính lượt.</div>`
+    ? `<div class="notice info">${Xg()} còn <b>${con}/${l.duoc}</b> lượt xem. Mỗi lần xem kết quả tính 1 lượt; luận giải cho lần xem đó không tính thêm. Dò giờ sinh không tính lượt. Lượt tính theo số điện thoại, dùng chung trên mọi máy.</div>`
     : `<div class="notice">${Xg()} đã dùng hết ${l.duoc} lượt xem.${l.choCap ? ` Tại Hạ đã nhận yêu cầu xin thêm lượt của ${xg()}.` : ""}<div class="btns"><button class="gold small" data-luot="xin">${l.choCap ? "Kiểm tra lại" : "Xin thêm lượt"}</button></div></div>`;
 }
 async function capNhatLuot() {
