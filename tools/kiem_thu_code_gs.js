@@ -26,18 +26,24 @@ function makeSheet() {
 }
 const sheets = {};
 const ss = { getSheetByName: n => sheets[n] || null, insertSheet: n => (sheets[n] = makeSheet()), getUrl: () => 'https://sheet' };
-const props = { CAN_KICH_HOAT: '1', LUOT_XEM_MOI_KHACH: '3', BAO_EMAIL: '0', FIREBASE_CONFIG: '' };
+const props = { CAN_KICH_HOAT: '1', LUOT_XEM_MOI_KHACH: '3', BAO_EMAIL: '', FIREBASE_CONFIG: '' };
+let NGAY = ['13/11/2026', '20261113'];
 const cache = {};
 const mails = [];
 const ctx = {
   SpreadsheetApp: { getActiveSpreadsheet: () => ss },
-  PropertiesService: { getScriptProperties: () => ({ getProperty: k => props[k] ?? null }) },
+  PropertiesService: { getScriptProperties: () => ({ getProperty: k => props[k] ?? null, setProperty: (k, v) => { props[k] = String(v); },
+    getKeys: () => Object.keys(props), deleteProperty: k => { delete props[k]; } }) },
   LockService: { getScriptLock: () => { return { waitLock() { if (ctx.__locked) throw new Error('khóa lồng nhau'); ctx.__locked = true; }, releaseLock() { ctx.__locked = false; } }; } },
-  CacheService: { getScriptCache: () => ({ get: k => cache[k] ?? null, put: (k, v) => { cache[k] = v; } }) },
-  Utilities: { formatDate: (d, tz, f) => f === 'yyyyMMdd' ? '20261113' : '13/11/2026 14:30:00' },
+  CacheService: { getScriptCache: () => ({ get: k => cache[k] ?? null, put: (k, v) => { cache[k] = v; }, remove: k => { delete cache[k]; } }) },
+  Utilities: { formatDate: (d, tz, f) => f === 'yyyyMMdd' ? NGAY[1] : f === 'dd/MM/yyyy' ? NGAY[0] : f === 'HH:mm' ? '14:30' : NGAY[0] + ' 14:30:00',
+    getUuid: () => require('crypto').randomUUID(),
+    computeHmacSha256Signature: (v, k) => [...require('crypto').createHmac('sha256', k).update(v).digest()],
+    base64EncodeWebSafe: b => Buffer.from(b).toString('base64').replace(/\+/g, '-').replace(/\//g, '_') },
+  ScriptApp: { getService: () => ({ getUrl: () => 'https://script.google.com/macros/s/X/exec' }) },
   MailApp: { sendEmail: (...a) => mails.push(a) },
   Session: { getEffectiveUser: () => ({ getEmail: () => 'owner@x' }) },
-  HtmlService: {}, ContentService: {}, UrlFetchApp: {},
+  HtmlService: { createHtmlOutput: h => { const o = { html: h, setTitle: () => o, addMetaTag: () => o }; return o; } }, ContentService: {}, UrlFetchApp: {},
   console
 };
 vm.createContext(ctx);
@@ -107,5 +113,46 @@ kt('máy mới của số bị khóa: khóa', !r.ok && r.ma_loi === 'khoa' && r.
 
 // 8. Lượt xem ghi bằng mã cũ (trước khi gộp) vẫn được luận / xem lại
 kt('cùng khách (mã cũ đã gộp)', ctx.cungKhach_('mayBbbbb', 'mayAaaaa') && !ctx.cungKhach_('mayAaaaa', 'cuCCCCCC'));
+
+// 9. Khách xin thêm lượt, chủ bấm số trong thư: được thêm đúng số đó, chỉ trong ngày
+const thuCuoi = () => mails[mails.length - 1][0];
+const linkSo = (thu, n) => { const m = thu.htmlBody.match(new RegExp('href="([^"]*&amp;n=' + n + '&amp;[^"]*)"')); return m && m[1].replace(/&amp;/g, '&'); };
+const bam = url => { const q = Object.fromEntries(new URL(url).searchParams); return ctx.doGet({ parameter: q }).html; };
+r = api('mayAaaaa', { action: 'toi' }); const goc = r.luot.duoc;          // 5 (chủ đã sửa ô P ở bước 3)
+while (luot('mayAaaaa', 'h' + Math.random().toString(36).slice(2, 6)).ok);   // xem đến hết lượt
+r = api('mayAaaaa', { action: 'xinluot', soLuot: 2, loiNhan: 'xem cho con' });
+kt('xin thêm: gửi thư', r.ok && mails.length && /xin thêm 2 lượt xem/.test(thuCuoi().subject), r);
+kt('thư có nút 1 2 3 5 10', [1, 2, 3, 5, 10].every(n => linkSo(thuCuoi(), n)), thuCuoi().htmlBody.slice(0, 300));
+let h = bam(linkSo(thuCuoi(), 2));
+kt('bấm 2: trang báo đã duyệt', /Đã duyệt/.test(h) && /2 lượt xem/.test(h), h.slice(0, 300));
+kt('cột V ghi +2 hôm nay', dongCua('mayAaaaa')[21] === '13/11/2026: +2', dongCua('mayAaaaa'));
+r = api('mayAaaaa', { action: 'toi' }); kt('được xem = gốc + 2', r.luot.duoc === goc + 2, r);
+const thuXem = thuCuoi();
+h = bam(linkSo(thuXem, 5)); r = api('mayAaaaa', { action: 'toi' });
+kt('bấm số khác (5) cho cùng yêu cầu: thay số cũ', r.luot.duoc === goc + 5 && dongCua('mayAaaaa')[21] === '13/11/2026: +5', r);
+h = bam(linkSo(thuXem, 5)); r = api('mayAaaaa', { action: 'toi' });
+kt('bấm lại cùng số: không cộng dồn', r.luot.duoc === goc + 5, r);
+kt('xem được thêm', luot('mayAaaaa', 'z1').ok);
+h = bam(linkSo(thuXem, 3).replace(/s=[^&]+/, 's=sai'));
+kt('link sửa chữ ký: từ chối', /không hợp lệ/.test(h), h.slice(0, 200));
+h = bam(linkSo(thuXem, 3).replace('n=3', 'n=30'));
+kt('link sửa số: từ chối', /không hợp lệ/.test(h), h.slice(0, 200));
+kt('máy B (đã gộp) thấy cùng số', api('mayBbbbb', { action: 'toi' }).luot.duoc === goc + 5);
+NGAY = ['14/11/2026', '20261114'];
+r = api('mayAaaaa', { action: 'toi' }); kt('qua ngày: số cấp thêm hết hạn', r.luot.duoc === goc, r);
+NGAY = ['13/11/2026', '20261113'];
+// 10. Xin thêm lần luận trọn đời, chủ bấm 1
+r = api('mayAaaaa', { action: 'xinluan', loai: 'trondoi', soLan: 1 });
+kt('xin luận: thư', r.ok && /xin thêm 1 lần luận trọn đời/.test(thuCuoi().subject), thuCuoi().subject);
+kt('luận trước khi duyệt: 0 thêm', ctx.themLuan_('mayAaaaa', 'trondoi') === 0);
+h = bam(linkSo(thuCuoi(), 1));
+kt('duyệt 1 lần trọn đời', /1 lần trọn đời/.test(h) && dongCua('mayAaaaa')[22] === '13/11/2026: trọn đời +1', [h.slice(0, 200), dongCua('mayAaaaa')[22]]);
+kt('themLuan_ trọn đời = 1, luận giải = 0', ctx.themLuan_('mayAaaaa', 'trondoi') === 1 && ctx.themLuan_('mayAaaaa', 'luan') === 0);
+dongCua('mayAaaaa')[18] = 2;   // chủ cấp lâu dài 2 (cột S)
+kt('cộng lâu dài + hôm nay', ctx.themLuan_('mayAaaaa', 'trondoi') === 3);
+NGAY = ['14/11/2026', '20261114'];
+kt('qua ngày: chỉ còn lâu dài', ctx.themLuan_('mayAaaaa', 'trondoi') === 2);
+NGAY = ['22/11/2026', '20261122'];
+h = bam(linkSo(thuXem, 2)); kt('link quá 7 ngày: hết hạn', /hết hạn/.test(h), h.slice(0, 200));
 console.log(`ĐẠT ${ok}, SAI ${fail}`);
 process.exit(fail ? 1 : 0);

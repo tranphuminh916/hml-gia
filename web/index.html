@@ -919,6 +919,15 @@ async function dungLuot(ctx) {
   if (j && (j.ma_loi === "chua_kich_hoat" || j.ma_loi === "khoa")) { KHACH.kichHoat = j.ma_loi === "khoa" ? "khoa" : ""; localSave(); kiemKichHoat(); return { loi: j.loi }; }
   return { loi: (j && j.loi) || `Chưa kết nối được máy chủ nên chưa mở được lượt xem. Mời ${xg()} thử lại sau ít phút.` };
 }
+// Ô chọn số lượt / lần muốn xin (chủ trang nhận thư, bấm số là cấp thêm trong ngày)
+function chonSoHtml(id, cacSo, macDinh, donVi) {
+  return `<label>${Xg()} muốn xin thêm mấy ${donVi}?</label><div class="seg" id="${id}">${cacSo.map(n => `<button type="button" class="chip${n === macDinh ? " on" : ""}" data-so="${n}">${n}</button>`).join("")}</div>`;
+}
+function ganChonSo(id) {
+  const el = $("#" + id);
+  el.onclick = e => { const c = e.target.closest("[data-so]"); if (!c) return; $$("[data-so]", el).forEach(x => x.classList.toggle("on", x === c)); };
+  return () => { const c = $("[data-so].on", el); return c ? +c.dataset.so : 1; };
+}
 async function moXinLuot() {
   await capNhatLuot();
   if (conLuotLocal()) { closeSheet(); toast(`${Xg()} đã có thêm lượt xem. Mời ${xg()} xem tiếp.`); $$("[data-luot]").forEach(b => { const c = b.closest(".card"); if (c && c.parentElement && c.parentElement.id !== "luotNote") c.remove(); }); return; }
@@ -926,18 +935,20 @@ async function moXinLuot() {
   if (l.choCap) { toast(`Yêu cầu đã gửi. Tại Hạ sẽ cấp thêm cho ${xg()} sớm.`); return; }
   openSheet(`<h3>Xin thêm lượt xem</h3>
     <p class="hint" style="margin-top:0">${Xg()} đã xem ${l.da}/${l.duoc} lượt. Tại Hạ sẽ nhận yêu cầu và cấp thêm lượt cho ${xg()}.</p>
+    ${chonSoHtml("xlSo", [1, 2, 3, 5], 3, "lượt")}
     <label for="xlNhan">Lời nhắn <span class="hint">(không bắt buộc)</span></label>
     <textarea id="xlNhan" maxlength="300" placeholder="vd: Tôi muốn xem thêm cho vợ và con"></textarea>
     <div class="small-note" id="xlChk" style="color:#8e2323"></div>
     <div class="btns"><button class="ghost" id="xlNo">Đóng</button><button class="primary" id="xlOk">Gửi yêu cầu</button></div>`);
   $("#xlNo").onclick = closeSheet;
+  const soXl = ganChonSo("xlSo");
   $("#xlOk").onclick = async () => {
     $("#xlOk").disabled = true;
-    let j = null; try { j = await callServer({ action: "xinluot", loiNhan: $("#xlNhan").value.trim() }); } catch (e) { j = null; }
+    let j = null; try { j = await callServer({ action: "xinluot", soLuot: soXl(), loiNhan: $("#xlNhan").value.trim() }); } catch (e) { j = null; }
     if (j && j.ok) {
       if (j.luot) { KHACH.luot = j.luot; localSave(); renderLuot(); }
       if (j.conLuot) { closeSheet(); toast(`${Xg()} vẫn còn lượt xem.`); return; }
-      openSheet(`<h3>Đã gửi yêu cầu</h3><p class="hint" style="margin-top:0">Tại Hạ đã nhận yêu cầu của ${xg()}. Khi Tại Hạ cấp thêm lượt, ${xg()} mở lại trang là xem tiếp được.</p><div class="btns"><button class="primary full" id="xlX">Đóng</button></div>`);
+      openSheet(`<h3>Đã gửi yêu cầu</h3><p class="hint" style="margin-top:0">Tại Hạ đã nhận yêu cầu của ${xg()}. Khi Tại Hạ cấp thêm, trang tự mở lại lượt xem (lượt cấp thêm dùng trong ngày được cấp).</p><div class="btns"><button class="primary full" id="xlX">Đóng</button></div>`);
       $("#xlX").onclick = closeSheet; return;
     }
     $("#xlOk").disabled = false;
@@ -1136,14 +1147,16 @@ function hetLuanHtml(j) {
 function moXinLuan(loai) {
   openSheet(`<h3>Xin thêm lần luận</h3>
     <p class="hint" style="margin-top:0">Tại Hạ sẽ nhận yêu cầu và cấp thêm lần luận cho ${xg()}. Khi được cấp, ${xg()} bấm lại nút luận là luận tiếp được, không cần tải lại trang.</p>
+    ${chonSoHtml("xnSo", [1, 2, 3], 1, "lần")}
     <label for="xnNhan">Lời nhắn <span class="hint">(không bắt buộc)</span></label>
     <textarea id="xnNhan" maxlength="300" placeholder="vd: Tôi muốn luận thêm cho chồng và con"></textarea>
     <div class="small-note" id="xnChk" style="color:#8e2323"></div>
     <div class="btns"><button class="ghost" id="xnNo">Đóng</button><button class="primary" id="xnOk">Gửi yêu cầu</button></div>`);
   $("#xnNo").onclick = closeSheet;
+  const soXn = ganChonSo("xnSo");
   $("#xnOk").onclick = async () => {
     $("#xnOk").disabled = true;
-    let j = null; try { j = await callServer({ action: "xinluan", loai, loiNhan: $("#xnNhan").value.trim() }); } catch (e) { j = null; }
+    let j = null; try { j = await callServer({ action: "xinluan", loai, soLan: soXn(), loiNhan: $("#xnNhan").value.trim() }); } catch (e) { j = null; }
     if (j && j.ok) {
       openSheet(`<h3>Đã gửi yêu cầu</h3><p class="hint" style="margin-top:0">${j.daGui ? "Yêu cầu của " + xg() + " đã gửi trước đó." : "Tại Hạ đã nhận yêu cầu của " + xg() + "."} Khi Tại Hạ cấp thêm, ${xg()} bấm lại nút luận là được.</p><div class="btns"><button class="primary full" id="xnX">Đóng</button></div>`);
       $("#xnX").onclick = closeSheet; return;
