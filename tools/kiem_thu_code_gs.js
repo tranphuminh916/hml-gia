@@ -114,33 +114,49 @@ kt('máy mới của số bị khóa: khóa', !r.ok && r.ma_loi === 'khoa' && r.
 // 8. Lượt xem ghi bằng mã cũ (trước khi gộp) vẫn được luận / xem lại
 kt('cùng khách (mã cũ đã gộp)', ctx.cungKhach_('mayBbbbb', 'mayAaaaa') && !ctx.cungKhach_('mayAaaaa', 'cuCCCCCC'));
 
-// 9. Khách xin thêm lượt, chủ bấm số trong thư: được thêm đúng số đó, chỉ trong ngày
+// 9. Khách xin thêm lượt, chủ bấm số trong thư: tổng được xem tăng để khách xem tiếp đúng số đó
 const thuCuoi = () => mails[mails.length - 1][0];
 const linkSo = (thu, n) => { const m = thu.htmlBody.match(new RegExp('href="([^"]*&amp;n=' + n + '&amp;[^"]*)"')); return m && m[1].replace(/&amp;/g, '&'); };
 const bam = url => { const q = Object.fromEntries(new URL(url).searchParams); return ctx.doGet({ parameter: q }).html; };
-r = api('mayAaaaa', { action: 'toi' }); const goc = r.luot.duoc;          // 5 (chủ đã sửa ô P ở bước 3)
 while (luot('mayAaaaa', 'h' + Math.random().toString(36).slice(2, 6)).ok);   // xem đến hết lượt
+r = api('mayAaaaa', { action: 'toi' }); const goc = r.luot.duoc; kt('đã hết lượt', r.luot.da === goc, r);
 r = api('mayAaaaa', { action: 'xinluot', soLuot: 2, loiNhan: 'xem cho con' });
 kt('xin thêm: gửi thư', r.ok && mails.length && /xin thêm 2 lượt xem/.test(thuCuoi().subject), r);
+kt('thư ghi tổng đã xem', thuCuoi().htmlBody.includes('Tổng đã xem: ' + goc + ' lượt'), thuCuoi().htmlBody.slice(0, 400));
 kt('thư có nút 1 2 3 5 10', [1, 2, 3, 5, 10].every(n => linkSo(thuCuoi(), n)), thuCuoi().htmlBody.slice(0, 300));
 let h = bam(linkSo(thuCuoi(), 2));
-kt('bấm 2: trang báo đã duyệt', /Đã duyệt/.test(h) && /2 lượt xem/.test(h), h.slice(0, 300));
-kt('cột V ghi +2 hôm nay', dongCua('mayAaaaa')[21] === '13/11/2026: +2', dongCua('mayAaaaa'));
-r = api('mayAaaaa', { action: 'toi' }); kt('được xem = gốc + 2', r.luot.duoc === goc + 2, r);
+kt('bấm 2: trang báo đã duyệt, còn 2', /Đã duyệt/.test(h) && /còn 2 lượt/.test(h), h.slice(0, 400));
+r = api('mayAaaaa', { action: 'toi' }); kt('tổng được xem = đã xem + 2 (ô P)', r.luot.duoc === goc + 2 && dongCua('mayAaaaa')[15] === goc + 2, r);
 const thuXem = thuCuoi();
 h = bam(linkSo(thuXem, 5)); r = api('mayAaaaa', { action: 'toi' });
-kt('bấm số khác (5) cho cùng yêu cầu: thay số cũ', r.luot.duoc === goc + 5 && dongCua('mayAaaaa')[21] === '13/11/2026: +5', r);
+kt('bấm số khác (5) cho cùng yêu cầu: thay số cũ', r.luot.duoc === goc + 5, r);
 h = bam(linkSo(thuXem, 5)); r = api('mayAaaaa', { action: 'toi' });
 kt('bấm lại cùng số: không cộng dồn', r.luot.duoc === goc + 5, r);
 kt('xem được thêm', luot('mayAaaaa', 'z1').ok);
+h = bam(linkSo(thuXem, 5)); r = api('mayAaaaa', { action: 'toi' });
+kt('bấm lại sau khi khách đã xem: tổng giữ nguyên', r.luot.duoc === goc + 5 && r.luot.da === goc + 1, r);
 h = bam(linkSo(thuXem, 3).replace(/s=[^&]+/, 's=sai'));
 kt('link sửa chữ ký: từ chối', /không hợp lệ/.test(h), h.slice(0, 200));
 h = bam(linkSo(thuXem, 3).replace('n=3', 'n=30'));
 kt('link sửa số: từ chối', /không hợp lệ/.test(h), h.slice(0, 200));
 kt('máy B (đã gộp) thấy cùng số', api('mayBbbbb', { action: 'toi' }).luot.duoc === goc + 5);
 NGAY = ['14/11/2026', '20261114'];
-r = api('mayAaaaa', { action: 'toi' }); kt('qua ngày: số cấp thêm hết hạn', r.luot.duoc === goc, r);
+r = api('mayAaaaa', { action: 'toi' }); kt('qua ngày: lượt đã duyệt vẫn còn', r.luot.duoc === goc + 5, r);
 NGAY = ['13/11/2026', '20261113'];
+// 9b. Khách đã xem quá tổng (đổi máy trước đây): da 15, tổng 10. Bấm 5 thì xem tiếp được 5.
+KH.appendRow(['quaXXXXXX', 't', 't', 'Khách Quá', 'Nữ', '1980', 'Dương', '', '', '0911222333', 15, 0, 'Đã kích hoạt', '222222', 't', 10, '']);
+r = api('quaXXXXXX', { action: 'xinluot', soLuot: 5 });
+kt('thư ghi đã xem quá', /Tổng đã xem: 15 lượt · Tổng được xem: 10 lượt/.test(thuCuoi().htmlBody) && /quá 5 lượt/.test(thuCuoi().htmlBody), thuCuoi().htmlBody.slice(0, 500));
+h = bam(linkSo(thuCuoi(), 5)); r = api('quaXXXXXX', { action: 'toi' });
+kt('xem quá: bấm 5 thì tổng 20, còn 5', r.luot.duoc === 20 && r.luot.da === 15, r);
+// 9c. Đã duyệt theo cách cũ (cấp trong ngày, cột V) rồi bấm lại cùng số: gộp vào tổng, còn đủ số đã duyệt
+KH.appendRow(['cuVVVVVVV', 't', 't', 'Khách Cũ', 'Nữ', '1980', 'Dương', '', '', '0911222444', 15, 0, 'Đã kích hoạt', '333333', 't', 10, '', '', '', '', '', '13/11/2026: +5']);
+const thuCu = (() => { api('cuVVVVVVV', { action: 'xinluot', soLuot: 5 }); return thuCuoi(); })();
+const rqCu = new URL(linkSo(thuCu, 5)).searchParams.get('r');
+props['dy_' + rqCu + '_xem'] = '13/11/2026:5';                      // bản trước đã ghi: bấm 5 hôm nay
+kt('trước khi sửa: còn 0', api('cuVVVVVVV', { action: 'toi' }).luot.duoc === 15);
+h = bam(linkSo(thuCu, 5)); r = api('cuVVVVVVV', { action: 'toi' });
+kt('bấm lại 5: tổng 20, cột V xóa', r.luot.duoc === 20 && !dongCua('cuVVVVVVV')[21], [r, dongCua('cuVVVVVVV')]);
 // 10. Xin thêm lần luận trọn đời, chủ bấm 1
 r = api('mayAaaaa', { action: 'xinluan', loai: 'trondoi', soLan: 1 });
 kt('xin luận: thư', r.ok && /xin thêm 1 lần luận trọn đời/.test(thuCuoi().subject), thuCuoi().subject);

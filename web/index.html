@@ -948,7 +948,7 @@ async function moXinLuot() {
     if (j && j.ok) {
       if (j.luot) { KHACH.luot = j.luot; localSave(); renderLuot(); }
       if (j.conLuot) { closeSheet(); toast(`${Xg()} vẫn còn lượt xem.`); return; }
-      openSheet(`<h3>Đã gửi yêu cầu</h3><p class="hint" style="margin-top:0">Tại Hạ đã nhận yêu cầu của ${xg()}. Khi Tại Hạ cấp thêm, trang tự mở lại lượt xem (lượt cấp thêm dùng trong ngày được cấp).</p><div class="btns"><button class="primary full" id="xlX">Đóng</button></div>`);
+      openSheet(`<h3>Đã gửi yêu cầu</h3><p class="hint" style="margin-top:0">Tại Hạ đã nhận yêu cầu của ${xg()}. Khi Tại Hạ cấp thêm, trang tự mở lại lượt xem.</p><div class="btns"><button class="primary full" id="xlX">Đóng</button></div>`);
       $("#xlX").onclick = closeSheet; return;
     }
     $("#xlOk").disabled = false;

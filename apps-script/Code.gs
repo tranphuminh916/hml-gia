@@ -25,9 +25,12 @@
  *   Một số điện thoại = một tài khoản: khách mở trang trên điện thoại, máy tính khác và xác nhận lại cùng số thì dùng
  *   chung dòng khách cũ (chung lượt xem, lượt luận, trạng thái khóa). Dòng của máy mới ghi "Gộp vào <mã khách>".
  *   Đổi số điện thoại trong thông tin đăng ký thì phải kích hoạt lại với số mới.
- *   Khách xin thêm lượt xem / lần luận (chọn số muốn xin) → chủ nhận thư có các nút số 1, 2, 3, 5, 10; bấm số nào thì
- *   khách được thêm bấy nhiêu, dùng trong ngày bấm (ghi ở cột "Cấp thêm lượt hôm nay", "Cấp thêm luận hôm nay").
- *   Bấm số khác cho cùng một yêu cầu thì số mới thay số cũ. Cấp lâu dài vẫn sửa ô "Lượt được xem" / cột R, S, T như cũ.
+ *   Khách xin thêm lượt xem / lần luận (chọn số muốn xin) → chủ nhận thư (kèm tổng số lượt khách đã xem) có các nút
+ *   số 1, 2, 3, 5, 10. Bấm số N:
+ *     - lượt xem: tăng TỔNG lượt được xem (ô "Lượt được xem") để khách xem tiếp được đúng N lượt, tính từ số đã xem
+ *       (khách đã xem quá tổng cũ, vd do đổi máy trước đây, thì vẫn được đủ N lượt). Không hết hạn theo ngày.
+ *     - lần luận: thêm N lần trong ngày bấm (cột "Cấp thêm luận hôm nay"), vì lần luận tính theo ngày.
+ *   Bấm số khác cho cùng một yêu cầu thì số mới thay số cũ. Cấp lâu dài lần luận vẫn ghi cột R, S, T như cũ.
  *
  * Xem chỉ tay: trang gửi ảnh bàn tay (đã nén, tối đa 3 ảnh) kèm yêu cầu luận; máy chủ chuyển ảnh cho Claude xem rồi trả bài luận.
  *   Ảnh KHÔNG ghi vào Sheet; Sheet chỉ ghi thông tin đã gửi và bài luận. Mỗi lần xem tính 1 lượt xem và 1 lần luận như các mục khác.
@@ -47,7 +50,8 @@ var COT_DA_XEM = 11, COT_DUOC_XEM = 16, COT_XIN_THEM = 17;
 var COT_THEM = { luan: 18, trondoi: 19, viec: 20 }, COT_XIN_LUAN = 21;
 var TEN_LOAI = { luan: 'luận giải', trondoi: 'luận trọn đời', viec: 'luận xem việc đủ các cách' };
 var CHU_COT = { 18: 'R', 19: 'S', 20: 'T', 21: 'U' };
-// Chủ bấm số trong thư khách xin thêm: cộng thêm lượt xem / lần luận CHỈ TRONG NGÀY bấm (cột V, W; qua ngày tự hết).
+// Chủ bấm số trong thư khách xin thêm. Lượt xem: tăng tổng (ô P). Lần luận: thêm trong ngày bấm (cột W, qua ngày tự hết).
+// Cột V ("Cấp thêm lượt hôm nay") là cách cấp lượt xem theo ngày của bản trước: vẫn đọc trong ngày ghi, lần duyệt sau gộp vào ô P.
 var COT_XEM_HOM_NAY = 22, COT_LUAN_HOM_NAY = 23;
 var SO_DUYET = [1, 2, 3, 5, 10];
 // Địa chỉ trang (bản triển khai đang dùng) cho link trong thư; đổi được bằng thuộc tính URL_TRANG.
@@ -721,13 +725,17 @@ function baoXinLuot_(P, k, loiNhan) {
     var url = SpreadsheetApp.getActiveSpreadsheet().getUrl();
     var o = url + (k.gid != null ? '#gid=' + k.gid + '&range=P' + k.dong : '');
     var rq = maYeuCau_();
+    var moc = Math.max(k.da, k.duoc);
     guiThuDuyet_(to, 'Sổ Tử Vi – ' + k.ten + ' xin thêm ' + k.soXin + ' lượt xem (' + k.sdt + ')', {
-      dong: [k.ten + ' · ' + k.sdt, 'Đã xem ' + k.da + '/' + k.duoc + ' lượt. Xin thêm ' + k.soXin + ' lượt.',
-        'Lời nhắn: ' + (loiNhan || '(không có)')],
-      hoi: 'Bấm số lượt cho thêm (khách dùng trong hôm nay):',
+      dong: [k.ten + ' · ' + k.sdt,
+        'Tổng đã xem: ' + k.da + ' lượt · Tổng được xem: ' + k.duoc + ' lượt · Còn lại: ' + Math.max(0, k.duoc - k.da) + ' lượt.' +
+          (k.da > k.duoc ? ' (Đã xem quá ' + (k.da - k.duoc) + ' lượt do trước đây dùng nhiều máy.)' : ''),
+        'Xin thêm ' + k.soXin + ' lượt.', 'Lời nhắn: ' + (loiNhan || '(không có)')],
+      hoi: 'Bấm số lượt cho thêm – khách xem tiếp được đúng bấy nhiêu lượt (tổng được xem thành ' + moc + ' + số anh bấm):',
       nut: SO_DUYET.concat(SO_DUYET.indexOf(k.soXin) < 0 ? [k.soXin] : []).sort(function (a, b) { return a - b; })
         .map(function (n) { return { n: n, url: linkDuyet_(P, k.id, 'xem', n, rq), xin: n === k.soXin }; }),
-      cuoi: ['Không cho thêm thì bỏ qua thư này.', 'Muốn cho lâu dài (không hết hạn): sửa ô "Lượt được xem" của khách: ' + o]
+      cuoi: ['Không cho thêm thì bỏ qua thư này. Bấm số khác trong thư thì số mới thay cho số vừa bấm.',
+        'Ô "Lượt được xem" của khách: ' + o]
     });
   } catch (e) { /* gửi thư lỗi thì thôi, yêu cầu vẫn ghi ở cột "Xin thêm lượt" */ }
 }
@@ -766,7 +774,15 @@ function linkDuyet_(P, id, loai, n, rq) {
   return urlTrang_(P) + '?duyet=1&k=' + encodeURIComponent(id) + '&t=' + loai + '&n=' + n + '&r=' + rq + '&d=' + d +
     '&s=' + kyDuyet_(P, [id, loai, n, rq, d].join('|'));
 }
-// Chủ bấm số trong thư: cộng thêm cho khách trong ngày hôm nay. Bấm số khác cho cùng yêu cầu thì số mới thay số cũ.
+function docDy_(s) {
+  s = String(s == null ? '' : s).trim();
+  var m = s.match(/^(\d{8})\|(\d+)(?:\|(\d+))?$/);
+  if (m) return { ngay: m[1], n: Number(m[2]), moc: m[3] == null ? null : Number(m[3]) };
+  m = s.match(/^(\d{2})\/(\d{2})\/(\d{4}):(\d+)$/);
+  if (m) return { ngay: m[3] + m[2] + m[1], n: Number(m[4]), moc: null };
+  return null;
+}
+// Chủ bấm số trong thư: lượt xem tăng tổng (tính từ số đã xem), lần luận thêm trong ngày. Bấm số khác thì số mới thay số cũ.
 function duyet_(q) {
   var P = PropertiesService.getScriptProperties();
   var e = function (x) { return String(x).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); };
@@ -788,15 +804,21 @@ function duyet_(q) {
     var sh = tab_(TAB_KHACH, COT_KHACH), dong = timDong_(sh, 1, req.khachId);
     if (!dong) return null;
     var r = sh.getRange(dong, 1, 1, COT_KHACH.length).getValues()[0];
-    var ngay = homNay_(), kp = 'dy_' + rq + '_' + t, truoc = String(P.getProperty(kp) || '');
-    var nTruoc = truoc.indexOf(ngay + ':') === 0 ? Number(truoc.slice(ngay.length + 1)) || 0 : 0;   // số đã bấm hôm nay cho yêu cầu này
+    var ngay = homNay_(), kp = 'dy_' + rq + '_' + t, truoc = docDy_(P.getProperty(kp));
+    var nTruoc = truoc && truoc.ngay === ngayKey_() ? truoc.n : 0;        // số đã bấm hôm nay cho yêu cầu này
     var gio = Utilities.formatDate(new Date(), MUI_GIO, 'HH:mm');
     var kq0 = { ten: String(r[3] || ''), sdt: String(r[9] || ''), id: String(r[0]) };
+    var ghi = ngayKey_() + '|' + n;
     if (t === 'xem') {
-      var b = Math.max(0, xemHomNay_(r[COT_XEM_HOM_NAY - 1]) - nTruoc) + n;
-      sh.getRange(dong, COT_XEM_HOM_NAY).setValue(ngay + ': +' + b);
-      r[COT_XEM_HOM_NAY - 1] = ngay + ': +' + b;
-      kq0.homNay = b; kq0.da = Number(r[COT_DA_XEM - 1]) || 0; kq0.duoc = duocCaHomNay_(r, gioiHanLuot_(P) || 0);
+      // Tổng được xem mới = mốc + n; mốc = số lớn hơn giữa tổng đang được xem và tổng đã xem, tính lúc bấm lần đầu
+      // cho yêu cầu này (bấm số khác cho cùng yêu cầu thì tính lại từ mốc đó: số mới thay số cũ).
+      var da0 = Number(r[COT_DA_XEM - 1]) || 0, gh0 = gioiHanLuot_(P) || 0, moc;
+      if (truoc && truoc.moc != null) moc = truoc.moc;
+      else moc = Math.max(duocCaHomNay_(r, gh0) - nTruoc, da0);            // nTruoc: phần bản trước đã cấp theo ngày cho yêu cầu này
+      sh.getRange(dong, COT_DUOC_XEM).setValue(moc + n);
+      if (String(r[COT_XEM_HOM_NAY - 1] == null ? '' : r[COT_XEM_HOM_NAY - 1]).trim() !== '') sh.getRange(dong, COT_XEM_HOM_NAY).setValue('');
+      ghi += '|' + moc;
+      kq0.da = da0; kq0.duoc = moc + n;
       var q0 = String(r[COT_XIN_THEM - 1] || '').replace(/ · đã duyệt.*$/, '');
       if (q0) sh.getRange(dong, COT_XIN_THEM).setValue(sach_(q0 + ' · đã duyệt +' + n + ' lúc ' + gio + ' ' + ngay, 400));
       CacheService.getScriptCache().remove('xl_' + kq0.id);
@@ -810,16 +832,20 @@ function duyet_(q) {
       if (u0) sh.getRange(dong, COT_XIN_LUAN).setValue(sach_(u0 + ' · đã duyệt +' + n + ' lúc ' + gio + ' ' + ngay, 400));
       CacheService.getScriptCache().remove('xn_' + kq0.id + '_' + t);
     }
-    P.setProperty(kp, ngay + ':' + n);
-    var cu = P.getKeys().filter(function (x) { return x.indexOf('dy_') === 0 && String(P.getProperty(x)).indexOf(ngay + ':') !== 0; });
-    cu.forEach(function (x) { P.deleteProperty(x); });                      // dọn số đã bấm của các ngày trước
+    P.setProperty(kp, ghi);
+    var hn0 = ngayKey_(), mocXoa = Date.UTC(+hn0.slice(0, 4), +hn0.slice(4, 6) - 1, +hn0.slice(6, 8)) - 8 * 86400000;
+    P.getKeys().forEach(function (x) {                                     // dọn số đã bấm quá 8 ngày (link chỉ dùng 7 ngày)
+      if (x.indexOf('dy_') !== 0) return;
+      var v = docDy_(P.getProperty(x));
+      if (!v || Date.UTC(+v.ngay.slice(0, 4), +v.ngay.slice(4, 6) - 1, +v.ngay.slice(6, 8)) < mocXoa) P.deleteProperty(x);
+    });
     return kq0;
   });
   if (!kq) return trang('Không tìm thấy khách', '<p>Khách này không còn trong Sheet.</p>', false);
   var ten = '<b>' + e(kq.ten) + '</b> (' + e(kq.sdt) + ')';
   var them = t === 'xem'
-    ? '<p>Đã cho ' + ten + ' thêm <b>' + n + ' lượt xem</b>, dùng đến hết hôm nay (' + homNay_() + ').</p>' +
-      '<p>Hôm nay khách được xem ' + kq.duoc + ' lượt, đã xem ' + kq.da + '. Hôm nay anh đã cho thêm tổng cộng ' + kq.homNay + ' lượt.</p>'
+    ? '<p>Đã cho ' + ten + ' thêm <b>' + n + ' lượt xem</b>.</p>' +
+      '<p>Tổng được xem nay là ' + kq.duoc + ' lượt; khách đã xem ' + kq.da + ', còn ' + Math.max(0, kq.duoc - kq.da) + ' lượt.</p>'
     : '<p>Đã cho ' + ten + ' thêm <b>' + n + ' lần ' + NHAN_LUAN[t] + '</b>, dùng đến hết hôm nay (' + homNay_() + ').</p>' +
       '<p>Hôm nay khách được ' + kq.moiNgay + ' lần ' + NHAN_LUAN[t] + '.</p>';
   return trang('Đã duyệt', them + '<p style="color:#666;font-size:14px">Khách bấm "Kiểm tra lại" hoặc mở lại trang là dùng được. ' +
