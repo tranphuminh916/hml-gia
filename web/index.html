@@ -1034,7 +1034,7 @@ async function renderResult(box, ctx) {
     <div class="luanBox"${coLuan() ? "" : " hidden"}>
     <label>${ctx.kind === "trondoi" ? "Mốc đời thực đã qua (năm – việc), tính cách các con, điều muốn hỏi thêm" : Xg() + " muốn hỏi thêm điều gì?"} <span class="hint">(không bắt buộc)</span></label>
     <textarea class="askMore" placeholder="${ctx.kind === "trondoi" ? "vd: 2007 sinh con trai đầu (hiền); 2012 sinh con út (cứng); 2015 lập công ty; muốn hỏi thêm về hợp tác." : "vd: Năm nay làm ăn với đối tác mới có thuận không?"}">${esc(ctx.hoiThem || "")}</textarea>
-    <div class="btns"><button class="primary full btnLuan">${ctx.kind === "trondoi" || ctx.kind === "viec" ? tdKe(ctx).nut : "✨ Xem luận giải"}</button></div>
+    <div class="btns"><button class="primary full btnLuan">${ctx.kind === "trondoi" || ctx.kind === "viec" ? tdKe(ctx).nut : "✨ Nhờ Thầy luận"}</button></div>
     <div class="luan"></div>
     </div>
   </div>`;
@@ -1171,9 +1171,9 @@ async function doLuan(box, ctx) {
   if (!SRV.url) { out.innerHTML = `<div class="notice">Trang đang chạy thử, chưa nối máy chủ nên chưa có phần luận.</div>`; return; }
   if (SRV.info && SRV.info.co_luan === false) { out.innerHTML = `<div class="notice">Chủ trang chưa bật phần luận. Số liệu phía trên vẫn dùng được.</div>`; return; }
   const hoiThem = $(".askMore", box).value.trim();
-  btn.disabled = true; btn.textContent = "Đang luận giải…";
-  out.innerHTML = `<div class="luan-box"><div class="busy"><div class="spin"></div>Đang luận giải, thường mất 30–90 giây…</div></div>`;
-  const fail = msg => { out.innerHTML = `<div class="notice err">${esc(msg)}</div>`; btn.disabled = false; btn.textContent = "✨ Xem luận giải"; };
+  btn.disabled = true; btn.textContent = "Thầy đang luận…";
+  out.innerHTML = `<div class="luan-box"><div class="busy"><div class="spin"></div>Thầy đang luận giải, thường mất 30–90 giây…</div></div>`;
+  const fail = msg => { out.innerHTML = `<div class="notice err">${esc(msg)}</div>`; btn.disabled = false; btn.textContent = "✨ Nhờ Thầy luận"; };
   await persistCtx(ctx); await flushOutbox();
   if (OUTBOX.some(x => x.luotId === ctx.logId)) return fail("Chưa gửi được lượt xem lên máy chủ (có thể do mạng). Mời " + xg() + " thử lại sau ít phút.");
   const me = self_();
@@ -1191,7 +1191,7 @@ async function doLuan(box, ctx) {
   ctx.luan = j.text;
   out.innerHTML = `<div class="luan-box">${renderMd(j.text)}</div>` + (j.conLai != null ? `<div class="small-note">Hôm nay ${xg()} còn ${j.conLai} lần nhờ luận.</div>` : "");
   await persistCtx(ctx, { luan: j.text, hoiThem });
-  btn.disabled = false; btn.textContent = "✨ Luận lại";
+  btn.disabled = false; btn.textContent = "✨ Nhờ Thầy luận lại";
 }
 
 /* ============================================================ LÁ SỐ */
@@ -1618,7 +1618,7 @@ function gsResult() {
     <div class="luanBox"${daTraLoi && gsCoLuan() ? "" : " hidden"} style="margin-top:12px">
       <label>${esc(Xw)} muốn hỏi thêm điều gì? <span class="hint">(không bắt buộc)</span></label>
       <textarea class="askMore" placeholder="vd: Giờ này với giờ sau khác nhau thế nào?"></textarea>
-      <div class="btns"><button class="primary full btnLuan">✨ Xem luận giải</button><button class="btnSave" hidden></button></div>
+      <div class="btns"><button class="primary full btnLuan">✨ Nhờ Thầy luận</button><button class="btnSave" hidden></button></div>
       <div class="luan"></div>
     </div>
     <div class="btns"><button class="${daTraLoi && gsCoLuan() ? "gold" : "primary"} full" id="gsUse">Ghi giờ ${esc(top.ten.replace(/^Giờ /, ""))} (${top.gio_dai_dien}) vào sổ của ${esc(p.ten)}</button>
