@@ -309,7 +309,8 @@ function quyTac_(xung) {
 // Model đời 5 tự bật suy nghĩ trước khi viết, và phần suy nghĩ ăn vào max_tokens (bài luận bị cụt).
 // Bài luận chỉ cần viết từ số liệu có sẵn nên tắt suy nghĩ: Sonnet 5.5 dùng "between_tools", model khác dùng "disabled".
 function goiApi_(model, toiDa, system, noiDung) {
-  var body = { model: model, max_tokens: toiDa, system: system, messages: [{ role: 'user', content: noiDung }] };
+  // 17/11: system cố định → có cache
+  var body = { model: model, max_tokens: toiDa, system: (typeof system === 'string' && system) ? [{ type: 'text', text: system, cache_control: { type: 'ephemeral' } }] : system, messages: [{ role: 'user', content: noiDung }] };
   var m = String(model);
   if (/sonnet-5-5/.test(m)) {
     body.thinking = { type: 'between_tools' };
@@ -1101,19 +1102,23 @@ function luan_(req, P) {
     '=== SỐ LIỆU BỘ TÍNH (output nguyên văn) ===',
     String(x.soLieu || '').slice(0, 70000)
   ].join('\n');
-  var noiDung = nen + '\n\n=== ' + NHAC_VIET, system = quyTac_(xung);
+  // 17/11: tách phần hướng dẫn (giống nhau giữa các khách cùng môn) thành khối riêng có cache → rẻ + nhanh hơn
+  var dauHD = '=== HƯỚNG DẪN LUẬN CỦA BỘ (tài liệu tham khảo) ===\n' + String(x.huongDan || '').slice(0, 90000);
+  var tachHD = nen.indexOf(dauHD) === 0 && dauHD.length < nen.length;
+  var sauHD = tachHD ? nen.slice(dauHD.length).replace(/^\n+/, '') : nen;
+  var noiDung = tachHD
+    ? [{ type: 'text', text: dauHD, cache_control: { type: 'ephemeral' } }, { type: 'text', text: sauHD + '\n\n=== ' + NHAC_VIET }]
+    : nen + '\n\n=== ' + NHAC_VIET, system = quyTac_(xung);
   if (chiTay) {
     // Mỗi ảnh đi kèm nhãn của nó; ảnh chỉ chuyển cho Claude, không ghi vào Sheet.
     system = quyTacChiTay_(xung);
-    noiDung = [];
+    // 17/11: hướng dẫn chung đặt đầu, có cache (giống nhau giữa các khách)
+    noiDung = [{ type: 'text', text: '=== HƯỚNG DẪN XEM CHỈ TAY (tài liệu tham khảo) ===\n' + String(x.huongDan || '').slice(0, 40000), cache_control: { type: 'ephemeral' } }];
     anh.forEach(function (a, i) {
       noiDung.push({ type: 'text', text: 'Ảnh ' + (i + 1) + ': ' + a.ten });
       noiDung.push({ type: 'image', source: { type: 'base64', media_type: a.media, data: a.data } });
     });
     noiDung.push({ type: 'text', text: [
-      '=== HƯỚNG DẪN XEM CHỈ TAY (tài liệu tham khảo) ===',
-      String(x.huongDan || '').slice(0, 40000),
-      '',
       '=== VIỆC CẦN XEM ===',
       String(x.soLieu || '').slice(0, 3000),
       'Hôm nay: ' + Utilities.formatDate(new Date(), MUI_GIO, 'dd/MM/yyyy'),
@@ -1125,12 +1130,14 @@ function luan_(req, P) {
     // Phần chung (hướng dẫn + số liệu) giống hệt nhau giữa các phần: đánh dấu để API lưu đệm, phần sau rẻ hơn nhiều.
     system = viec ? quyTacXemViec_(xung) : quyTacTronDoi_(xung);
     var daViet = String(td.daViet || '').slice(0, 15000);
-    noiDung = [
-      { type: 'text', text: nen, cache_control: { type: 'ephemeral' } },
+    // 17/11: 2 mốc cache: hướng dẫn (dùng chung mọi khách) + số liệu của khách (dùng chung các phần)
+    noiDung = (tachHD
+      ? [{ type: 'text', text: dauHD, cache_control: { type: 'ephemeral' } }, { type: 'text', text: sauHD, cache_control: { type: 'ephemeral' } }]
+      : [{ type: 'text', text: nen, cache_control: { type: 'ephemeral' } }]).concat([
       { type: 'text', text: (daViet ? '=== CÁC PHẦN ĐÃ VIẾT (để tổng kết) ===\n' + daViet + '\n\n' : '') +
         '=== PHẦN CẦN VIẾT (phần ' + (phan + 1) + '/' + tong + ') ===\n' + String(td.yeuCau || '').slice(0, 3000) +
         (x.hoiThem ? '\nĐiều người xem quan tâm thêm (lồng vào nếu liên quan đến phần này): ' + String(x.hoiThem).slice(0, 600) : '') + '\n\n' + NHAC_VIET }
-    ];
+    ]);
   }
 
   // Google chỉ chờ mỗi lần gọi ra ngoài khoảng 60 giây. Lần đầu viết vừa phải; quá giờ thì thử lại một lần
