@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Sổ Tử Vi">
-<meta name="theme-color" content="#7a1f1f">
-<title>Sổ Tử Vi</title>
+<meta name="apple-mobile-web-app-title" content="Tử Vi Bí Điển">
+<meta name="theme-color" content="#14111a">
+<title>Tử Vi Bí Điển</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Noto+Serif:wght@600;700&display=swap" rel="stylesheet">
@@ -154,11 +154,37 @@ label.ct-slot{display:block;margin:0;cursor:pointer;text-align:center;font-weigh
 .ct-thumbs figure{margin:0;text-align:center}.ct-thumbs img{width:70px;height:92px;object-fit:cover;border-radius:9px;border:1px solid var(--line);display:block}
 .ct-thumbs figcaption{font-size:11.5px;color:var(--muted);margin-top:2px;max-width:70px}
 nav.tabbar button{white-space:nowrap;font-size:11px;letter-spacing:-.1px}
+/* ===== Tử Vi Bí Điển: khung tối kiểu đêm Liêu Trai, trang đọc giấy dó ===== */
+:root{--bg:#f3e9d2;--card:#fbf4e2;--line:#d6c7a0;--ink:#2b2118;--muted:#6b5c44;--red:#a3261c;--red2:#b3382c;--gold:#8a6a1f;--gold-bg:#f1e3bd;--bd-ink:#14111a;--bd-gold:#c9a45c;--bd-line:#5a4824}
+header.top{background:var(--bd-ink);color:#e8dcc0;border-bottom:1px solid var(--bd-line)}
+header.top h1{color:var(--bd-gold);letter-spacing:.6px}
+header.top .sub{color:#b8ab8e;opacity:1}
+.bd-tag{margin-left:auto;font-family:"Be Vietnam Pro",sans-serif;font-size:11px;font-weight:600;letter-spacing:.3px;color:#e8786b;border:1px solid #b3382c;border-radius:4px;padding:1px 6px}
+h2{border-bottom:1.5px double rgba(163,38,28,.35);padding-bottom:6px}
+.card{box-shadow:none}
+nav.tabbar{background:rgba(20,17,26,.98);border-top:1px solid var(--bd-line)}
+nav.tabbar button{color:#8f8576}
+nav.tabbar button.on{color:var(--bd-gold)}
+.luan-box{background:#f7ecd0;border:1px solid #cdbb8c;border-radius:6px;padding:14px 14px 4px}
+.luan-box h2{font-family:"Noto Serif",serif;color:#8a1f16;font-size:17px;border-bottom:1px solid #cdbb8c;padding-bottom:5px}
+.luan-box blockquote{background:transparent;border-left:2px solid var(--bd-gold);color:#5a4630;font-family:"Noto Serif",serif;font-style:italic;padding:2px 10px}
+#bdOv{position:fixed;inset:0;z-index:90;background:var(--bd-ink);color:#e8dcc0;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:28px;font-family:"Noto Serif",serif}
+#bdOv.on{display:flex}
+#bdOv .k{font-size:11px;letter-spacing:3px;color:#8f8576;margin:16px 0 6px}
+#bdOv h1{font-size:26px;font-weight:600;color:var(--bd-gold);margin:0 0 10px;line-height:1.35}
+#bdOv p{font-family:"Be Vietnam Pro",sans-serif;font-size:15px;color:#b8ab8e;margin:0 0 22px;max-width:320px;line-height:1.6}
+.bd-seal{width:62px;height:62px;border:2px solid #b3382c;color:#e8786b;display:flex;align-items:center;justify-content:center;font-size:14px;line-height:1.2;margin-bottom:26px;transform:rotate(-6deg);animation:bdStamp .9s .5s both cubic-bezier(.2,.8,.2,1)}
+@keyframes bdStamp{0%{transform:scale(2.4) rotate(-14deg);opacity:0}65%{transform:scale(.92) rotate(-6deg);opacity:1}100%{transform:scale(1) rotate(-6deg);opacity:1}}
+#bdOv button{background:transparent;border:1px solid var(--bd-gold);color:var(--bd-gold);border-radius:8px;padding:11px 34px;font-size:16px;font-family:"Be Vietnam Pro",sans-serif;width:auto}
+@media (prefers-reduced-motion:reduce){.bd-seal{animation:none}}
+.bd-doors{display:flex;gap:8px;justify-content:center;margin:10px 0 14px}
+.bd-door{width:64px;height:84px;border:1.5px solid #c9a45c;border-radius:32px 32px 4px 4px;background:#1f1a27;color:#c9a45c;font-family:"Noto Serif",serif;font-size:12.5px;padding:0 0 8px;display:flex;align-items:flex-end;justify-content:center}
+.bd-door.on{border-color:#e8786b;color:#fff;background:#b3382c}
 </style>
 </head>
 <body>
 <header class="top">
-  <h1><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f3cf86" stroke-width="1.6"><circle cx="12" cy="12" r="9.5"/><path d="M12 2.5a4.75 4.75 0 0 1 0 9.5a4.75 4.75 0 0 0 0 9.5"/><circle cx="12" cy="7.25" r="1.2" fill="#f3cf86"/><circle cx="12" cy="16.75" r="1.2"/></svg>Sổ Tử Vi</h1>
+  <h1><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f3cf86" stroke-width="1.6"><circle cx="12" cy="12" r="9.5"/><path d="M12 2.5a4.75 4.75 0 0 1 0 9.5a4.75 4.75 0 0 0 0 9.5"/><circle cx="12" cy="7.25" r="1.2" fill="#f3cf86"/><circle cx="12" cy="16.75" r="1.2"/></svg>Tử Vi Bí Điển<span class="bd-tag">Tầng cao</span></h1>
   <div class="sub"><span class="dot" id="engDot"></span><span id="engText">Đang nạp bộ tính…</span></div>
 </header>
 
@@ -171,6 +197,7 @@ nav.tabbar button{white-space:nowrap;font-size:11px;letter-spacing:-.1px}
   <h2>Thông tin đã nhập</h2>
   <div class="hint" style="margin:-4px 2px 10px">Người đầu tiên là <span class="xg">Thí Chủ</span>. <span class="Xg">Thí Chủ</span> có thể thêm người thân để xem giúp.</div>
   <div id="peopleList"><div class="empty">Đang tải…</div></div>
+  <div class="card" id="bdQuanTam" style="margin-bottom:12px"></div>
   <button class="gold" style="width:100%" id="btnAddPerson">＋ Thêm người (vợ, chồng, con, bố mẹ…)</button>
   <h2 style="margin-top:22px">Các lần <span class="xg">Thí Chủ</span> đã xem</h2>
   <div class="hint" style="margin:-4px 2px 10px">Lưu trên máy này để <span class="xg">Thí Chủ</span> xem lại.</div>
@@ -560,11 +587,12 @@ async function checkServer() {
 async function initStore() {
   STORE_MODE = "local"; localLoad();
   if (!KHACH.id) { KHACH.id = "k" + uid() + uid(); localSave(); }
-  renderPeople(); renderLogs(); fillPeopleSelects(); applyXung();
+  renderPeople(); renderLogs(); fillPeopleSelects(); applyXung(); bdVeQuanTam();
   await checkServer();
   if (!KHACH.dongY || !self_()) openPersonSheet(self_() || null, { welcome: true });
   else if (canKichHoat() || gioiHan()) { if (await kiemKichHoat()) flushOutbox(); }
   else flushOutbox();
+  if (KHACH.dongY && self_() && (KHACH.kichHoat === "da" || !canKichHoat())) bdKhoiDong();
 }
 async function savePerson(p) {
   const id = p.id || (slug(p.ten) + "-" + (p.ngay || "").slice(0, 4) + "-" + uid().slice(-4));
@@ -572,6 +600,7 @@ async function savePerson(p) {
   const i = PEOPLE.findIndex(x => x.id === id), doiSinh = i >= 0 && sigOf(PEOPLE[i]) !== sigOf(body);
   if (i >= 0) PEOPLE[i] = { id, ...body }; else PEOPLE.push({ id, ...body });
   PEOPLE.sort(byRank); localSave(); renderPeople(); fillPeopleSelects(); applyXung();
+  if (i < 0) bdQuanHe(body.quanHe);
   if (doiSinh) danhDauKetQuaCu(id);
   if (body.quanHe === "Bản thân") queue("khach", { khach: { ...personPublic({ id, ...body }), lienHe: body.lienHe || "" } });
   return id;
@@ -764,7 +793,7 @@ function openKichHoatSheet(loi, chuGui) {
     $("#kOk").disabled = false;
     if (j && j.ok) {
       KHACH.kichHoat = "da"; localSave(); closeSheet();
-      toast(`Đã kích hoạt. Mời ${xg()} bắt đầu xem.`); flushOutbox(); capNhatLuot(); return;
+      toast(`Đã kích hoạt. Mời ${xg()} bắt đầu xem.`); flushOutbox(); capNhatLuot(); setTimeout(bdKhoiDong, 1200); return;
     }
     if (j && j.ma_loi === "khoa") { KHACH.kichHoat = "khoa"; localSave(); return openKichHoatSheet(); }
     if (j && j.ma_loi === "chua_dang_ky") return openPersonSheet(self_() || null, { welcome: true });
@@ -846,7 +875,7 @@ function openSmsSheet(loi) {
       try { FB.auth.signOut(); } catch (e) {}
       if (j && j.ok) {
         KHACH.kichHoat = "da"; localSave(); closeSheet();
-        toast(`Đã kích hoạt. Mời ${xg()} bắt đầu xem.`); flushOutbox(); capNhatLuot(); return;
+        toast(`Đã kích hoạt. Mời ${xg()} bắt đầu xem.`); flushOutbox(); capNhatLuot(); setTimeout(bdKhoiDong, 1200); return;
       }
       if (j && j.ma_loi === "khoa") { KHACH.kichHoat = "khoa"; localSave(); return openKichHoatSheet(); }
       if (j && j.ma_loi === "chua_dang_ky") return openPersonSheet(self_() || null, { welcome: true });
@@ -1034,7 +1063,7 @@ async function renderResult(box, ctx) {
     <div class="luanBox"${coLuan() ? "" : " hidden"}>
     <label>${ctx.kind === "trondoi" ? "Mốc đời thực đã qua (năm – việc), tính cách các con, điều muốn hỏi thêm" : Xg() + " muốn hỏi thêm điều gì?"} <span class="hint">(không bắt buộc)</span></label>
     <textarea class="askMore" placeholder="${ctx.kind === "trondoi" ? "vd: 2007 sinh con trai đầu (hiền); 2012 sinh con út (cứng); 2015 lập công ty; muốn hỏi thêm về hợp tác." : "vd: Năm nay làm ăn với đối tác mới có thuận không?"}">${esc(ctx.hoiThem || "")}</textarea>
-    <div class="btns"><button class="primary full btnLuan">${ctx.kind === "trondoi" || ctx.kind === "viec" ? tdKe(ctx).nut : "✨ Nhờ Thầy luận"}</button></div>
+    <div class="btns"><button class="primary full btnLuan">${ctx.kind === "trondoi" || ctx.kind === "viec" ? tdKe(ctx).nut : "✨ Nhờ Điển Sư luận"}</button></div>
     <div class="luan"></div>
     </div>
   </div>`;
@@ -1171,9 +1200,9 @@ async function doLuan(box, ctx) {
   if (!SRV.url) { out.innerHTML = `<div class="notice">Trang đang chạy thử, chưa nối máy chủ nên chưa có phần luận.</div>`; return; }
   if (SRV.info && SRV.info.co_luan === false) { out.innerHTML = `<div class="notice">Chủ trang chưa bật phần luận. Số liệu phía trên vẫn dùng được.</div>`; return; }
   const hoiThem = $(".askMore", box).value.trim();
-  btn.disabled = true; btn.textContent = "Thầy đang luận…";
-  out.innerHTML = `<div class="luan-box"><div class="busy"><div class="spin"></div>Thầy đang luận giải, thường mất 30–90 giây…</div></div>`;
-  const fail = msg => { out.innerHTML = `<div class="notice err">${esc(msg)}</div>`; btn.disabled = false; btn.textContent = "✨ Nhờ Thầy luận"; };
+  btn.disabled = true; btn.textContent = "Điển Sư đang luận…";
+  out.innerHTML = `<div class="luan-box"><div class="busy"><div class="spin"></div>Điển Sư đang khai quyển, thường mất 30–90 giây…</div></div>`;
+  const fail = msg => { out.innerHTML = `<div class="notice err">${esc(msg)}</div>`; btn.disabled = false; btn.textContent = "✨ Nhờ Điển Sư luận"; };
   await persistCtx(ctx); await flushOutbox();
   if (OUTBOX.some(x => x.luotId === ctx.logId)) return fail("Chưa gửi được lượt xem lên máy chủ (có thể do mạng). Mời " + xg() + " thử lại sau ít phút.");
   const me = self_();
@@ -1191,7 +1220,7 @@ async function doLuan(box, ctx) {
   ctx.luan = j.text;
   out.innerHTML = `<div class="luan-box">${renderMd(j.text)}</div>` + (j.conLai != null ? `<div class="small-note">Hôm nay ${xg()} còn ${j.conLai} lần nhờ luận.</div>` : "");
   await persistCtx(ctx, { luan: j.text, hoiThem });
-  btn.disabled = false; btn.textContent = "✨ Nhờ Thầy luận lại";
+  btn.disabled = false; btn.textContent = "✨ Nhờ Điển Sư luận lại";
 }
 
 /* ============================================================ LÁ SỐ */
@@ -1280,6 +1309,7 @@ async function runLaso() {
 
 /* ============================================================ CHỌN NGÀY */
 $("#ngViec").innerHTML = VIEC_NGAY.map(([v, t]) => `<option value="${v}">${t}</option>`).join("");
+$("#ngViec").addEventListener("change", () => { const k = BD_VIEC_CHU_DE[$("#ngViec").value]; if (k) bdBump(k, 2); });
 const ngToa = () => { const v = $("#ngViec").value; $("#ngToaBox").style.display = (v === "dongtho" || v === "antang") ? "" : "none"; $("#ngSuaWrap").style.display = v === "dongtho" ? "" : "none"; $("#ngPhuWrap").style.display = v === "antang" ? "" : "none"; };
 $("#ngViec").addEventListener("change", ngToa); ngToa();
 $("#ngThu").innerHTML = THU.map(([v, t]) => `<button class="chip" data-v="${v}">${t}</button>`).join("");
@@ -1618,7 +1648,7 @@ function gsResult() {
     <div class="luanBox"${daTraLoi && gsCoLuan() ? "" : " hidden"} style="margin-top:12px">
       <label>${esc(Xw)} muốn hỏi thêm điều gì? <span class="hint">(không bắt buộc)</span></label>
       <textarea class="askMore" placeholder="vd: Giờ này với giờ sau khác nhau thế nào?"></textarea>
-      <div class="btns"><button class="primary full btnLuan">✨ Nhờ Thầy luận</button><button class="btnSave" hidden></button></div>
+      <div class="btns"><button class="primary full btnLuan">✨ Nhờ Điển Sư luận</button><button class="btnSave" hidden></button></div>
       <div class="luan"></div>
     </div>
     <div class="btns"><button class="${daTraLoi && gsCoLuan() ? "gold" : "primary"} full" id="gsUse">Ghi giờ ${esc(top.ten.replace(/^Giờ /, ""))} (${top.gio_dai_dien}) vào sổ của ${esc(p.ten)}</button>
@@ -1776,7 +1806,7 @@ Quy tắc bắt buộc:
 function tdKe(ctx) {
   return ctx.kind === "viec"
     ? { phan: VIEC_PHAN, quyTac: VIEC_QUY_TAC, loai: "viec", guide: "viec", nut: "✨ Luận đủ các cách và tổng kết", ten: "luận xem việc", phut: "khoảng 2 phút" }
-    : { phan: TD_PHAN, quyTac: TD_QUY_TAC, loai: "trondoi", guide: "trondoi", nut: "✨ Luận giải chi tiết trọn đời", ten: "luận trọn đời", phut: "khoảng 5–8 phút" };
+    : { phan: tdPhanBD(ctx), quyTac: TD_QUY_TAC, loai: "trondoi", guide: "trondoi", nut: "✨ Luận giải chi tiết trọn đời", ten: "luận trọn đời", phut: "khoảng 5–8 phút" };
 }
 const NHAC_VIET = `NHẮC LẠI CÁCH VIẾT (bắt buộc): câu chính viết như kể cho người chưa từng nghe về tử vi – không có các chữ cung, môn, sao, thần, khóa, truyền, hào, quẻ, can chi, mệnh, không vong, phục ngâm, phản ngâm; những chữ đó chỉ được để trong ngoặc cuối câu (tối đa 4 chữ). Viết ngắn, đúng số gạch đầu dòng đã nêu. Viết xong tự rà lại từng câu.`;
 const TD_QUA_SERVER = typeof callServer === "function";
@@ -1816,6 +1846,7 @@ ${NHAC_VIET}`;
   }
 }
 async function doLuanTronDoi(box, ctx, tu = 0) {
+  if (tu === 0) { delete ctx.bdChuDe; delete ctx.tdPhan; bdTuKhoa((($(".askMore", box) || { value: "" }).value) + " " + (ctx.hoi || "")); }
   const K = tdKe(ctx), out = $(".luan", box), btn = $(".btnLuan", box), n = K.phan.length;
   const hoiThem = ($(".askMore", box) || { value: "" }).value.trim();
   const goi = typeof xg === "function" ? xg() : "Thí Chủ";
@@ -2047,7 +2078,150 @@ async function ctLuan(box, ctx) {
   btn.disabled = false; btn.textContent = "✨ Xem lại";
 }
 
-function goTab(t) { $$("section.tab").forEach(s => s.classList.toggle("on", s.id === "tab-" + t)); $$("#tabbar button").forEach(b => b.classList.toggle("on", b.dataset.tab === t)); window.scrollTo(0, 0); try { history.replaceState(null, "", "#" + t); } catch (e) {} }
+/* ====================== Tử Vi Bí Điển: nghi thức, chủ đề quan tâm, giọng văn ====================== */
+const BD_CHU_DE = [
+  ["tien", "Tiền bạc, làm ăn", "tiền đến từ đâu, hao vì đâu, cách giữ tiền, chuyện hợp tác chia phần"],
+  ["nghiep", "Công việc, sự nghiệp", "hợp vai trò gì, lúc nên bứt lên hoặc giữ nhịp, có nên đổi hướng"],
+  ["gia", "Gia đạo, con cái", "cha mẹ, anh em, vợ chồng, con cái; chỗ dễ va chạm và cách giữ hòa khí"],
+  ["tinh", "Tình duyên", "kiểu người hợp, thời điểm duyên đến, chỗ dễ vấp trong tình cảm và hôn nhân"],
+  ["khoe", "Sức khỏe", "chỗ cơ thể cần giữ, năm cần để ý, thói quen nên chỉnh (góc nhìn cổ học)"],
+  ["quy", "Quý nhân, cộng sự", "kiểu người nâng đỡ, kiểu người nên tránh, cách chọn cộng sự và đối tác"],
+  ["nha", "Nhà đất", "thời điểm mua bán, xây sửa, chuyển nhà; hướng và cách bố trí hợp"],
+  ["hoc", "Học hành, thi cử", "hợp ngành gì, giai đoạn học tốt, cách học hợp"],
+  ["xa", "Đi xa, định cư", "hướng và thời điểm đi xa, ra nước ngoài, đổi nơi sống"],
+  ["van", "Vận năm nay", "diễn biến từng mảng và từng tháng của năm nay, tháng nên bứt lên, tháng nên chậm"]
+];
+const BD_CUA = [["Tài", ["tien"]], ["Tình", ["tinh"]], ["Nghiệp", ["nghiep"]], ["Nhà", ["gia", "nha"]]];
+const BD_TU_KHOA = [
+  ["tien", /\b(tien|luong|thu nhap|dau tu|chung khoan|von|lam an|kinh doanh|vay|no)\b/],
+  ["nghiep", /\b(cong viec|sep|doi viec|thang tien|cong ty|khoi nghiep|nghe nghiep|su nghiep)\b/],
+  ["gia", /\b(con|cha me|bo me|anh em|gia dinh|gia dao)\b/],
+  ["tinh", /\b(yeu|cuoi|ket hon|ly hon|ban gai|ban trai|tinh duyen|vo chong|vo|chong)\b/],
+  ["khoe", /\b(suc khoe|benh|dau om|mat ngu|om dau)\b/],
+  ["quy", /\b(quy nhan|cong su|doi tac|hop tac|nguoi giup)\b/],
+  ["nha", /\b(nha dat|mua nha|xay nha|chuyen nha|bat dong san|dat dai)\b/],
+  ["hoc", /\b(hoc hanh|thi cu|du hoc|dai hoc|tot nghiep)\b/],
+  ["xa", /\b(di xa|dinh cu|nuoc ngoai|xuat canh|di nuoc ngoai)\b/],
+  ["van", /\b(nam nay|van han|van nam)\b/]
+];
+const bdTen = k => (BD_CHU_DE.find(c => c[0] === k) || [k, k])[1];
+const bdGoiY = k => (BD_CHU_DE.find(c => c[0] === k) || [])[2] || "";
+function bdTT() { if (!KHACH.tt || typeof KHACH.tt !== "object") KHACH.tt = {}; return KHACH.tt; }
+function bdBump(k, w = 1) {
+  if (STORE_MODE === "loading" || !BD_CHU_DE.some(c => c[0] === k)) return;
+  const t = bdTT(); t[k] = Math.min(20, (t[k] || 0) + w); localSave();
+}
+function bdTuKhoa(txt) {
+  const t = String(txt || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/đ/g, "d");
+  if (!t.trim()) return;
+  BD_TU_KHOA.forEach(([k, re]) => { if (re.test(t)) bdBump(k, 2); });
+}
+function bdTheoDoi(t) { if (t === "nha") bdBump("nha", 1); }
+function bdQuanHe(qh) { if (/^(Vợ|Chồng)/.test(qh || "")) bdBump("tinh", 2); else if (/^(Con|Cha|Mẹ|Bố|Anh|Chị|Em)/.test(qh || "")) bdBump("gia", 2); }
+const BD_VIEC_CHU_DE = { khaitruong: "tien", kyhopdong: "tien", xuathanh: "xa", cuoi: "tinh", anhoi: "tinh", dongtho: "nha", nhaptrach: "nha" };
+
+function bdNghiThuc() {
+  return new Promise(res => {
+    let ov = $("#bdOv");
+    if (!ov) { ov = document.createElement("div"); ov.id = "bdOv"; document.body.appendChild(ov); }
+    const chuyen = !!(window.HO_SO_CHUYEN && typeof window.HO_SO_CHUYEN === "object");
+    ov.innerHTML = `<svg width="46" height="46" viewBox="0 0 46 46" aria-hidden="true"><circle cx="23" cy="23" r="17" fill="#c9a45c"/><circle cx="29" cy="19" r="15" fill="#14111a"/></svg>
+      <div class="k">THIÊN CƠ MỞ LỐI</div><h1>Tầng Bí Điển<br>đã mở</h1>
+      <p>${chuyen ? "Hồ sơ và lá số của " + xg() + " đã theo về nguyên vẹn." : "Mời " + xg() + " bước vào, Tại Hạ đã chuẩn bị sẵn quyển hồ sơ."}</p>
+      <div class="bd-seal" aria-hidden="true">Bí<br>Điển</div><button id="bdVao">Bước vào</button>`;
+    ov.classList.add("on");
+    $("#bdVao").onclick = () => { ov.classList.remove("on"); KHACH.bidien = 1; localSave(); res(); };
+  });
+}
+function bdMoChuDe() {
+  return new Promise(res => {
+    let chon = (KHACH.quanTam || []).filter(k => BD_CHU_DE.some(c => c[0] === k)).slice(0, 2);
+    const ve = () => {
+      openSheet(`<h3>Một câu hỏi nữa</h3>
+        <p class="hint" style="margin-top:0">Điều gì khiến ${xg()} canh cánh nhất? Chọn tối đa 2, Tại Hạ sẽ nhìn kỹ những điều này trong bản luận. Bỏ qua cũng được.</p>
+        <div class="bd-doors">${BD_CUA.map(([t, ks], i) => `<button type="button" class="bd-door${ks.every(k => chon.includes(k)) ? " on" : ""}" data-cua="${i}">Cửa ${t}</button>`).join("")}</div>
+        <div class="chips" id="bdChips">${BD_CHU_DE.map(([k, t]) => `<button type="button" class="chip${chon.includes(k) ? " on" : ""}" data-k="${k}">${esc(t)}</button>`).join("")}</div>
+        <div class="small-note" id="bdNote">Chọn một cánh cửa hoặc chọn thẻ chủ đề bên dưới.</div>
+        <div class="btns"><button class="ghost" id="bdBo">Để sau</button><button class="primary" id="bdXong">Xong</button></div>`, true);
+      $$(".bd-door", $("#sheet")).forEach(b => b.onclick = () => {
+        const ks = BD_CUA[+b.dataset.cua][1];
+        chon = ks.every(k => chon.includes(k)) ? chon.filter(k => !ks.includes(k)) : chon.filter(k => !ks.includes(k)).concat(ks).slice(-2);
+        ve();
+      });
+      $$(".chip", $("#bdChips")).forEach(b => b.onclick = () => {
+        const k = b.dataset.k;
+        if (chon.includes(k)) chon = chon.filter(x => x !== k);
+        else if (chon.length >= 2) { $("#bdNote").textContent = "Chọn tối đa 2 điều. Bấm một thẻ đang sáng để bỏ chọn."; return; }
+        else chon.push(k);
+        ve();
+      });
+      $("#bdBo").onclick = () => { if (!KHACH.quanTam) KHACH.quanTamBo = new Date().toISOString(); localSave(); closeSheet(); bdVeQuanTam(); res(); };
+      $("#bdXong").onclick = () => { KHACH.quanTam = chon.slice(); KHACH.quanTamLuc = new Date().toISOString(); delete KHACH.quanTamBo; localSave(); closeSheet(); bdVeQuanTam(); if (chon.length) toast("Tại Hạ đã ghi nhớ."); res(); };
+    };
+    ve();
+  });
+}
+function bdVeQuanTam() {
+  const el = $("#bdQuanTam"); if (!el) return;
+  const q = (KHACH.quanTam || []).map(bdTen);
+  el.innerHTML = `<div style="display:flex;gap:10px;align-items:center;justify-content:space-between"><div><div class="hint" style="margin:0">Điều ${xg()} canh cánh</div><div style="font-weight:600">${q.length ? esc(q.join(", ")) : "Chưa chọn"}</div></div><button class="ghost small" id="bdDoi" style="width:auto">${q.length ? "Chọn lại" : "Chọn ngay"}</button></div>`;
+  $("#bdDoi").onclick = () => { bdMoChuDe(); };
+}
+let BD_DANG = false;
+async function bdKhoiDong() {
+  if (BD_DANG) return; BD_DANG = true;
+  try {
+    if (!KHACH.bidien) await bdNghiThuc();
+    if (!KHACH.quanTam && !KHACH.quanTamBo) await bdMoChuDe();
+    bdVeQuanTam();
+  } finally { BD_DANG = false; }
+}
+function bdChuDe(ctx) {
+  if (ctx.bdChuDe) return ctx.bdChuDe;
+  const ro = (KHACH.quanTam || []).filter(k => BD_CHU_DE.some(c => c[0] === k)).slice(0, 2), tt = bdTT();
+  const ngam = Object.keys(tt).filter(k => !ro.includes(k) && tt[k] >= 3).sort((a, b) => tt[b] - tt[a]).slice(0, 1);
+  return (ctx.bdChuDe = { ro, ngam });
+}
+const BD_TEN_MUC = [
+  `"## 1." thành "## 1. Lời mở quyển (tóm tắt)"; "## 2." thành "## 2. Mệnh bàn của Thí Chủ (thông tin lá số)"; "## 3." thành "## 3. Tâm tính (con người)"`,
+  `"## 4." thành "## 4. Lập nghiệp và tài lộc (công việc, tiền bạc)"`,
+  `"## 5." thành "## 5. Gia đạo (gia đình)"; "## 6." thành "## 6. Thân khí (sức khỏe, góc nhìn cổ học, không thay cho khám bệnh)"`,
+  `"## 7." thành "## 7. Đường đã đi (hành trình đã qua)"`,
+  `"## 8." thành "## 8. Nhịp vận gần (năm trước và năm nay)"`,
+  `"## 9." thành "## 9. Cửa năm tới (năm sau)"`,
+  `"## 10." thành "## 10. Đường dài phía trước (tương lai)"`,
+  `"## 11." thành "## 11. Lời Điển Sư dặn (gợi ý nên làm)"; "## 12." thành "## 12. Vật hợp với Thí Chủ (những thứ hợp)"; "## 13." thành "## 13. Lời cuối (lưu ý)"`
+];
+function bdYeu(p, i, cd) {
+  let s = p.yeu + `
+
+PHONG CÁCH BÍ ĐIỂN (mức vừa, bắt buộc):
+- Đổi tiêu đề, giữ nguyên số thứ tự: ${BD_TEN_MUC[i]}.
+- Ngay dưới mỗi tiêu đề "##" thêm một dòng dẫn bắt đầu bằng "> " (tối đa 20 chữ, hình ảnh gợi mở, dễ hiểu, không thuật ngữ).
+- Thân bài giữ lời thường như quy tắc cách viết; không thêm chữ cổ khó hiểu; mỗi mục tối đa 1 hình ảnh ví von.
+- Cuối mỗi mục (trừ mục chỉ có bảng) thêm một dòng "**Điển Sư dặn:** …": một câu, việc cụ thể nên làm.`;
+  if (cd.ro.length) s += `\nCHỦ ĐỀ ƯU TIÊN của người xem: ${cd.ro.map(bdTen).join(", ")}. Mục này có mảng liên quan thì viết kỹ hơn (thêm 2–3 gạch đầu dòng hoặc vài câu cụ thể), mảng khác viết gọn như thường. Không thêm số liệu ngoài bộ tính.`;
+  if (cd.ngam.length) s += `\nNgười xem có vẻ quan tâm thêm: ${cd.ngam.map(bdTen).join(", ")} (đoán từ cách dùng); chỉ nhắc nhẹ khi liên quan.`;
+  return s;
+}
+function bdQuyenRieng(k) {
+  const ten = bdTen(k);
+  return { ten: "Quyển riêng: " + ten, canTruoc: true, chiLay: [0], yeu: `Viết "## Quyển riêng · ${ten}" (không đánh số), dành riêng cho điều người xem canh cánh nhất.
+- Ngay dưới tiêu đề: một dòng dẫn bắt đầu bằng "> " (tối đa 20 chữ).
+- 6–8 gạch đầu dòng lời thường, mỗi dòng 1–2 câu, theo ý: nền tảng và chỗ vướng của mảng này; ${bdGoiY(k)}; chặng tốt và chặng cần dè chừng trong khoảng 10 năm tới (chỉ lấy năm hoặc chặng có trong số liệu); ba việc nên làm, hai việc nên tránh, cụ thể.
+- Dòng cuối: "**Điển Sư dặn:** …" một câu.
+- Chỉ dùng số liệu bộ tính; không đổi đánh giá đã nêu; không chẩn đoán bệnh; không khuyên mua bán tài sản cụ thể; không phán chắc chắn.
+Khoảng 220–320 chữ.` };
+}
+function tdPhanBD(ctx) {
+  if (ctx.tdPhan) return ctx.tdPhan;
+  const cd = bdChuDe(ctx), ds = TD_PHAN.map((p, i) => ({ ...p, yeu: bdYeu(p, i, cd) }));
+  const k = cd.ro[0] || cd.ngam[0];
+  if (k) ds.splice(ds.length - 1, 0, bdQuyenRieng(k));
+  return (ctx.tdPhan = ds);
+}
+
+function goTab(t) { try { bdTheoDoi(t); } catch (e) {} $$("section.tab").forEach(s => s.classList.toggle("on", s.id === "tab-" + t)); $$("#tabbar button").forEach(b => b.classList.toggle("on", b.dataset.tab === t)); window.scrollTo(0, 0); try { history.replaceState(null, "", "#" + t); } catch (e) {} }
 $("#tabbar").onclick = e => { const b = e.target.closest("button[data-tab]"); if (b) goTab(b.dataset.tab); };
 (function init() {
   $("#dsNoi").innerHTML = TINH.map(t => `<option value="${t}">`).join("");
