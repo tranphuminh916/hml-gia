@@ -1695,7 +1695,7 @@ function tdHuongDanTruoc() {
   return `<b>Để bản luận sát với ${g} hơn, ${g} làm 3 bước:</b>
 <ol style="margin:6px 0 0 18px;padding:0">
 <li><b>Ghi 3–5 mốc đã qua</b> vào ô "Mốc đời thực" bên dưới, dạng <i>năm – việc</i>, cách nhau bằng dấu chấm phẩy. Ví dụ: <i>2008 cưới; 2010 sinh con trai đầu, tính hiền; 2015 mở công ty; 2020 chuyển nhà</i>.<br>Nên ghi: năm cưới, năm sinh từng con (kèm vài chữ về tính cách), năm đổi việc hoặc mở công ty, năm chuyển nhà, năm có việc lớn về tiền hay sức khỏe. Không cần ghi tên người hay số điện thoại. Không nhớ thì để trống.</li>
-<li><b>Bấm nút "✨ Luận giải chi tiết trọn đời"</b> rồi để nguyên trang khoảng 5–8 phút; đừng tắt màn hình hay chuyển sang ứng dụng khác. Nếu bị ngắt giữa chừng, bấm "Viết tiếp từ phần …" để viết nốt.</li>
+<li><b>Bấm nút "✨ Luận giải chi tiết trọn đời"</b> rồi để nguyên trang khoảng 3–4 phút; đừng tắt màn hình hay chuyển sang ứng dụng khác. Nếu bị ngắt giữa chừng, bấm "Viết tiếp từ phần …" để viết nốt.</li>
 <li><b>Đọc mục "Tóm tắt" trước</b>, rồi mới xem các bảng năm, tháng.</li>
 </ol>`;
 }
@@ -1806,7 +1806,7 @@ Quy tắc bắt buộc:
 function tdKe(ctx) {
   return ctx.kind === "viec"
     ? { phan: VIEC_PHAN, quyTac: VIEC_QUY_TAC, loai: "viec", guide: "viec", nut: "✨ Luận đủ các cách và tổng kết", ten: "luận xem việc", phut: "khoảng 2 phút" }
-    : { phan: tdPhanBD(ctx), quyTac: TD_QUY_TAC, loai: "trondoi", guide: "trondoi", nut: "✨ Luận giải chi tiết trọn đời", ten: "luận trọn đời", phut: "khoảng 5–8 phút" };
+    : { phan: tdPhanBD(ctx), quyTac: TD_QUY_TAC, loai: "trondoi", guide: "trondoi", nut: "✨ Luận giải chi tiết trọn đời", ten: "luận trọn đời", phut: "khoảng 3–4 phút" };
 }
 const NHAC_VIET = `NHẮC LẠI CÁCH VIẾT (bắt buộc): câu chính viết như kể cho người chưa từng nghe về tử vi – không có các chữ cung, môn, sao, thần, khóa, truyền, hào, quẻ, can chi, mệnh, không vong, phục ngâm, phản ngâm; những chữ đó chỉ được để trong ngoặc cuối câu (tối đa 4 chữ). Viết ngắn, đúng số gạch đầu dòng đã nêu. Viết xong tự rà lại từng câu.`;
 const TD_QUA_SERVER = typeof callServer === "function";
@@ -1865,7 +1865,7 @@ async function doLuanTronDoi(box, ctx, tu = 0) {
   }
   const huongDan = await guideFor(K.guide), soLieu = tdSoLieu(ctx);
   for (let i = tu; i < n; i++) {
-    const dang = `Đang viết phần ${i + 1}/${n}: ${K.phan[i].ten}… (mỗi phần khoảng 30–60 giây, cả bài ${K.phut}; ${goi} cứ để trang mở)`;
+    const dang = `Đang viết phần ${i + 1}/${n}: ${K.phan[i].ten}… (mỗi phần khoảng 15–30 giây, cả bài ${K.phut}; ${goi} cứ để trang mở)`;
     ve(dang);
     let r = null;
     for (let lan = 0; lan < 2; lan++) {
@@ -1904,6 +1904,7 @@ async function doLuanTronDoi(box, ctx, tu = 0) {
   try { await persistCtx(ctx, { luan: ctx.luan, hoiThem }); } catch (e) {}
   const sv = $(".btnSave", box); if (sv && ctx.logId) { sv.textContent = "✓ Đã lưu vào sổ"; sv.disabled = true; }
   btn.disabled = false; btn.textContent = "✨ Luận lại từ đầu";
+  try { ctx.bdThem = []; bdXemSauVe(box, ctx, K, n); } catch (e) {}
 }
 /* ============================================================ CHỈ TAY */
 // Xem chỉ tay từ ảnh lòng bàn tay, theo skill "xem-chi-tay": ba trường phái Tây, Ấn, Đông, tổng kết chỗ đáng tin.
@@ -2199,8 +2200,8 @@ PHONG CÁCH BÍ ĐIỂN (mức vừa, bắt buộc):
 - Đổi tiêu đề, giữ nguyên số thứ tự: ${BD_TEN_MUC[i]}.
 - Ngay dưới mỗi tiêu đề "##" thêm một dòng dẫn bắt đầu bằng "> " (tối đa 20 chữ, hình ảnh gợi mở, dễ hiểu, không thuật ngữ).
 - Thân bài giữ lời thường như quy tắc cách viết; không thêm chữ cổ khó hiểu; mỗi mục tối đa 1 hình ảnh ví von.
-- Cuối mỗi mục (trừ mục chỉ có bảng) thêm một dòng "**Điển Sư dặn:** …": một câu, việc cụ thể nên làm.`;
-  if (cd.ro.length) s += `\nCHỦ ĐỀ ƯU TIÊN của người xem: ${cd.ro.map(bdTen).join(", ")}. Mục này có mảng liên quan thì viết kỹ hơn (thêm 2–3 gạch đầu dòng hoặc vài câu cụ thể), mảng khác viết gọn như thường. Không thêm số liệu ngoài bộ tính.`;
+- Cuối mỗi mục (trừ mục chỉ có bảng) thêm một dòng "**Điển Sư dặn:** …": một câu, tối đa 18 chữ, việc cụ thể nên làm. Riêng mục 12 và 13 không cần dòng này.`;
+  if (cd.ro.length) s += `\nCHỦ ĐỀ ƯU TIÊN của người xem: ${cd.ro.map(bdTen).join(", ")}. Chỉ viết sâu hơn ở mục thật sự thuộc chủ đề đó (thêm 2–3 gạch đầu dòng cụ thể); các mục khác viết bình thường, không kéo chủ đề sang và không nhắc lại. Không thêm số liệu ngoài bộ tính.`;
   if (cd.ngam.length) s += `\nNgười xem có vẻ quan tâm thêm: ${cd.ngam.map(bdTen).join(", ")} (đoán từ cách dùng); chỉ nhắc nhẹ khi liên quan.`;
   return s;
 }
@@ -2209,9 +2210,9 @@ function bdQuyenRieng(k) {
   return { ten: "Quyển riêng: " + ten, canTruoc: true, chiLay: [0], yeu: `Viết "## Quyển riêng · ${ten}" (không đánh số), dành riêng cho điều người xem canh cánh nhất.
 - Ngay dưới tiêu đề: một dòng dẫn bắt đầu bằng "> " (tối đa 20 chữ).
 - 6–8 gạch đầu dòng lời thường, mỗi dòng 1–2 câu, theo ý: nền tảng và chỗ vướng của mảng này; ${bdGoiY(k)}; chặng tốt và chặng cần dè chừng trong khoảng 10 năm tới (chỉ lấy năm hoặc chặng có trong số liệu); ba việc nên làm, hai việc nên tránh, cụ thể.
-- Dòng cuối: "**Điển Sư dặn:** …" một câu.
+- Dòng cuối: "**Điển Sư dặn:** …" một câu, tối đa 18 chữ.
 - Chỉ dùng số liệu bộ tính; không đổi đánh giá đã nêu; không chẩn đoán bệnh; không khuyên mua bán tài sản cụ thể; không phán chắc chắn.
-Khoảng 220–320 chữ.` };
+Khoảng 200–280 chữ.` };
 }
 function tdPhanBD(ctx) {
   if (ctx.tdPhan) return ctx.tdPhan;
@@ -2219,6 +2220,46 @@ function tdPhanBD(ctx) {
   const k = cd.ro[0] || cd.ngam[0];
   if (k) ds.splice(ds.length - 1, 0, bdQuyenRieng(k));
   return (ctx.tdPhan = ds);
+}
+
+/* ---- "Xem sâu hơn?": mở thêm quyển riêng sau bản luận (tối đa 2, tổng không quá 10 phần) ---- */
+function bdXemSauVe(box, ctx, K, n) {
+  const out = $(".luan", box); if (!out || K.loai !== "trondoi") return;
+  const them = ctx.bdThem || (ctx.bdThem = []);
+  const daCo = new Set([...(bdChuDe(ctx).ro), ...them]);
+  const con = Math.min(2, 10 - n) - them.length;
+  let el = $(".bdSau", out); if (el) el.remove();
+  if (con <= 0) return;
+  const tt = bdTT();
+  const ds = BD_CHU_DE.filter(c => !daCo.has(c[0])).sort((a, b) => (tt[b[0]] || 0) - (tt[a[0]] || 0)).slice(0, 6);
+  out.insertAdjacentHTML("beforeend", `<div class="card bdSau" style="margin-top:12px"><div style="font-weight:600">Xem sâu hơn?</div>
+    <div class="hint" style="margin:2px 0 8px">Điển Sư có thể mở thêm một quyển riêng về điều ${xg()} muốn biết kỹ (còn ${con} quyển, mỗi quyển khoảng 20 giây).</div>
+    <div class="chips">${ds.map(([k, t]) => `<button type="button" class="chip" data-k="${k}">${esc(t)}</button>`).join("")}</div><div class="small-note bdSauNote"></div></div>`);
+  $$(".bdSau .chip", out).forEach(b => b.onclick = () => bdXemSau(box, ctx, K, n, b.dataset.k));
+}
+async function bdXemSau(box, ctx, K, n, k) {
+  const out = $(".luan", box), el = $(".bdSau", out), note = $(".bdSauNote", el);
+  $$(".chip", el).forEach(b => b.disabled = true);
+  note.textContent = "Điển Sư đang mở quyển riêng…";
+  const them = ctx.bdThem || (ctx.bdThem = []);
+  const p = bdQuyenRieng(k);
+  let r = null;
+  try {
+    r = await callServer({ action: "luan", luotId: ctx.logId, luan: { xung: "Thí Chủ", mon: ctx.mon, nguoi: ctx.nguoi || "", hoi: ctx.hoi || "", hoiThem: "",
+      huongDan: await guideFor(K.guide), soLieu: tdSoLieu(ctx),
+      tronDoi: { phan: n + them.length, tong: n + them.length + 1, them: true, yeuCau: p.yeu, loai: K.loai, daViet: (ctx.tdBai || [])[0] || "" } } }, 240000);
+  } catch (e) { r = null; }
+  if (!r || !r.ok) {
+    note.textContent = (r && r.loi) || "Chưa mở được quyển riêng. Mời thử lại sau ít phút.";
+    $$(".chip", el).forEach(b => b.disabled = false); return;
+  }
+  them.push(k); bdBump(k, 3);
+  ctx.tdBai.push(r.text); ctx.luan = ctx.tdBai.join("\n\n");
+  el.remove();
+  const box2 = document.createElement("div"); box2.className = "luan-box"; box2.style.marginTop = "12px"; box2.innerHTML = renderMd(r.text);
+  out.appendChild(box2);
+  try { await persistCtx(ctx, { luan: ctx.luan, hoiThem: "" }); } catch (e) {}
+  bdXemSauVe(box, ctx, K, n);
 }
 
 function goTab(t) { try { bdTheoDoi(t); } catch (e) {} $$("section.tab").forEach(s => s.classList.toggle("on", s.id === "tab-" + t)); $$("#tabbar button").forEach(b => b.classList.toggle("on", b.dataset.tab === t)); window.scrollTo(0, 0); try { history.replaceState(null, "", "#" + t); } catch (e) {} }

@@ -1044,7 +1044,13 @@ function luan_(req, P) {
   var cache = CacheService.getScriptCache();
   var kTd = 'td_' + khachId + '_' + luotId;
   var hoan, conLai = null;
-  if (td && phan > 0) {
+  if (td && phan > 0 && td.them === true) {
+    // Quyển thêm ("xem sâu hơn"): chỉ khi bộ còn trong bộ nhớ đệm, tối đa 2 quyển mỗi bộ, không trừ thêm lượt luận.
+    var kThem = kTd + '_them', daThem = Number(cache.get(kThem) || 0);
+    if (cache.get(kTd) === null || daThem >= 2) return { ok: false, ma_loi: 'het_bo', loi: 'Bộ luận này đã hết hạn hoặc đã mở đủ quyển thêm.' };
+    cache.put(kThem, String(daThem + 1), 21600);
+    hoan = function () { cache.put(kThem, String(daThem), 21600); };
+  } else if (td && phan > 0) {
     // Phần tiếp theo của bộ đã mở: không trừ thêm lượt, chỉ cần bộ còn phần.
     var con = Number(cache.get(kTd) || 0);
     if (con <= 0) return { ok: false, ma_loi: 'het_bo', loi: 'Bộ luận trọn đời này đã hết hạn. Mời ' + xung + ' bấm luận lại từ đầu.' };
